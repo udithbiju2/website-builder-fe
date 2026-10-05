@@ -53,7 +53,10 @@ export default function LeftRail() {
         </RailButton>
       </nav>
       {active && Panel && (
-        <aside aria-label={active.label} className="flex h-full min-h-0 w-72 shrink-0 flex-col border-r border-ed-border bg-ed-panel overflow-hidden">
+        <aside
+          aria-label={active.label}
+          className={`flex h-full min-h-0 ${leftPanel === "add" ? "w-96" : "w-72"} shrink-0 flex-col border-r border-ed-border bg-ed-panel overflow-hidden transition-[width] duration-150`}
+        >
           <Panel />
         </aside>
       )}
