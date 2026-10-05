@@ -4,9 +4,11 @@ import { GuestOnly, RequireAuth } from "./auth/RouteGuards.tsx";
 import AdminLayout from "./layouts/AdminLayout.tsx";
 import ClientLayout from "./layouts/ClientLayout.tsx";
 import PublicLayout from "./layouts/PublicLayout.tsx";
+import AllWebsitesPage from "./pages/admin/AllWebsitesPage.tsx";
 import ClientFormPage from "./pages/admin/ClientFormPage.tsx";
 import ClientsPage from "./pages/admin/ClientsPage.tsx";
 import EmailSettingsPage from "./pages/admin/EmailSettingsPage.tsx";
+import SectionLibraryPage from "./pages/admin/SectionLibraryPage.tsx";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.tsx";
 import LoginPage from "./pages/auth/LoginPage.tsx";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage.tsx";
@@ -15,6 +17,9 @@ import VerifyEmailPage from "./pages/auth/VerifyEmailPage.tsx";
 import DashboardPage from "./pages/client/DashboardPage.tsx";
 import LandingPage from "./pages/public/LandingPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
+import CreateWebsitePage from "./pages/websites/CreateWebsitePage.tsx";
+import WebsiteEditorPage from "./pages/websites/editor/WebsiteEditorPage.tsx";
+import WebsitePreviewPage from "./pages/websites/WebsitePreviewPage.tsx";
 
 export default function App() {
   return (
@@ -40,11 +45,19 @@ export default function App() {
             </Route>
           </Route>
 
+          <Route element={<RequireAuth roles={["CLIENT", "SUPER_ADMIN"]} />}>
+            <Route path="websites/new" element={<CreateWebsitePage />} />
+            <Route path="websites/:id/preview" element={<WebsitePreviewPage />} />
+            <Route path="websites/:id/edit" element={<WebsiteEditorPage />} />
+          </Route>
+
           <Route element={<RequireAuth roles={["SUPER_ADMIN"]} />}>
             <Route path="admin" element={<AdminLayout />}>
               <Route index element={<ClientsPage />} />
               <Route path="clients/new" element={<ClientFormPage />} />
               <Route path="clients/:id" element={<ClientFormPage />} />
+              <Route path="websites" element={<AllWebsitesPage />} />
+              <Route path="sections" element={<SectionLibraryPage />} />
               <Route path="settings/email" element={<EmailSettingsPage />} />
             </Route>
           </Route>

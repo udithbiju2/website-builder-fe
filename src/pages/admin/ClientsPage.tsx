@@ -10,6 +10,7 @@ import { ClientStatusChip, formatDate, SOURCE_LABELS, STATUS_LABELS } from "../.
 import PageHeader from "../../components/app/PageHeader.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
 import SelectInput, { type SelectOption } from "../../components/ui/SelectInput.tsx";
+import { useDebouncedValue } from "../../hooks/use-debounced-value.ts";
 
 const PAGE_SIZE = 20;
 
@@ -27,15 +28,6 @@ const STATUS_OPTIONS: SelectOption<UserStatus | "">[] = [
   { value: "PENDING_VERIFICATION", label: STATUS_LABELS.PENDING_VERIFICATION },
   { value: "SUSPENDED", label: STATUS_LABELS.SUSPENDED },
 ];
-
-function useDebouncedValue<T>(value: T, delayMs: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebounced(value), delayMs);
-    return () => window.clearTimeout(timer);
-  }, [value, delayMs]);
-  return debounced;
-}
 
 export default function ClientsPage() {
   const [search, setSearch] = useState("");
