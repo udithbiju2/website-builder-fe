@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@source "../**/*.{ts,tsx}";
+
+@theme {
+  --font-sans:
+    "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-brand: #2447c7;
+  --color-brand-hover: #1d3aa8;
+  --color-brand-soft: #e8edfb;
+
+  --color-ink: #1a1d23;
+  --color-ink-body: #4b5160;
+  --color-ink-muted: #7a8090;
+
+  --color-canvas: #f3f4f6;
+  --color-surface: #ffffff;
+  --color-line: #e3e5ea;
+  --color-line-strong: #d3d6dd;
+}
+
+:root {
+  --accent: #2447c7;
+  --accent-foreground: #ffffff;
+  --focus: #2447c7;
+  --radius: 0.5rem;
+  /* Design reference uses visibly bordered form fields on white cards. */
+  --field-border-width: 1px;
+  --field-border: var(--color-line-strong);
+  --field-border-hover: #b9bdc7;
+}
+
+/* Design reference uses squared-off controls rather than HeroUI's pill buttons. */
+.button {
+  border-radius: calc(var(--radius) * 0.75);
+}
+
+.card {
+  border-radius: var(--radius-lg);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+[id] {
+  scroll-margin-top: 5rem;
+}

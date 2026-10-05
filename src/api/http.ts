@@ -1,0 +1,130 @@
+import { env } from "../config/env.ts";
+
+export type FieldIssue = {
+  message: string;
+  path: (string | number)[];
+};
+
+type ApiErrorBody = {
+  error?: {
+    code?: string;
+    message?: string;
+    details?: unknown;
+  };
+};
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code: string;
+  readonly details: unknown;
+
+  constructor(status: number, body: ApiErrorBody) {
+    super(body.error?.message ?? `Request failed (${status})`);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = body.error?.code ?? "UNKNOWN_ERROR";
+    this.details = body.error?.details;
+  }
+
+  /** Maps Joi validation details to `{ fieldName: message }` (first message per field). */
+  fieldErrors(): Record<string, string> {
+    if (this.code !== "VALIDATION_ERROR" || !Array.isArray(this.details)) return {};
+    const errors: Record<string, string> = {};
+    for (const issue of this.details as FieldIssue[]) {
+      const field = issue.path?.[0];
+      if (typeof field === "string" && !errors[field]) errors[field] = issue.message;
+    }
+    return errors;
+  }
+}
+
+export function errorMessage(error: unknown, fallback = "Something went wrong. Please try again."): string {
+  if (error instanceof ApiError) return error.message;
+  if (error instanceof TypeError) return "Can't reach the server. Check your connection and try again.";
+  return fallback;
+}
+
+/** Auth endpoints that must never trigger a refresh-and-retry loop. */
+const SKIP_REFRESH_PATHS = new Set([
+  "/auth/login",
+  "/auth/signup",
+  "/auth/verify-email",
+  "/auth/resend-verification",
+  "/auth/refresh",
+  "/auth/logout",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+]);
+
+let refreshInFlight: Promise<void> | null = null;
+let lastRefreshCompletedAt = 0;
+let sessionExpiredHandler: (() => void) | null = null;
+
+/** The auth provider registers this so an unrecoverable 401 clears the signed-in user. */
+export function setSessionExpiredHandler(handler: (() => void) | null): void {
+  sessionExpiredHandler = handler;
+}
+
+async function send(path: string, init: RequestInit): Promise<Response> {
+  const headers = new Headers(init.headers);
+  if (init.body !== undefined && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  return fetch(`${env.apiUrl}${path}`, {
+    ...init,
+    headers,
+    credentials: "include",
+    cache: "no-store",
+  });
+}
+
+async function parse<T>(response: Response): Promise<T> {
+  if (response.status === 204) return undefined as T;
+  const data = (await response.json().catch(() => ({}))) as T & ApiErrorBody;
+  if (!response.ok) throw new ApiError(response.status, data);
+  return data;
+}
+
+/**
+ * Refresh tokens are single-use, so concurrent 401s share one refresh call.
+ * Presenting an already-rotated token would trip server-side reuse detection.
+ */
+function refreshSession(): Promise<void> {
+  refreshInFlight ??= send("/auth/refresh", { method: "POST" })
+    .then((response) => parse<unknown>(response))
+    .then(() => {
+      lastRefreshCompletedAt = Date.now();
+    })
+    .finally(() => {
+      refreshInFlight = null;
+    });
+  return refreshInFlight;
+}
+
+type RequestOptions = Omit<RequestInit, "body"> & { body?: unknown };
+
+export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const { body, ...rest } = options;
+  const init: RequestInit = {
+    ...rest,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  };
+
+  const startedAt = Date.now();
+  const response = await send(path, init);
+  if (response.status !== 401 || SKIP_REFRESH_PATHS.has(path.split("?")[0])) {
+    return parse<T>(response);
+  }
+
+  // A refresh that finished after this request was sent already rotated the cookies.
+  if (lastRefreshCompletedAt < startedAt) {
+    try {
+      await refreshSession();
+    } catch (error) {
+      sessionExpiredHandler?.();
+      throw error;
+    }
+  }
+
+  return parse<T>(await send(path, init));
+}
