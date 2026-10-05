@@ -5,9 +5,10 @@ import type { GridColumns, IconName, ImageRef, LinkRef, SectionSettings } from "
 type SiteLinkProps = {
   link: LinkRef;
   className?: string;
+  children?: ReactNode;
 };
 
-export function SiteLink({ link, className }: SiteLinkProps) {
+export function SiteLink({ link, className, children }: SiteLinkProps) {
   const href = safeHref(link.href);
   const external = isExternalHref(href);
   return (
@@ -16,7 +17,7 @@ export function SiteLink({ link, className }: SiteLinkProps) {
       className={className}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
-      {link.label}
+      {children ?? link.label}
     </a>
   );
 }
@@ -70,6 +71,50 @@ export function SearchIcon() {
       <circle cx="11" cy="11" r="8" />
       <path d="M21 21l-4.35-4.35" />
     </svg>
+  );
+}
+
+export function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+export function StarFilledIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1" aria-hidden="true">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    </svg>
+  );
+}
+
+export function BottomShapeDivider({ shape }: { shape?: "none" | "wave" | "curve" | "slant" | "tilt" }) {
+  if (!shape || shape === "none") return null;
+  return (
+    <div className={`wb-shape-divider wb-shape-${shape}`} aria-hidden="true">
+      {shape === "wave" && (
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M0,0 C150,90 350,-40 500,60 C650,160 900,10 1200,40 L1200,120 L0,120 Z" fill="currentColor" />
+        </svg>
+      )}
+      {shape === "curve" && (
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M0,0 C400,120 800,120 1200,0 L1200,120 L0,120 Z" fill="currentColor" />
+        </svg>
+      )}
+      {shape === "slant" && (
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M1200,0 L0,120 L1200,120 Z" fill="currentColor" />
+        </svg>
+      )}
+      {shape === "tilt" && (
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M0,0 L1200,100 L1200,120 L0,120 Z" fill="currentColor" />
+        </svg>
+      )}
+    </div>
   );
 }
 
@@ -192,9 +237,18 @@ type SectionShellProps = {
 };
 
 export function SectionShell({ sectionId, settings, className, label, children }: SectionShellProps) {
+  const customColors = settings.customColors;
+  const customStyle: CSSProperties = {
+    ...(customColors?.background ? { "--wb-bg": customColors.background, backgroundColor: customColors.background } : {}),
+    ...(customColors?.text ? { "--wb-text": customColors.text, color: customColors.text } : {}),
+    ...(customColors?.primary ? { "--wb-primary": customColors.primary } : {}),
+    ...(customColors?.muted ? { "--wb-muted": customColors.muted } : {}),
+    ...(customColors?.border ? { "--wb-border": customColors.border } : {}),
+  };
+
   const classes = [
     "wb-section",
-    settings.background !== "default" && `wb-bg-${settings.background}`,
+    settings.background !== "default" && !customColors?.background && `wb-bg-${settings.background}`,
     settings.spacing && settings.spacing !== "default" && `wb-space-${settings.spacing}`,
     settings.align === "left" && "wb-align-left",
     settings.hideOnMobile && "wb-hide-mobile",
@@ -210,17 +264,19 @@ export function SectionShell({ sectionId, settings, className, label, children }
       id={settings.anchor || undefined}
       data-section-id={sectionId}
       aria-label={label}
+      style={Object.keys(customStyle).length > 0 ? customStyle : undefined}
     >
       <div className="wb-container">{children}</div>
     </section>
   );
 }
 
-export function SectionHead({ heading, intro, eyebrow }: { heading: string; intro?: string; eyebrow?: string }) {
+export function SectionHead({ heading, intro, eyebrow }: { heading?: string; intro?: string; eyebrow?: string }) {
+  if (!heading && !intro && !eyebrow) return null;
   return (
     <div className="wb-section-head">
       {eyebrow && <p className="wb-eyebrow">{eyebrow}</p>}
-      <h2>{heading}</h2>
+      {heading && <h2>{heading}</h2>}
       {intro && <p className="wb-muted">{intro}</p>}
     </div>
   );

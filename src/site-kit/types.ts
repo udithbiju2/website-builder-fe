@@ -155,6 +155,14 @@ export type SectionBackground = "default" | "surface" | "primary" | "dark";
 export type SectionSpacing = "none" | "compact" | "default" | "relaxed";
 export type SectionAlign = "center" | "left";
 
+export type SectionCustomColors = {
+  background?: string;
+  text?: string;
+  primary?: string;
+  muted?: string;
+  border?: string;
+};
+
 export type SectionSettings = {
   background: SectionBackground;
   hideOnMobile: boolean;
@@ -164,18 +172,78 @@ export type SectionSettings = {
   align?: SectionAlign;
   /** In-page anchor id, so links like `#pricing` can jump to the section. */
   anchor?: string;
+  customColors?: SectionCustomColors;
 };
 
 export type IconName = "check" | "star" | "bolt" | "shield" | "heart" | "chat";
 
+export const HERO_VARIANTS = [
+  "centered",
+  "split",
+  "split-left",
+  "background-image",
+  "video-bg",
+  "gradient",
+  "curved-bottom",
+  "soft-card",
+  "minimal-typography",
+  "floating-cards",
+  "asymmetric",
+] as const;
+
+export type HeroVariant = (typeof HERO_VARIANTS)[number];
+
+export type HeroFloatingCard = {
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  icon?: string;
+};
+
+export type HeroRating = {
+  stars?: number;
+  text?: string;
+  avatarCount?: number;
+};
+
+export type HeroTrustedBy = {
+  label?: string;
+  logos?: { label: string; url?: string }[];
+};
+
 export type HeroData = {
-  variant: "centered" | "split";
+  variant: HeroVariant;
   eyebrow?: string;
+  badgeIcon?: string;
   heading: string;
+  highlightText?: string;
   subheading?: string;
+  description?: string;
   primaryCta?: LinkRef;
   secondaryCta?: LinkRef;
+  tertiaryCta?: LinkRef;
+  buttons?: LinkRef[];
+  mediaType?: "image" | "video" | "both";
+  videoUrl?: string;
+  videoAutoplay?: boolean;
+  videoControls?: boolean;
+  videoLoop?: boolean;
   image?: ImageRef;
+  secondaryImage?: ImageRef;
+  backgroundImage?: ImageRef;
+  bgImagePosition?: "bottom" | "center" | "top" | "cover";
+  bgOverlayType?: "dark" | "light" | "gradient" | "none";
+  backgroundVideoUrl?: string;
+  imagePosition?: "right" | "left" | "bottom" | "background" | "card";
+  imageStyle?: "mockup" | "rounded" | "glow" | "shadow" | "plain";
+  overlayOpacity?: number;
+  overlayBlur?: boolean;
+  minHeight?: "auto" | "compact" | "screen" | "tall";
+  contentAlign?: "center" | "left" | "right";
+  bottomShape?: "none" | "wave" | "curve" | "slant" | "tilt";
+  rating?: HeroRating;
+  floatingCards?: HeroFloatingCard[];
+  trustedBy?: HeroTrustedBy;
 };
 
 export type GridColumns = 1 | 2 | 3 | 4;

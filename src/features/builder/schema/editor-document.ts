@@ -6,6 +6,16 @@ export const EDITOR_SCHEMA_VERSION = 1;
 
 const sectionTypeSchema = z.enum(SECTION_TYPES as [SectionType, ...SectionType[]]);
 
+export const sectionCustomColorsSchema = z
+  .object({
+    background: z.string().optional(),
+    text: z.string().optional(),
+    primary: z.string().optional(),
+    muted: z.string().optional(),
+    border: z.string().optional(),
+  })
+  .optional();
+
 export const sectionSettingsSchema = z.object({
   background: z.enum(["default", "surface", "primary", "dark"]),
   hideOnMobile: z.boolean(),
@@ -13,6 +23,7 @@ export const sectionSettingsSchema = z.object({
   spacing: z.enum(["none", "compact", "default", "relaxed"]).optional(),
   align: z.enum(["center", "left"]).optional(),
   anchor: z.string().max(40).optional(),
+  customColors: sectionCustomColorsSchema,
 });
 
 /**

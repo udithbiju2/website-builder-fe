@@ -7,12 +7,12 @@ import {
 } from "react";
 import { Button, Checkbox, Dropdown, Label } from "@heroui/react";
 import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { CellColorPicker } from "../../../components/ui/CellColorPicker.tsx";
 import type { ImageRef, LinkRef } from "../../../site-kit/index.ts";
 
 const SAFE_HREF =
   /^(https?:\/\/\S+|mailto:\S+|tel:[+0-9() -]+|\/(?!\/)\S*|#\S*)$/i;
 const SAFE_IMAGE_URL = /^(https?:\/\/\S+|\/(?!\/)\S*)$/i;
-const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 const inputClass =
   "h-8 w-full rounded-ed border border-ed-border bg-ed-panel px-2.5 text-ed-sm text-ed-text placeholder:text-ed-faint shadow-ed-xs transition-all duration-150 hover:border-ed-border-strong focus:border-ed-accent focus:bg-ed-panel focus:outline-none focus:ring-2 focus:ring-ed-accent/15 aria-invalid:border-ed-danger aria-invalid:focus:ring-ed-danger/15 disabled:bg-ed-subtle disabled:text-ed-muted disabled:cursor-not-allowed";
@@ -208,10 +208,21 @@ export function CheckboxField({
   hint,
   disabled,
 }: CheckboxFieldProps) {
+  const handleToggle = (val: unknown) => {
+    if (typeof val === "boolean") {
+      onChange(val);
+    } else if (val && typeof val === "object" && "target" in val) {
+      const target = (val as { target?: { checked?: boolean } }).target;
+      onChange(Boolean(target?.checked));
+    } else {
+      onChange(!checked);
+    }
+  };
+
   return (
     <Checkbox
-      isSelected={checked}
-      onChange={onChange}
+      isSelected={Boolean(checked)}
+      onChange={handleToggle as (isSelected: boolean) => void}
       isDisabled={disabled}
       className="group cursor-pointer select-none"
     >
@@ -234,45 +245,36 @@ export function ColorField({
   label,
   value,
   onChange,
+  fallback = "#ffffff",
+  hint,
 }: {
   label: string;
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
+  fallback?: string;
+  hint?: string;
 }) {
-  const id = useId();
-  const [text, setText] = useState(value);
-  const [lastValue, setLastValue] = useState(value);
-  if (value !== lastValue) {
-    setLastValue(value);
-    setText(value);
-  }
   return (
-    <FieldShell
-      id={id}
-      label={label}
-      error={HEX_COLOR.test(text) ? undefined : "Use #rrggbb"}
-    >
-      <div className="flex items-center gap-2">
-        <input
-          type="color"
-          aria-label={`${label} picker`}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-8 w-10 shrink-0 cursor-pointer rounded-ed border border-ed-border bg-ed-panel p-0.5 shadow-ed-xs hover:border-ed-border-strong transition-colors"
-        />
-        <input
-          id={id}
-          value={text}
-          onChange={(event) => {
-            setText(event.target.value);
-            if (HEX_COLOR.test(event.target.value))
-              onChange(event.target.value.toLowerCase());
-          }}
-          className={`${inputClass} font-mono text-ed-xs uppercase`}
-          maxLength={7}
-        />
-      </div>
-    </FieldShell>
+    <div className="flex flex-col gap-1">
+      <CellColorPicker
+        value={value}
+        onChange={(val) => onChange(val || "")}
+        label={label}
+        fallback={fallback}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <CellColorPicker.Label />
+          <div className="flex items-center gap-1.5 w-36">
+            <CellColorPicker.Trigger />
+            <CellColorPicker.ValueDisplay />
+          </div>
+        </div>
+        <CellColorPicker.Popover>
+          <CellColorPicker.Swatch />
+        </CellColorPicker.Popover>
+      </CellColorPicker>
+      {hint && <p className="text-ed-2xs text-ed-muted leading-normal">{hint}</p>}
+    </div>
   );
 }
 
@@ -579,3 +581,6 @@ export function FormGroup({
     </section>
   );
 }
+
+export { CellColorPicker } from "../../../components/ui/CellColorPicker.tsx";
+
