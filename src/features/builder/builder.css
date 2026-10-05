@@ -1,0 +1,57 @@
+/*
+ * Loaded only with the lazy editor chunk. Puck copies host styles into its
+ * canvas iframe, so these rules apply to the selection overlays there too.
+ */
+:root {
+  --puck-font-family: var(--font-sans);
+  --puck-color-azure-01: #0c1847;
+  --puck-color-azure-02: #13256b;
+  --puck-color-azure-03: #1b3496;
+  --puck-color-azure-04: #2447c7;
+  --puck-color-azure-05: #4462d4;
+  --puck-color-azure-06: #6a83de;
+  --puck-color-azure-07: #8fa2e7;
+  --puck-color-azure-08: #b2c0ef;
+  --puck-color-azure-09: #d1daf6;
+  --puck-color-azure-10: #e6ebfb;
+  --puck-color-azure-11: #f1f4fd;
+  --puck-color-azure-12: #f7f9fe;
+}
+
+/* Hidden sections stay editable but are clearly marked as not published. */
+.wb-editor-hidden {
+  position: relative;
+  opacity: 0.45;
+}
+.wb-editor-hidden::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(135deg, transparent 0 10px, rgb(24 24 27 / 0.04) 10px 20px);
+}
+
+/* Site-wide header/footer targets inside the canvas. */
+.wb-editor-area {
+  position: relative;
+  cursor: pointer;
+}
+.wb-editor-area::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  transition: outline-color 120ms ease;
+}
+.wb-editor-area:hover::after,
+.wb-editor-area:focus-visible::after {
+  outline-color: color-mix(in srgb, var(--color-ed-accent) 45%, transparent);
+}
+.wb-editor-area[data-active="true"]::after {
+  outline-color: var(--color-ed-accent);
+}
+.wb-editor-area:focus-visible {
+  outline: none;
+}

@@ -27,6 +27,50 @@
   --color-surface: #ffffff;
   --color-line: #e3e5ea;
   --color-line-strong: #d3d6dd;
+
+  /* Visual builder: warm neutral surfaces, one accent, semantic status colours. */
+  --color-ed-app: #f6f6f4;
+  --color-ed-panel: #ffffff;
+  --color-ed-subtle: #f1f1ee;
+  --color-ed-hover: #ebebe7;
+  --color-ed-border: #e6e5e1;
+  --color-ed-border-strong: #d6d5d0;
+  --color-ed-text: #1b1b1f;
+  --color-ed-muted: #66666e;
+  --color-ed-faint: #94949b;
+  --color-ed-accent: #2447c7;
+  --color-ed-accent-hover: #1d3aa8;
+  --color-ed-accent-soft: #eaeefb;
+  --color-ed-success: #157f3c;
+  --color-ed-success-soft: #e7f5ec;
+  --color-ed-warning: #a15c07;
+  --color-ed-warning-soft: #fdf3e2;
+  --color-ed-danger: #c4302b;
+  --color-ed-danger-soft: #fbeceb;
+  --color-ed-info: #2563eb;
+  --color-ed-info-soft: #e9f0fd;
+
+  --radius-ed-sm: 4px;
+  --radius-ed: 6px;
+  --radius-ed-lg: 8px;
+
+  --shadow-ed-xs: 0 1px 2px rgb(24 24 27 / 0.05);
+  --shadow-ed-pop: 0 1px 2px rgb(24 24 27 / 0.06), 0 8px 24px -6px rgb(24 24 27 / 0.14);
+  --shadow-ed-canvas: 0 0 0 1px rgb(24 24 27 / 0.06), 0 12px 32px -12px rgb(24 24 27 / 0.18);
+
+  --text-ed-2xs: 11px;
+  --text-ed-xs: 12px;
+  --text-ed-sm: 13px;
+}
+
+/* Builder stacking order; use as z-(--z-ed-*). */
+:root {
+  --z-ed-canvas: 0;
+  --z-ed-panel: 10;
+  --z-ed-toolbar: 20;
+  --z-ed-drawer: 30;
+  --z-ed-popover: 40;
+  --z-ed-toast: 50;
 }
 
 :root {
@@ -63,4 +107,19 @@ body {
 
 [id] {
   scroll-margin-top: 5rem;
+}
+
+.ed-focus:focus-visible,
+.ed-root :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-ed-accent);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-root *,
+  .ed-root *::before,
+  .ed-root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

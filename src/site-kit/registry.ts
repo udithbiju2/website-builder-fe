@@ -9,7 +9,10 @@ export type SectionCategory =
   | "CTA"
   | "Contact"
   | "Portfolio"
-  | "Content";
+  | "Content"
+  | "Media"
+  | "Pricing"
+  | "Team";
 
 export type SectionDefinition<T extends SectionType> = {
   type: T;
@@ -138,6 +141,100 @@ export const SECTION_DEFINITIONS: { [T in SectionType]: SectionDefinition<T> } =
       columns: 3,
       mobileColumns: 1,
       images: [],
+    }),
+  },
+  logos: {
+    type: "logos",
+    label: "Logo cloud",
+    category: "Social proof",
+    description: "A row of customer or partner logos.",
+    createData: () => ({
+      heading: "Trusted by teams at",
+      grayscale: true,
+      logos: [],
+    }),
+  },
+  split: {
+    type: "split",
+    label: "Split content",
+    category: "Content",
+    description: "Text and bullet points beside an image.",
+    createData: () => ({
+      eyebrow: "How it works",
+      heading: "Explain one key idea",
+      body: "Use a short paragraph to describe what makes this part of your offer valuable.",
+      bullets: ["First benefit", "Second benefit", "Third benefit"],
+      imagePosition: "right",
+    }),
+  },
+  stats: {
+    type: "stats",
+    label: "Statistics",
+    category: "Social proof",
+    description: "Large numbers that show results at a glance.",
+    createData: () => ({
+      items: [
+        { value: "10+", label: "Years of experience" },
+        { value: "500", label: "Happy customers" },
+        { value: "24/7", label: "Support" },
+      ],
+    }),
+  },
+  pricing: {
+    type: "pricing",
+    label: "Pricing",
+    category: "Pricing",
+    description: "Plans with price, features and a button each.",
+    createData: () => ({
+      heading: "Simple, transparent pricing",
+      intro: "Choose the plan that fits you.",
+      plans: [
+        {
+          name: "Starter",
+          price: "$19",
+          period: "/ month",
+          description: "For individuals getting started.",
+          features: ["First feature", "Second feature"],
+          cta: { label: "Choose Starter", href: "/contact" },
+          featured: false,
+        },
+        {
+          name: "Pro",
+          price: "$49",
+          period: "/ month",
+          description: "For growing teams.",
+          features: ["Everything in Starter", "Third feature", "Priority support"],
+          cta: { label: "Choose Pro", href: "/contact" },
+          featured: true,
+        },
+      ],
+    }),
+  },
+  media: {
+    type: "media",
+    label: "Image / video",
+    category: "Media",
+    description: "One large image or a YouTube / Vimeo video.",
+    createData: () => ({
+      kind: "image",
+      aspect: "16:9",
+      width: "contained",
+    }),
+  },
+  team: {
+    type: "team",
+    label: "Team",
+    category: "Team",
+    description: "People with photo, role and short bio.",
+    createData: () => ({
+      heading: "Meet the team",
+      columns: 3,
+      mobileColumns: 1,
+      members: [
+        { name: "Team member", role: "Role" },
+        { name: "Team member", role: "Role" },
+        { name: "Team member", role: "Role" },
+      ],
     }),
   },
 };
@@ -325,5 +422,69 @@ export const SECTION_PRESETS: SectionPreset[] = [
     category: "Portfolio",
     description: "Denser photo grid, 2 per row on mobile.",
     create: () => createSection("gallery", { data: { columns: 4, mobileColumns: 2 } }),
+  },
+  {
+    key: "logos",
+    type: "logos",
+    label: "Logo cloud",
+    category: "Social proof",
+    description: "Customer logos in a calm grayscale row.",
+    create: () => createSection("logos", { settings: { spacing: "compact" } }),
+  },
+  {
+    key: "stats",
+    type: "stats",
+    label: "Statistics",
+    category: "Social proof",
+    description: "Three headline numbers.",
+    create: () => createSection("stats", { settings: { background: "surface" } }),
+  },
+  {
+    key: "split-right",
+    type: "split",
+    label: "Split · image right",
+    category: "Content",
+    description: "Text and bullets, image on the right.",
+    create: () => createSection("split"),
+  },
+  {
+    key: "split-left",
+    type: "split",
+    label: "Split · image left",
+    category: "Content",
+    description: "Image on the left, text on the right.",
+    create: () => createSection("split", { data: { imagePosition: "left" } }),
+  },
+  {
+    key: "pricing",
+    type: "pricing",
+    label: "Pricing · 2 plans",
+    category: "Pricing",
+    description: "Two plans with the recommended one highlighted.",
+    create: () => createSection("pricing"),
+  },
+  {
+    key: "media-image",
+    type: "media",
+    label: "Large image",
+    category: "Media",
+    description: "One wide image with an optional caption.",
+    create: () => createSection("media"),
+  },
+  {
+    key: "media-video",
+    type: "media",
+    label: "Video",
+    category: "Media",
+    description: "A YouTube or Vimeo video.",
+    create: () => createSection("media", { data: { kind: "video" } }),
+  },
+  {
+    key: "team",
+    type: "team",
+    label: "Team",
+    category: "Team",
+    description: "Three people with role and photo.",
+    create: () => createSection("team"),
   },
 ];

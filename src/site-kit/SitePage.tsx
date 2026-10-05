@@ -7,12 +7,18 @@ import FaqSection from "./sections/FaqSection.tsx";
 import FeaturesSection from "./sections/FeaturesSection.tsx";
 import GallerySection from "./sections/GallerySection.tsx";
 import HeroSection from "./sections/HeroSection.tsx";
+import LogosSection from "./sections/LogosSection.tsx";
+import MediaSection from "./sections/MediaSection.tsx";
+import PricingSection from "./sections/PricingSection.tsx";
 import ServicesSection from "./sections/ServicesSection.tsx";
+import SplitSection from "./sections/SplitSection.tsx";
+import StatsSection from "./sections/StatsSection.tsx";
+import TeamSection from "./sections/TeamSection.tsx";
 import TestimonialsSection from "./sections/TestimonialsSection.tsx";
 import TextSection from "./sections/TextSection.tsx";
 import { SITE_CSS } from "./styles.ts";
 import { themeToCssVars } from "./theme.ts";
-import type { PageData, Section, SiteData } from "./types.ts";
+import type { FooterData, HeaderData, PageData, Section, SiteData, ThemeSettings } from "./types.ts";
 
 export function SectionView({ section }: { section: Section }) {
   switch (section.type) {
@@ -34,7 +40,46 @@ export function SectionView({ section }: { section: Section }) {
       return <TextSection section={section} />;
     case "gallery":
       return <GallerySection section={section} />;
+    case "logos":
+      return <LogosSection section={section} />;
+    case "split":
+      return <SplitSection section={section} />;
+    case "stats":
+      return <StatsSection section={section} />;
+    case "pricing":
+      return <PricingSection section={section} />;
+    case "media":
+      return <MediaSection section={section} />;
+    case "team":
+      return <TeamSection section={section} />;
   }
+}
+
+type SiteFrameProps = {
+  theme: ThemeSettings;
+  header: ReactNode;
+  footer: ReactNode;
+  children: ReactNode;
+};
+
+/** Themed page wrapper shared by the published page and the visual editor canvas. */
+export function SiteFrame({ theme, header, footer, children }: SiteFrameProps) {
+  const classes = ["wb-site", `wb-buttons-${theme.buttonStyle}`, `wb-cards-${theme.cardStyle}`].join(" ");
+  return (
+    <div className={classes} style={themeToCssVars(theme)}>
+      {header}
+      <main>{children}</main>
+      {footer}
+    </div>
+  );
+}
+
+export function SiteHeaderView({ header }: { header: HeaderData }) {
+  return <SiteHeader header={header} />;
+}
+
+export function SiteFooterView({ footer }: { footer: FooterData }) {
+  return <SiteFooter footer={footer} />;
 }
 
 /** Injects the site stylesheet. Published sites link it as a file instead. */
@@ -60,26 +105,24 @@ type SitePageProps = {
 
 /** One full page of a client website: header, visible sections, footer. */
 export default function SitePage({ site, page, editor }: SitePageProps) {
-  const { theme } = site;
-  const classes = ["wb-site", `wb-buttons-${theme.buttonStyle}`, `wb-cards-${theme.cardStyle}`].join(" ");
   const header = <SiteHeader header={site.header} />;
   const footer = <SiteFooter footer={site.footer} />;
 
   return (
-    <div className={classes} style={themeToCssVars(theme)}>
-      {editor ? editor.renderHeader(header) : header}
-      <main>
-        {editor
-          ? page.sections.length === 0
-            ? editor.emptyState
-            : page.sections.map((section) => (
-                <Fragment key={section.id}>{editor.renderSection(section, <SectionView section={section} />)}</Fragment>
-              ))
-          : page.sections
-              .filter((section) => !section.hidden)
-              .map((section) => <SectionView key={section.id} section={section} />)}
-      </main>
-      {editor ? editor.renderFooter(footer) : footer}
-    </div>
+    <SiteFrame
+      theme={site.theme}
+      header={editor ? editor.renderHeader(header) : header}
+      footer={editor ? editor.renderFooter(footer) : footer}
+    >
+      {editor
+        ? page.sections.length === 0
+          ? editor.emptyState
+          : page.sections.map((section) => (
+              <Fragment key={section.id}>{editor.renderSection(section, <SectionView section={section} />)}</Fragment>
+            ))
+        : page.sections
+            .filter((section) => !section.hidden)
+            .map((section) => <SectionView key={section.id} section={section} />)}
+    </SiteFrame>
   );
 }

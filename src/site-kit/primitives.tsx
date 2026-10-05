@@ -67,16 +67,23 @@ type SectionShellProps = {
 export function SectionShell({ sectionId, settings, className, label, children }: SectionShellProps) {
   const classes = [
     "wb-section",
-    settings.background === "surface" && "wb-bg-surface",
-    settings.background === "primary" && "wb-bg-primary",
+    settings.background !== "default" && `wb-bg-${settings.background}`,
+    settings.spacing && settings.spacing !== "default" && `wb-space-${settings.spacing}`,
+    settings.align === "left" && "wb-align-left",
     settings.hideOnMobile && "wb-hide-mobile",
+    settings.hideOnDesktop && "wb-hide-desktop",
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <section className={classes} data-section-id={sectionId} aria-label={label}>
+    <section
+      className={classes}
+      id={settings.anchor || undefined}
+      data-section-id={sectionId}
+      aria-label={label}
+    >
       <div className="wb-container">{children}</div>
     </section>
   );

@@ -65,11 +65,19 @@ export type FooterData = {
   copyright: string;
 };
 
-export type SectionBackground = "default" | "surface" | "primary";
+export type SectionBackground = "default" | "surface" | "primary" | "dark";
+export type SectionSpacing = "none" | "compact" | "default" | "relaxed";
+export type SectionAlign = "center" | "left";
 
 export type SectionSettings = {
   background: SectionBackground;
   hideOnMobile: boolean;
+  hideOnDesktop?: boolean;
+  /** Vertical padding; "default" (or unset) follows the theme's section spacing. */
+  spacing?: SectionSpacing;
+  align?: SectionAlign;
+  /** In-page anchor id, so links like `#pricing` can jump to the section. */
+  anchor?: string;
 };
 
 export type IconName = "check" | "star" | "bolt" | "shield" | "heart" | "chat";
@@ -142,6 +150,74 @@ export type GalleryData = {
   images: ImageRef[];
 };
 
+export type LogosData = {
+  heading?: string;
+  grayscale: boolean;
+  logos: ImageRef[];
+};
+
+export type SplitData = {
+  eyebrow?: string;
+  heading: string;
+  /** Plain text; blank lines separate paragraphs. */
+  body: string;
+  bullets: string[];
+  image?: ImageRef;
+  imagePosition: "left" | "right";
+  cta?: LinkRef;
+};
+
+export type StatsData = {
+  heading?: string;
+  intro?: string;
+  items: { value: string; label: string }[];
+};
+
+export type PricingPlan = {
+  name: string;
+  price: string;
+  period?: string;
+  description?: string;
+  features: string[];
+  cta?: LinkRef;
+  featured: boolean;
+};
+
+export type PricingData = {
+  heading: string;
+  intro?: string;
+  plans: PricingPlan[];
+};
+
+export type MediaAspect = "16:9" | "4:3" | "1:1";
+
+export type MediaData = {
+  heading?: string;
+  caption?: string;
+  kind: "image" | "video";
+  image?: ImageRef;
+  /** YouTube or Vimeo page URL, rendered only as a privacy-enhanced embed. */
+  videoUrl?: string;
+  aspect: MediaAspect;
+  width: "contained" | "wide";
+};
+
+export type TeamMember = {
+  name: string;
+  role?: string;
+  bio?: string;
+  photo?: ImageRef;
+  link?: LinkRef;
+};
+
+export type TeamData = {
+  heading: string;
+  intro?: string;
+  columns: GridColumns;
+  mobileColumns: GridColumns;
+  members: TeamMember[];
+};
+
 export type SectionDataMap = {
   hero: HeroData;
   features: FeaturesData;
@@ -152,6 +228,12 @@ export type SectionDataMap = {
   contact: ContactData;
   text: TextData;
   gallery: GalleryData;
+  logos: LogosData;
+  split: SplitData;
+  stats: StatsData;
+  pricing: PricingData;
+  media: MediaData;
+  team: TeamData;
 };
 
 export type SectionType = keyof SectionDataMap;
