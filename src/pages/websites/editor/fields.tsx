@@ -216,8 +216,8 @@ export function CheckboxField({
       className="group cursor-pointer select-none"
     >
       <Checkbox.Content className="items-start gap-2">
-        <Checkbox.Control className="mt-0.5">
-          <Checkbox.Indicator />
+        <Checkbox.Control className="mt-0.5 size-4 rounded-[4px] border border-ed-border-strong bg-ed-panel flex items-center justify-center p-0 m-0 shrink-0 transition-all duration-150 data-[selected=true]:bg-ed-accent data-[selected=true]:border-ed-accent text-white">
+          <Checkbox.Indicator className="size-full flex items-center justify-center p-0 m-0 bg-transparent text-white" />
         </Checkbox.Control>
         <div className="min-w-0 flex-1">
           <Label className="block text-ed-sm font-medium text-ed-text cursor-pointer leading-tight">

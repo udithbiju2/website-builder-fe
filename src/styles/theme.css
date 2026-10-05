@@ -135,32 +135,87 @@ body {
 }
 
 /* HeroUI Checkbox: full solid box fill with zero internal spacing */
+[data-slot="checkbox-control"],
 [data-slot="control"],
+.checkbox__control,
 button[role="checkbox"] {
   border-radius: 4px !important;
   border-width: 1px !important;
+  border-style: solid !important;
+  border-color: var(--color-ed-border-strong, #cbd5e1) !important;
+  background-color: var(--color-ed-panel, #ffffff) !important;
   padding: 0 !important;
+  margin: 0 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   box-sizing: border-box !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  overflow: hidden !important;
+  transition: all 0.15s ease-in-out !important;
 }
 
-[data-slot="indicator"] {
+/* Checked / Selected State: Solid filled background on the ENTIRE control */
+[data-slot="checkbox"][data-selected="true"] [data-slot="checkbox-control"],
+[data-slot="checkbox"][data-selected="true"] [data-slot="control"],
+[data-slot="checkbox-content"][data-selected="true"] [data-slot="checkbox-control"],
+[data-slot="checkbox-control"][data-selected="true"],
+[data-selected="true"] > [data-slot="checkbox-control"],
+[data-selected="true"] [data-slot="checkbox-control"],
+button[role="checkbox"][aria-checked="true"],
+button[role="checkbox"][data-selected="true"] {
+  background-color: var(--color-ed-accent, #2447c7) !important;
+  border-color: var(--color-ed-accent, #2447c7) !important;
+  color: #ffffff !important;
+}
+
+/* Hover state */
+[data-slot="checkbox-content"]:hover [data-slot="checkbox-control"]:not([data-selected="true"]) {
+  border-color: var(--color-ed-muted, #94a3b8) !important;
+}
+
+/* Focus visible state */
+[data-slot="checkbox"]:focus-visible [data-slot="checkbox-control"],
+[data-slot="checkbox-content"]:focus-visible [data-slot="checkbox-control"],
+button[role="checkbox"]:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(36, 71, 199, 0.2) !important;
+}
+
+/* Indicator: completely transparent and full fill with zero padding/margin/inset */
+[data-slot="checkbox-indicator"],
+[data-slot="indicator"],
+.checkbox__indicator {
   width: 100% !important;
   height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+  inset: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  color: #ffffff !important;
 }
 
-[data-slot="indicator"] svg {
+/* Checkmark SVG inside indicator */
+[data-slot="checkbox-indicator"] svg,
+[data-slot="indicator"] svg,
+[data-slot*="indicator"] svg,
+.checkbox__indicator svg {
   width: 11px !important;
   height: 11px !important;
-  stroke: currentColor !important;
+  stroke: #ffffff !important;
   stroke-width: 2.5 !important;
+  fill: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* HeroUI Dropdown popover and menu refinements */
