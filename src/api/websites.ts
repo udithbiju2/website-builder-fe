@@ -127,6 +127,22 @@ export type SavedSection = {
 
 export type SaveTemplateInput = { name: string; description?: string };
 
+export type SavePageContentInput = {
+  expectedDraftUpdatedAt: string;
+  schemaVersion: number;
+  sections: Section[];
+};
+
+export type WebsiteVersion = {
+  id: string;
+  version: number;
+  status: "PENDING" | "SUCCEEDED" | "FAILED";
+  isLive: boolean;
+  publishedByName: string | null;
+  createdAt: string;
+  completedAt: string | null;
+};
+
 type WebsiteResponse = { website: WebsiteDetail };
 
 const BASE = "/websites";
@@ -174,4 +190,15 @@ export const websitesApi = {
 
   saveDraft: (id: string, input: SaveDraftInput) =>
     request<WebsiteResponse>(`${BASE}/${id}/draft`, { method: "PUT", body: input }).then((data) => data.website),
+
+  savePageContent: (id: string, pageId: string, input: SavePageContentInput) =>
+    request<{ draftUpdatedAt: string }>(`${BASE}/${id}/pages/${pageId}/content`, { method: "PUT", body: input }),
+
+  publish: (id: string, expectedDraftUpdatedAt: string) =>
+    request<WebsiteResponse>(`${BASE}/${id}/publish`, { method: "POST", body: { expectedDraftUpdatedAt } }).then(
+      (data) => data.website,
+    ),
+
+  versions: (id: string) =>
+    request<{ versions: WebsiteVersion[] }>(`${BASE}/${id}/versions`).then((data) => data.versions),
 };

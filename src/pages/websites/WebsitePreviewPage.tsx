@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Spinner } from "@heroui/react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, Copy, Lock, Pencil, X } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { errorMessage } from "../../api/http.ts";
 import { websitesApi, type WebsiteDetail } from "../../api/websites.ts";
 import { useAuth } from "../../auth/auth-context.ts";
-import FormAlert from "../../components/ui/FormAlert.tsx";
 import { DeviceToggle, PreviewFrame, type Device } from "../../components/websites/DevicePreview.tsx";
-import { WebsiteStatusChip } from "../../components/websites/website-labels.tsx";
 import { SitePage, type SiteData } from "../../site-kit/index.ts";
 import type { CreatedState } from "./CreateWebsitePage.tsx";
 
@@ -15,13 +13,16 @@ export default function WebsitePreviewPage() {
   const { id = "" } = useParams();
   const location = useLocation();
   const { user } = useAuth();
-  const justCreated = (location.state as CreatedState | null)?.created === true;
+  const [showCreatedBanner, setShowCreatedBanner] = useState(
+    () => (location.state as CreatedState | null)?.created === true,
+  );
   const backTo = user?.role === "SUPER_ADMIN" ? "/admin/websites" : "/dashboard";
 
   const [website, setWebsite] = useState<WebsiteDetail | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>("desktop");
   const [pageId, setPageId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,74 +53,127 @@ export default function WebsitePreviewPage() {
     if (target) setPageId(target.id);
   }
 
+  const simulatedDomain = website ? `${website.subdomain || "preview"}.bytezora.site` : "preview.bytezora.site";
+  const currentPath = page?.slug === "/" ? "" : page?.slug ?? "";
+  const fullUrl = `https://${simulatedDomain}${currentPath}`;
+
+  function copyUrl() {
+    navigator.clipboard.writeText(fullUrl).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="sticky top-0 z-30 flex flex-wrap items-center gap-x-6 gap-y-3 bg-ink px-6 py-3 text-white">
-        <Link to={backTo} className="inline-flex items-center gap-1 text-sm text-white/80 hover:text-white">
-          <ArrowLeft className="size-4" aria-hidden /> Back
-        </Link>
-        {website && (
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-medium">{website.name}</span>
-            <WebsiteStatusChip website={website} />
+    <div className="min-h-screen flex flex-col bg-zinc-900 text-zinc-100 antialiased">
+      {/* Top Preview Control Bar */}
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-white/10 bg-zinc-950/90 px-4 backdrop-blur-md">
+        {/* Left Side: Back & Site Identity */}
+        <div className="flex items-center gap-3 min-w-0">
+          <Link
+            to={backTo}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-white/90 transition hover:bg-white/10 hover:text-white"
+          >
+            <ArrowLeft className="size-3.5" aria-hidden /> Back
+          </Link>
+
+          {website && (
+            <div className="hidden sm:flex items-center gap-2 min-w-0 pl-1">
+              <span className="truncate text-sm font-semibold text-white">{website.name}</span>
+              <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-300 border border-amber-500/25">
+                Draft Preview
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Center: Simulated Browser Address Bar */}
+        <div className="hidden md:flex flex-1 max-w-lg items-center justify-center">
+          <div className="flex w-full items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-3.5 py-1 text-xs text-zinc-300 shadow-inner">
+            <Lock className="size-3 text-emerald-400 shrink-0" aria-hidden />
+            <span className="text-zinc-500">https://</span>
+            <span className="truncate font-medium text-zinc-200">{simulatedDomain}</span>
+            {currentPath && <span className="text-brand-300 font-medium">{currentPath}</span>}
+            <button
+              type="button"
+              onClick={copyUrl}
+              title="Copy URL"
+              className="ml-auto rounded p-1 text-zinc-400 transition hover:bg-white/10 hover:text-white"
+            >
+              {copied ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3" />}
+            </button>
           </div>
-        )}
-        <div className="ml-auto flex flex-wrap items-center gap-3">
+        </div>
+
+        {/* Right Side: Page Selector, Device Switcher & Edit CTA */}
+        <div className="flex items-center gap-2.5">
           {pages.length > 1 && (
-            <label className="flex items-center gap-2 text-sm text-white/70">
-              Page
+            <div className="relative">
               <select
                 value={page?.id ?? ""}
                 onChange={(event) => setPageId(event.target.value)}
-                className="h-8 rounded-md border border-white/15 bg-white/10 px-2 text-sm text-white outline-none focus:border-white/40"
+                className="h-8.5 rounded-lg border border-white/15 bg-zinc-900 px-2.5 pr-7 text-xs font-medium text-zinc-200 outline-none transition focus:border-brand"
               >
                 {pages.map((candidate) => (
-                  <option key={candidate.id} value={candidate.id} className="text-ink">
-                    {candidate.name}
-                    {candidate.visible ? "" : " (hidden)"}
+                  <option key={candidate.id} value={candidate.id} className="bg-zinc-900 text-zinc-100">
+                    {candidate.name} ({candidate.slug})
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
           )}
+
           <DeviceToggle value={device} onChange={setDevice} tone="dark" />
+
           {website && (
-            <Link to={`/websites/${website.id}/edit`} className="rounded-md bg-white px-3 py-1.5 text-sm font-medium text-ink hover:bg-white/90">
-              Edit website
+            <Link
+              to={`/websites/${website.id}/edit`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-100 active:scale-[0.98]"
+            >
+              <Pencil className="size-3.5" aria-hidden />
+              <span>Edit</span>
             </Link>
           )}
         </div>
       </header>
 
-      {justCreated && website && (
-        <div className="mx-auto max-w-3xl px-6 pt-5">
-          <FormAlert status="success" title="Draft created">
-            “{website.name}” was created with {website.pageCount} pages. This is a preview of the draft; nothing is published.
-          </FormAlert>
+      {/* Floating Notification for new draft */}
+      {showCreatedBanner && website && (
+        <div className="relative z-30 flex items-center justify-between border-b border-emerald-500/20 bg-emerald-950/70 px-4 py-2 text-xs text-emerald-200 backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-emerald-300">“{website.name}” draft ready!</span>
+            <span>Created with {website.pageCount} pages. Explore your preview below.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowCreatedBanner(false)}
+            className="rounded p-1 text-emerald-300/80 hover:bg-emerald-900/50 hover:text-emerald-200"
+          >
+            <X className="size-3.5" />
+          </button>
         </div>
       )}
 
+      {/* Error state */}
       {loadError && (
-        <div className="mx-auto max-w-3xl px-6 pt-8">
-          <FormAlert status="danger">{loadError}</FormAlert>
+        <div className="mx-auto my-8 max-w-xl rounded-xl border border-red-500/30 bg-red-950/30 p-4 text-sm text-red-200">
+          {loadError}
         </div>
       )}
 
+      {/* Loading state */}
       {!website && !loadError && (
-        <div className="grid place-items-center py-24">
-          <Spinner aria-label="Loading website" />
+        <div className="grid flex-1 place-items-center py-32">
+          <Spinner aria-label="Loading website preview" />
         </div>
       )}
 
+      {/* Realistic Website Preview Frame */}
       {site && page && (
-        <>
-          <p className="px-6 pt-4 text-center text-xs text-ink-muted">
-            Previewing draft · Page: {page.name} · {page.slug}
-          </p>
+        <main className="flex-1 w-full overflow-y-auto">
           <PreviewFrame device={device} onLinkClick={openLink}>
             <SitePage site={site} page={page} />
           </PreviewFrame>
-        </>
+        </main>
       )}
     </div>
   );

@@ -1,0 +1,86 @@
+import { z } from "zod";
+import { SECTION_TYPES, type SectionType } from "../../../site-kit/index.ts";
+
+/** Stored editor document format. The server rejects any other version. */
+export const EDITOR_SCHEMA_VERSION = 1;
+
+const sectionTypeSchema = z.enum(SECTION_TYPES as [SectionType, ...SectionType[]]);
+
+export const sectionCustomColorsSchema = z
+  .object({
+    background: z.string().optional(),
+    text: z.string().optional(),
+    primary: z.string().optional(),
+    muted: z.string().optional(),
+    border: z.string().optional(),
+  })
+  .optional();
+
+export const sectionSettingsSchema = z.object({
+  background: z.enum(["default", "surface", "primary", "dark"]),
+  hideOnMobile: z.boolean(),
+  hideOnDesktop: z.boolean().optional(),
+  spacing: z.enum(["none", "compact", "default", "relaxed"]).optional(),
+  align: z.enum(["center", "left"]).optional(),
+  anchor: z.string().max(40).optional(),
+  customColors: sectionCustomColorsSchema,
+});
+
+/**
+ * Structural shape of a section. Per-type `data` fields are validated by the
+ * server's Joi schemas on every save; the client only guarantees the envelope.
+ */
+export const sectionEnvelopeSchema = z.object({
+  id: z.string().min(1).max(64),
+  type: sectionTypeSchema,
+  hidden: z.boolean(),
+  settings: sectionSettingsSchema,
+  data: z.record(z.string(), z.unknown()),
+});
+
+/** One Puck content item as produced by the builder config. */
+export const puckItemSchema = z.object({
+  type: sectionTypeSchema,
+  props: z.object({
+    id: z.string().min(1).max(64),
+    hidden: z.boolean(),
+    settings: sectionSettingsSchema,
+    data: z.record(z.string(), z.unknown()),
+  }),
+});
+
+export const puckContentSchema = z.array(puckItemSchema).max(60);
+
+export const pageMetadataSchema = z.object({
+  title: z.string().trim().min(1).max(120),
+  slug: z.string().regex(/^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*)?$/),
+  seoTitle: z.string().max(160).nullable(),
+  seoDescription: z.string().max(320).nullable(),
+});
+
+/** Version-ready document for one page; the AI builder exchanges this shape too. */
+export const editorDocumentSchema = z.object({
+  schemaVersion: z.literal(EDITOR_SCHEMA_VERSION),
+  pageId: z.string().uuid(),
+  metadata: pageMetadataSchema,
+  content: z.array(sectionEnvelopeSchema).max(60),
+  updatedAt: z.string().datetime(),
+  updatedBy: z.string().nullable(),
+});
+
+export type EditorDocument = z.infer<typeof editorDocumentSchema>;
+
+/** A proposed AI change, reviewed as a before/after diff before it can be applied. */
+export const aiSuggestionSchema = z.object({
+  id: z.string().min(1),
+  prompt: z.string().min(1).max(2000),
+  summary: z.string().max(500),
+  target: z.discriminatedUnion("scope", [
+    z.object({ scope: z.literal("page") }),
+    z.object({ scope: z.literal("section"), sectionId: z.string().min(1) }),
+  ]),
+  before: z.array(sectionEnvelopeSchema).max(60),
+  after: z.array(sectionEnvelopeSchema).max(60),
+});
+
+export type AiSuggestion = z.infer<typeof aiSuggestionSchema>;

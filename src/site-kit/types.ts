@@ -40,48 +40,210 @@ export type ThemeSettings = {
   sectionSpacing: SpacingSize;
 };
 
-export type HeaderDesign = "logo-left" | "centered";
+export const HEADER_DESIGNS = [
+  "logo-left",
+  "centered",
+  "classical",
+  "minimalist",
+  "comprehensive",
+  "ecommerce",
+  "floating",
+  "transparent",
+] as const;
+
+export type HeaderDesign = (typeof HEADER_DESIGNS)[number];
+
+export type HeaderSubMenuItem = {
+  label: string;
+  href: string;
+  description?: string;
+  badge?: string;
+  icon?: string;
+};
+
+export type HeaderMenuItem = {
+  label: string;
+  href: string;
+  badge?: string;
+  icon?: string;
+  children?: HeaderSubMenuItem[];
+};
 
 export type HeaderData = {
   design: HeaderDesign;
   siteName: string;
   logo?: ImageRef;
-  menu: LinkRef[];
+  menu: HeaderMenuItem[];
   cta?: LinkRef;
+  secondaryCta?: LinkRef;
   announcement?: string;
+  announcementLink?: LinkRef;
+  position?: "static" | "sticky" | "fixed" | "floating";
   sticky: boolean;
+  overlay?: boolean;
+  showSearch?: boolean;
+  showAccount?: boolean;
+  showCart?: boolean;
+  cartCount?: number;
+  currency?: string;
+  mobileMenuType?: "drawer" | "fullscreen" | "dropdown";
+  hidden?: boolean;
 };
 
-export type FooterDesign = "columns" | "simple";
+export const FOOTER_DESIGNS = [
+  "columns",
+  "simple",
+  "mega",
+  "newsletter",
+  "split",
+  "inline",
+  "centered",
+  "cta-banner",
+] as const;
+
+export type FooterDesign = (typeof FOOTER_DESIGNS)[number];
+
+export type FooterNewsletter = {
+  enabled?: boolean;
+  title?: string;
+  description?: string;
+  placeholder?: string;
+  buttonText?: string;
+};
+
+export type FooterCtaBanner = {
+  enabled?: boolean;
+  heading?: string;
+  subheading?: string;
+  primaryCta?: LinkRef;
+  secondaryCta?: LinkRef;
+};
+
+export type FooterPaymentMethods = {
+  enabled?: boolean;
+  methods?: string[];
+};
+
+export type FooterContact = {
+  title?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  hours?: string;
+};
 
 export type FooterData = {
   design: FooterDesign;
   siteName: string;
   logo?: ImageRef;
+  tagline?: string;
   description?: string;
   columns: { title: string; links: LinkRef[] }[];
-  contact?: { email?: string; phone?: string; address?: string };
+  menu?: LinkRef[];
+  contact?: FooterContact;
   social: LinkRef[];
+  newsletter?: FooterNewsletter;
+  ctaBanner?: FooterCtaBanner;
+  paymentMethods?: FooterPaymentMethods;
+  legalLinks?: LinkRef[];
   copyright: string;
+  themeMode?: "dark" | "light" | "auto";
+  hidden?: boolean;
 };
 
-export type SectionBackground = "default" | "surface" | "primary";
+export type SectionBackground = "default" | "surface" | "primary" | "dark";
+export type SectionSpacing = "none" | "compact" | "default" | "relaxed";
+export type SectionAlign = "center" | "left";
+
+export type SectionCustomColors = {
+  background?: string;
+  text?: string;
+  primary?: string;
+  muted?: string;
+  border?: string;
+};
 
 export type SectionSettings = {
   background: SectionBackground;
   hideOnMobile: boolean;
+  hideOnDesktop?: boolean;
+  /** Vertical padding; "default" (or unset) follows the theme's section spacing. */
+  spacing?: SectionSpacing;
+  align?: SectionAlign;
+  /** In-page anchor id, so links like `#pricing` can jump to the section. */
+  anchor?: string;
+  customColors?: SectionCustomColors;
 };
 
 export type IconName = "check" | "star" | "bolt" | "shield" | "heart" | "chat";
 
+export const HERO_VARIANTS = [
+  "centered",
+  "split",
+  "split-left",
+  "background-image",
+  "video-bg",
+  "gradient",
+  "curved-bottom",
+  "soft-card",
+  "minimal-typography",
+  "floating-cards",
+  "asymmetric",
+] as const;
+
+export type HeroVariant = (typeof HERO_VARIANTS)[number];
+
+export type HeroFloatingCard = {
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  icon?: string;
+};
+
+export type HeroRating = {
+  stars?: number;
+  text?: string;
+  avatarCount?: number;
+};
+
+export type HeroTrustedBy = {
+  label?: string;
+  logos?: { label: string; url?: string }[];
+};
+
 export type HeroData = {
-  variant: "centered" | "split";
+  variant: HeroVariant;
   eyebrow?: string;
+  badgeIcon?: string;
   heading: string;
+  highlightText?: string;
   subheading?: string;
+  description?: string;
   primaryCta?: LinkRef;
   secondaryCta?: LinkRef;
+  tertiaryCta?: LinkRef;
+  buttons?: LinkRef[];
+  mediaType?: "image" | "video" | "both";
+  videoUrl?: string;
+  videoAutoplay?: boolean;
+  videoControls?: boolean;
+  videoLoop?: boolean;
   image?: ImageRef;
+  secondaryImage?: ImageRef;
+  backgroundImage?: ImageRef;
+  bgImagePosition?: "bottom" | "center" | "top" | "cover";
+  bgOverlayType?: "dark" | "light" | "gradient" | "none";
+  backgroundVideoUrl?: string;
+  imagePosition?: "right" | "left" | "bottom" | "background" | "card";
+  imageStyle?: "mockup" | "rounded" | "glow" | "shadow" | "plain";
+  overlayOpacity?: number;
+  overlayBlur?: boolean;
+  minHeight?: "auto" | "compact" | "screen" | "tall";
+  contentAlign?: "center" | "left" | "right";
+  bottomShape?: "none" | "wave" | "curve" | "slant" | "tilt";
+  rating?: HeroRating;
+  floatingCards?: HeroFloatingCard[];
+  trustedBy?: HeroTrustedBy;
 };
 
 export type GridColumns = 1 | 2 | 3 | 4;
@@ -142,7 +304,77 @@ export type GalleryData = {
   images: ImageRef[];
 };
 
+export type LogosData = {
+  heading?: string;
+  grayscale: boolean;
+  logos: ImageRef[];
+};
+
+export type SplitData = {
+  eyebrow?: string;
+  heading: string;
+  /** Plain text; blank lines separate paragraphs. */
+  body: string;
+  bullets: string[];
+  image?: ImageRef;
+  imagePosition: "left" | "right";
+  cta?: LinkRef;
+};
+
+export type StatsData = {
+  heading?: string;
+  intro?: string;
+  items: { value: string; label: string }[];
+};
+
+export type PricingPlan = {
+  name: string;
+  price: string;
+  period?: string;
+  description?: string;
+  features: string[];
+  cta?: LinkRef;
+  featured: boolean;
+};
+
+export type PricingData = {
+  heading: string;
+  intro?: string;
+  plans: PricingPlan[];
+};
+
+export type MediaAspect = "16:9" | "4:3" | "1:1";
+
+export type MediaData = {
+  heading?: string;
+  caption?: string;
+  kind: "image" | "video";
+  image?: ImageRef;
+  /** YouTube or Vimeo page URL, rendered only as a privacy-enhanced embed. */
+  videoUrl?: string;
+  aspect: MediaAspect;
+  width: "contained" | "wide";
+};
+
+export type TeamMember = {
+  name: string;
+  role?: string;
+  bio?: string;
+  photo?: ImageRef;
+  link?: LinkRef;
+};
+
+export type TeamData = {
+  heading: string;
+  intro?: string;
+  columns: GridColumns;
+  mobileColumns: GridColumns;
+  members: TeamMember[];
+};
+
 export type SectionDataMap = {
+  header: HeaderData;
+  footer: FooterData;
   hero: HeroData;
   features: FeaturesData;
   services: ServicesData;
@@ -152,6 +384,12 @@ export type SectionDataMap = {
   contact: ContactData;
   text: TextData;
   gallery: GalleryData;
+  logos: LogosData;
+  split: SplitData;
+  stats: StatsData;
+  pricing: PricingData;
+  media: MediaData;
+  team: TeamData;
 };
 
 export type SectionType = keyof SectionDataMap;

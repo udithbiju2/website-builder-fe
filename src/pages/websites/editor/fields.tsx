@@ -1,17 +1,25 @@
-import { createContext, useContext, useId, useState, type ReactNode } from "react";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import {
+  createContext,
+  useContext,
+  useId,
+  useState,
+  type ReactNode,
+} from "react";
+import { Button, Checkbox, Dropdown, Label } from "@heroui/react";
+import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { CellColorPicker } from "../../../components/ui/CellColorPicker.tsx";
 import type { ImageRef, LinkRef } from "../../../site-kit/index.ts";
 
-/** Mirrors the backend content rules so problems show while typing, not only on save. */
-const SAFE_HREF = /^(https?:\/\/\S+|mailto:\S+|tel:[+0-9() -]+|\/(?!\/)\S*|#\S*)$/i;
+const SAFE_HREF =
+  /^(https?:\/\/\S+|mailto:\S+|tel:[+0-9() -]+|\/(?!\/)\S*|#\S*)$/i;
 const SAFE_IMAGE_URL = /^(https?:\/\/\S+|\/(?!\/)\S*)$/i;
-const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 const inputClass =
-  "h-8 w-full rounded-md border border-line-strong bg-surface px-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 aria-invalid:border-danger";
+  "h-8 w-full rounded-ed border border-ed-border bg-ed-panel px-2.5 text-ed-sm text-ed-text placeholder:text-ed-faint shadow-ed-xs transition-all duration-150 hover:border-ed-border-strong focus:border-ed-accent focus:bg-ed-panel focus:outline-none focus:ring-2 focus:ring-ed-accent/15 aria-invalid:border-ed-danger aria-invalid:focus:ring-ed-danger/15 disabled:bg-ed-subtle disabled:text-ed-muted disabled:cursor-not-allowed";
 
-/** Page URLs offered as suggestions in link fields. */
-export const LinkTargetsContext = createContext<{ label: string; href: string }[]>([]);
+export const LinkTargetsContext = createContext<
+  { label: string; href: string }[]
+>([]);
 
 type FieldShellProps = {
   id: string;
@@ -24,14 +32,16 @@ type FieldShellProps = {
 function FieldShell({ id, label, hint, error, children }: FieldShellProps) {
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-xs font-medium text-ink">
+      <label htmlFor={id} className="text-ed-xs font-medium text-ed-text">
         {label}
       </label>
       {children}
       {error ? (
-        <p className="text-xs text-danger">{error}</p>
+        <p className="text-ed-2xs font-medium text-ed-danger">{error}</p>
       ) : (
-        hint && <p className="text-xs text-ink-muted">{hint}</p>
+        hint && (
+          <p className="text-ed-2xs text-ed-muted leading-normal">{hint}</p>
+        )
       )}
     </div>
   );
@@ -47,11 +57,19 @@ type TextFieldProps = {
   /** Shows "Required" when empty. */
   required?: boolean;
   error?: string;
-  type?: "text" | "email" | "tel" | "url";
+  type?: "text" | "email" | "tel" | "url" | "number";
   list?: string;
 };
 
-export function TextField({ label, value = "", onChange, required, error, hint, ...inputProps }: TextFieldProps) {
+export function TextField({
+  label,
+  value = "",
+  onChange,
+  required,
+  error,
+  hint,
+  ...inputProps
+}: TextFieldProps) {
   const id = useId();
   const message = error ?? (required && !value.trim() ? "Required" : undefined);
   return (
@@ -78,7 +96,15 @@ type TextAreaFieldProps = {
   required?: boolean;
 };
 
-export function TextAreaField({ label, value = "", onChange, rows = 3, hint, maxLength, required }: TextAreaFieldProps) {
+export function TextAreaField({
+  label,
+  value = "",
+  onChange,
+  rows = 3,
+  hint,
+  maxLength,
+  required,
+}: TextAreaFieldProps) {
   const id = useId();
   const message = required && !value.trim() ? "Required" : undefined;
   return (
@@ -90,7 +116,7 @@ export function TextAreaField({ label, value = "", onChange, rows = 3, hint, max
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={message ? true : undefined}
-        className={`${inputClass} h-auto py-1.5 leading-relaxed`}
+        className={`${inputClass} min-h-19 h-auto py-2 leading-relaxed resize-y`}
       />
     </FieldShell>
   );
@@ -104,25 +130,65 @@ type SelectFieldProps<T extends string | number> = {
   hint?: string;
 };
 
-export function SelectField<T extends string | number>({ label, value, options, onChange, hint }: SelectFieldProps<T>) {
+export function SelectField<T extends string | number>({
+  label,
+  value,
+  options,
+  onChange,
+  hint,
+}: SelectFieldProps<T>) {
   const id = useId();
+  const selectedOption = options.find((candidate) => candidate.value === value) ?? options[0];
+
   return (
     <FieldShell id={id} label={label} hint={hint}>
-      <select
-        id={id}
-        value={String(value)}
-        onChange={(event) => {
-          const option = options.find((candidate) => String(candidate.value) === event.target.value);
-          if (option) onChange(option.value);
-        }}
-        className={inputClass}
-      >
-        {options.map((option) => (
-          <option key={String(option.value)} value={String(option.value)}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <Dropdown>
+        <Button
+          id={id}
+          aria-label={label}
+          variant="secondary"
+          className="flex h-8 w-full items-center justify-between rounded-ed border border-ed-border bg-ed-panel px-2.5 text-left text-ed-sm font-normal text-ed-text shadow-ed-xs transition-all duration-150 hover:border-ed-border-strong hover:bg-ed-subtle/50 focus-visible:border-ed-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ed-accent/15"
+        >
+          <span className="truncate">{selectedOption?.label ?? String(value)}</span>
+          <ChevronDown className="size-3.5 shrink-0 text-ed-muted" />
+        </Button>
+        <Dropdown.Popover className="min-w-(--trigger-width) rounded-ed-lg border border-ed-border bg-ed-panel p-1 shadow-ed-pop z-(--z-ed-popover)">
+          <Dropdown.Menu
+            selectionMode="single"
+            selectedKeys={new Set([String(value)])}
+            onAction={(key) => {
+              const option = options.find((candidate) => String(candidate.value) === String(key));
+              if (option) onChange(option.value);
+            }}
+            className="flex flex-col gap-0.5 outline-none"
+          >
+            {options.map((option) => {
+              const isSelected = option.value === value;
+              return (
+                <Dropdown.Item
+                  key={String(option.value)}
+                  id={String(option.value)}
+                  textValue={option.label}
+                  className={`group flex w-full cursor-pointer items-center gap-2 rounded-ed px-2 py-1.5 text-ed-sm outline-none transition-colors duration-150 select-none ${
+                    isSelected
+                      ? "bg-ed-accent-soft font-medium text-ed-accent"
+                      : "text-ed-text hover:bg-ed-subtle"
+                  }`}
+                >
+                  <div className="flex size-4 shrink-0 items-center justify-center">
+                    {isSelected ? (
+                      <Check className="size-3.5 text-ed-accent" />
+                    ) : null}
+                  </div>
+                  <Label className="flex-1 cursor-pointer truncate font-inherit">
+                    {option.label}
+                  </Label>
+                </Dropdown.Item>
+              );
+            })}
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
     </FieldShell>
   );
 }
@@ -132,55 +198,83 @@ type CheckboxFieldProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
   hint?: string;
+  disabled?: boolean;
 };
 
-export function CheckboxField({ label, checked, onChange, hint }: CheckboxFieldProps) {
+export function CheckboxField({
+  label,
+  checked,
+  onChange,
+  hint,
+  disabled,
+}: CheckboxFieldProps) {
+  const handleToggle = (val: unknown) => {
+    if (typeof val === "boolean") {
+      onChange(val);
+    } else if (val && typeof val === "object" && "target" in val) {
+      const target = (val as { target?: { checked?: boolean } }).target;
+      onChange(Boolean(target?.checked));
+    } else {
+      onChange(!checked);
+    }
+  };
+
   return (
-    <label className="flex items-start gap-2 text-sm text-ink">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-        className="mt-0.5 size-4 accent-brand"
-      />
-      <span>
-        {label}
-        {hint && <span className="block text-xs text-ink-muted">{hint}</span>}
-      </span>
-    </label>
+    <Checkbox
+      isSelected={Boolean(checked)}
+      onChange={handleToggle as (isSelected: boolean) => void}
+      isDisabled={disabled}
+      className="group cursor-pointer select-none"
+    >
+      <Checkbox.Content className="items-start gap-2">
+        <Checkbox.Control className="mt-0.5 size-4 rounded-[4px] border border-ed-border-strong bg-ed-panel flex items-center justify-center p-0 m-0 shrink-0 transition-all duration-150 data-[selected=true]:bg-ed-accent data-[selected=true]:border-ed-accent text-white">
+          <Checkbox.Indicator className="size-full flex items-center justify-center p-0 m-0 bg-transparent text-white" />
+        </Checkbox.Control>
+        <div className="min-w-0 flex-1">
+          <Label className="block text-ed-sm font-medium text-ed-text cursor-pointer leading-tight">
+            {label}
+          </Label>
+          {hint && <p className="text-ed-2xs text-ed-muted leading-normal mt-0.5">{hint}</p>}
+        </div>
+      </Checkbox.Content>
+    </Checkbox>
   );
 }
 
-export function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  const id = useId();
-  const [text, setText] = useState(value);
-  const [lastValue, setLastValue] = useState(value);
-  if (value !== lastValue) {
-    setLastValue(value);
-    setText(value);
-  }
+export function ColorField({
+  label,
+  value,
+  onChange,
+  fallback = "#ffffff",
+  hint,
+}: {
+  label: string;
+  value: string | undefined;
+  onChange: (value: string) => void;
+  fallback?: string;
+  hint?: string;
+}) {
   return (
-    <FieldShell id={id} label={label} error={HEX_COLOR.test(text) ? undefined : "Use #rrggbb"}>
-      <div className="flex items-center gap-2">
-        <input
-          type="color"
-          aria-label={`${label} picker`}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-8 w-10 shrink-0 cursor-pointer rounded border border-line-strong bg-surface p-0.5"
-        />
-        <input
-          id={id}
-          value={text}
-          onChange={(event) => {
-            setText(event.target.value);
-            if (HEX_COLOR.test(event.target.value)) onChange(event.target.value.toLowerCase());
-          }}
-          className={`${inputClass} font-mono`}
-          maxLength={7}
-        />
-      </div>
-    </FieldShell>
+    <div className="flex flex-col gap-1">
+      <CellColorPicker
+        value={value}
+        onChange={(val) => onChange(val || "")}
+        label={label}
+        fallback={fallback}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <CellColorPicker.Label />
+          <div className="flex items-center gap-1.5 w-36">
+            <CellColorPicker.Trigger />
+            <CellColorPicker.ValueDisplay />
+          </div>
+        </div>
+        <CellColorPicker.Popover>
+          <CellColorPicker.Swatch />
+        </CellColorPicker.Popover>
+      </CellColorPicker>
+      {hint && <p className="text-ed-2xs text-ed-muted leading-normal">{hint}</p>}
+    </div>
   );
 }
 
@@ -193,11 +287,22 @@ type LinkFieldProps = {
 export function LinkField({ label, value, onChange }: LinkFieldProps) {
   const targets = useContext(LinkTargetsContext);
   const listId = useId();
-  const hrefError = value.href && !SAFE_HREF.test(value.href.trim()) ? "Use a page like /contact, https://…, mailto: or tel:" : undefined;
+  const hrefError =
+    value.href && !SAFE_HREF.test(value.href.trim())
+      ? "Use a page like /contact, https://…, mailto: or tel:"
+      : undefined;
   return (
-    <fieldset className="flex flex-col gap-2 rounded-md border border-line p-2.5">
-      <legend className="px-1 text-xs font-medium text-ink">{label}</legend>
-      <TextField label="Text" value={value.label} onChange={(text) => onChange({ ...value, label: text })} maxLength={80} required />
+    <fieldset className="flex flex-col gap-2 rounded-ed border border-ed-border bg-ed-subtle/30 p-2.5 shadow-ed-xs">
+      <legend className="px-1 text-ed-xs font-semibold text-ed-text">
+        {label}
+      </legend>
+      <TextField
+        label="Text"
+        value={value.label}
+        onChange={(text) => onChange({ ...value, label: text })}
+        maxLength={80}
+        required
+      />
       <TextField
         label="Goes to"
         value={value.href}
@@ -226,10 +331,19 @@ type OptionalLinkFieldProps = {
   fallback: LinkRef;
 };
 
-export function OptionalLinkField({ label, value, onChange, fallback }: OptionalLinkFieldProps) {
+export function OptionalLinkField({
+  label,
+  value,
+  onChange,
+  fallback,
+}: OptionalLinkFieldProps) {
   return (
     <div className="flex flex-col gap-2">
-      <CheckboxField label={`Show ${label.toLowerCase()}`} checked={Boolean(value)} onChange={(on) => onChange(on ? fallback : undefined)} />
+      <CheckboxField
+        label={`Show ${label.toLowerCase()}`}
+        checked={Boolean(value)}
+        onChange={(on) => onChange(on ? fallback : undefined)}
+      />
       {value && <LinkField label={label} value={value} onChange={onChange} />}
     </div>
   );
@@ -243,18 +357,32 @@ type ImageFieldProps = {
   optional?: boolean;
 };
 
-export function ImageField({ label, value, onChange, optional = false }: ImageFieldProps) {
+export function ImageField({
+  label,
+  value,
+  onChange,
+  optional = false,
+}: ImageFieldProps) {
   const image = value ?? { url: "", alt: "" };
-  const urlError = image.url && !SAFE_IMAGE_URL.test(image.url.trim()) ? "Use an https:// image link" : undefined;
+  const urlError =
+    image.url && !SAFE_IMAGE_URL.test(image.url.trim())
+      ? "Use an https:// image link"
+      : undefined;
   const update = (patch: Partial<ImageRef>) => {
     const next = { ...image, ...patch };
     onChange(optional && !next.url && !next.alt ? undefined : next);
   };
   return (
-    <fieldset className="flex flex-col gap-2 rounded-md border border-line p-2.5">
-      <legend className="px-1 text-xs font-medium text-ink">{label}</legend>
+    <fieldset className="flex flex-col gap-2 rounded-ed border border-ed-border bg-ed-subtle/30 p-2.5 shadow-ed-xs">
+      <legend className="px-1 text-ed-xs font-semibold text-ed-text">
+        {label}
+      </legend>
       {image.url && !urlError && (
-        <img src={image.url} alt="" className="h-20 w-full rounded border border-line bg-canvas object-cover" />
+        <img
+          src={image.url}
+          alt=""
+          className="h-20 w-full rounded-ed border border-ed-border bg-ed-subtle object-cover shadow-ed-xs"
+        />
       )}
       <TextField
         label="Image link"
@@ -275,7 +403,11 @@ export function ImageField({ label, value, onChange, optional = false }: ImageFi
         maxLength={300}
       />
       {optional && value && (
-        <button type="button" onClick={() => onChange(undefined)} className="self-start text-xs text-danger hover:underline">
+        <button
+          type="button"
+          onClick={() => onChange(undefined)}
+          className="self-start text-ed-xs font-medium text-ed-danger hover:underline"
+        >
           Remove image
         </button>
       )}
@@ -294,8 +426,16 @@ type ItemListProps<T> = {
   addLabel?: string;
 };
 
-/** Repeatable group (features, FAQ items, menu links…) with add, reorder and remove. */
-export function ItemList<T>({ label, items, onChange, create, itemTitle, renderItem, max, addLabel = "Add item" }: ItemListProps<T>) {
+export function ItemList<T>({
+  label,
+  items,
+  onChange,
+  create,
+  itemTitle,
+  renderItem,
+  max,
+  addLabel = "Add item",
+}: ItemListProps<T>) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   function move(index: number, delta: number) {
@@ -311,32 +451,45 @@ export function ItemList<T>({ label, items, onChange, create, itemTitle, renderI
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-ink">
-          {label} <span className="text-ink-muted">({items.length})</span>
+        <span className="text-ed-xs font-semibold text-ed-text">
+          {label}{" "}
+          <span className="font-normal text-ed-muted">({items.length})</span>
         </span>
       </div>
       <ul className="flex flex-col gap-1.5">
         {items.map((item, index) => {
           const open = openIndex === index;
           return (
-            <li key={index} className="rounded-md border border-line bg-surface">
+            <li
+              key={index}
+              className="rounded-ed border border-ed-border bg-ed-panel shadow-ed-xs overflow-hidden transition-colors hover:border-ed-border-strong"
+            >
               <div className="flex items-center gap-1 pl-2.5 pr-1">
                 <button
                   type="button"
                   onClick={() => setOpenIndex(open ? null : index)}
                   aria-expanded={open}
-                  className="min-w-0 flex-1 truncate py-1.5 text-left text-sm text-ink"
+                  className="min-w-0 flex-1 truncate py-1.5 text-left text-ed-sm font-medium text-ed-text"
                 >
                   {itemTitle(item, index) || `Item ${index + 1}`}
                 </button>
-                <IconButton label="Move up" onClick={() => move(index, -1)} disabled={index === 0}>
+                <IconButton
+                  label="Move up"
+                  onClick={() => move(index, -1)}
+                  disabled={index === 0}
+                >
                   <ChevronUp className="size-3.5" />
                 </IconButton>
-                <IconButton label="Move down" onClick={() => move(index, 1)} disabled={index === items.length - 1}>
+                <IconButton
+                  label="Move down"
+                  onClick={() => move(index, 1)}
+                  disabled={index === items.length - 1}
+                >
                   <ChevronDown className="size-3.5" />
                 </IconButton>
                 <IconButton
                   label="Remove"
+                  tone="danger"
                   onClick={() => {
                     onChange(items.filter((_, i) => i !== index));
                     setOpenIndex(null);
@@ -346,8 +499,14 @@ export function ItemList<T>({ label, items, onChange, create, itemTitle, renderI
                 </IconButton>
               </div>
               {open && (
-                <div className="flex flex-col gap-2.5 border-t border-line p-2.5">
-                  {renderItem(item, (updated) => onChange(items.map((current, i) => (i === index ? updated : current))))}
+                <div className="flex flex-col gap-2.5 border-t border-ed-border bg-ed-subtle/20 p-2.5">
+                  {renderItem(item, (updated) =>
+                    onChange(
+                      items.map((current, i) =>
+                        i === index ? updated : current,
+                      ),
+                    ),
+                  )}
                 </div>
               )}
             </li>
@@ -361,9 +520,10 @@ export function ItemList<T>({ label, items, onChange, create, itemTitle, renderI
           onChange([...items, create()]);
           setOpenIndex(items.length);
         }}
-        className="inline-flex items-center justify-center gap-1 rounded-md border border-dashed border-line-strong py-1.5 text-sm text-brand hover:bg-brand-soft/40 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex items-center justify-center gap-1.5 rounded-ed border border-dashed border-ed-border-strong py-1.5 text-ed-sm font-medium text-ed-accent hover:bg-ed-accent-soft/60 hover:border-ed-accent transition-colors disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Plus className="size-3.5" aria-hidden /> {items.length >= max ? `Maximum ${max}` : addLabel}
+        <Plus className="size-3.5" aria-hidden />{" "}
+        {items.length >= max ? `Maximum ${max}` : addLabel}
       </button>
     </div>
   );
@@ -377,7 +537,13 @@ type IconButtonProps = {
   children: ReactNode;
 };
 
-export function IconButton({ label, onClick, disabled, tone = "default", children }: IconButtonProps) {
+export function IconButton({
+  label,
+  onClick,
+  disabled,
+  tone = "default",
+  children,
+}: IconButtonProps) {
   return (
     <button
       type="button"
@@ -388,8 +554,10 @@ export function IconButton({ label, onClick, disabled, tone = "default", childre
         event.stopPropagation();
         onClick();
       }}
-      className={`grid size-7 place-items-center rounded transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
-        tone === "danger" ? "text-danger hover:bg-danger/10" : "text-ink-body hover:bg-canvas hover:text-ink"
+      className={`grid size-6 place-items-center rounded-ed transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
+        tone === "danger"
+          ? "text-ed-danger hover:bg-ed-danger-soft"
+          : "text-ed-faint hover:bg-ed-hover hover:text-ed-text"
       }`}
     >
       {children}
@@ -397,11 +565,22 @@ export function IconButton({ label, onClick, disabled, tone = "default", childre
   );
 }
 
-export function FormGroup({ title, children }: { title: string; children: ReactNode }) {
+export function FormGroup({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   return (
-    <section className="flex flex-col gap-3 border-b border-line px-4 py-4 last:border-b-0">
-      <h3 className="font-mono text-[11px] font-medium uppercase tracking-wider text-ink-muted">{title}</h3>
+    <section className="flex flex-col gap-3 border-b border-ed-border px-3.5 py-3.5 last:border-b-0">
+      <h3 className="text-ed-2xs font-semibold uppercase tracking-wider text-ed-faint">
+        {title}
+      </h3>
       {children}
     </section>
   );
 }
+
+export { CellColorPicker } from "../../../components/ui/CellColorPicker.tsx";
+

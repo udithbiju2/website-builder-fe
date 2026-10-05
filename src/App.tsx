@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AuthProvider from "./auth/AuthProvider.tsx";
 import { GuestOnly, RequireAuth } from "./auth/RouteGuards.tsx";
+import BuilderRoute from "./features/builder/BuilderRoute.tsx";
 import AdminLayout from "./layouts/AdminLayout.tsx";
 import ClientLayout from "./layouts/ClientLayout.tsx";
 import PublicLayout from "./layouts/PublicLayout.tsx";
@@ -18,7 +19,6 @@ import DashboardPage from "./pages/client/DashboardPage.tsx";
 import LandingPage from "./pages/public/LandingPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
 import CreateWebsitePage from "./pages/websites/CreateWebsitePage.tsx";
-import WebsiteEditorPage from "./pages/websites/editor/WebsiteEditorPage.tsx";
 import WebsitePreviewPage from "./pages/websites/WebsitePreviewPage.tsx";
 
 export default function App() {
@@ -48,7 +48,7 @@ export default function App() {
           <Route element={<RequireAuth roles={["CLIENT", "SUPER_ADMIN"]} />}>
             <Route path="websites/new" element={<CreateWebsitePage />} />
             <Route path="websites/:id/preview" element={<WebsitePreviewPage />} />
-            <Route path="websites/:id/edit" element={<WebsiteEditorPage />} />
+            <Route path="websites/:id/edit" element={<BuilderRoute />} />
           </Route>
 
           <Route element={<RequireAuth roles={["SUPER_ADMIN"]} />}>
