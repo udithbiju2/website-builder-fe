@@ -111,14 +111,17 @@ type SitePageProps = {
 
 /** One full page of a client website: header, visible sections, footer. */
 export default function SitePage({ site, page, editor }: SitePageProps) {
-  const header = <SiteHeader header={site.header} />;
-  const footer = <SiteFooter footer={site.footer} />;
+  const hasHeaderSection = page.sections.some((section) => section.type === "header" && (editor || !section.hidden));
+  const hasFooterSection = page.sections.some((section) => section.type === "footer" && (editor || !section.hidden));
+
+  const header = !hasHeaderSection && site.header ? <SiteHeader header={site.header} /> : null;
+  const footer = !hasFooterSection && site.footer ? <SiteFooter footer={site.footer} /> : null;
 
   return (
     <SiteFrame
       theme={site.theme}
-      header={editor ? editor.renderHeader(header) : header}
-      footer={editor ? editor.renderFooter(footer) : footer}
+      header={editor && header ? editor.renderHeader(header) : header}
+      footer={editor && footer ? editor.renderFooter(footer) : footer}
     >
       {editor
         ? page.sections.length === 0

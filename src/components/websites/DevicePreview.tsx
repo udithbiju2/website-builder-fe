@@ -94,9 +94,8 @@ export function PreviewFrame({ device, onLinkClick, fit = false, children }: Pre
     onLinkClick?.(anchor.getAttribute("href") ?? "");
   }
 
-  const frameClass = "overflow-clip rounded-lg border border-line-strong bg-white shadow-sm";
-
   if (fit) {
+    const frameClass = "overflow-clip rounded-lg border border-line-strong bg-white shadow-sm";
     return (
       <div className="bg-canvas p-4 sm:p-6">
         <SiteStyles />
@@ -114,11 +113,50 @@ export function PreviewFrame({ device, onLinkClick, fit = false, children }: Pre
     );
   }
 
-  return (
-    <div className="overflow-x-auto bg-canvas p-4 sm:p-6">
-      <SiteStyles />
-      <div className={`mx-auto ${frameClass}`} style={{ width }} onClickCapture={handleClickCapture}>
+  if (device === "desktop") {
+    return (
+      <div className="w-full min-h-screen bg-white" onClickCapture={handleClickCapture}>
+        <SiteStyles />
         {children}
+      </div>
+    );
+  }
+
+  if (device === "tablet") {
+    return (
+      <div className="flex justify-center py-8 px-4 overflow-x-auto bg-zinc-950/80 min-h-[calc(100vh-56px)]" onClickCapture={handleClickCapture}>
+        <SiteStyles />
+        <div
+          className="relative mx-auto flex flex-col overflow-hidden rounded-[28px] border-[10px] border-zinc-900 bg-white shadow-2xl ring-1 ring-white/10 shrink-0"
+          style={{ width: 768, minHeight: 900 }}
+        >
+          {/* Tablet status / camera dot */}
+          <div className="flex h-5 w-full items-center justify-center bg-zinc-900 shrink-0">
+            <div className="size-2 rounded-full bg-zinc-700" />
+          </div>
+          <div className="flex-1 w-full overflow-y-auto">
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mobile frame
+  return (
+    <div className="flex justify-center py-8 px-4 overflow-x-auto bg-zinc-950/80 min-h-[calc(100vh-56px)]" onClickCapture={handleClickCapture}>
+      <SiteStyles />
+      <div
+        className="relative mx-auto flex flex-col overflow-hidden rounded-[40px] border-[10px] border-zinc-900 bg-white shadow-2xl ring-1 ring-white/10 shrink-0"
+        style={{ width: 390, minHeight: 780 }}
+      >
+        {/* Dynamic Island Notch */}
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 flex h-4 w-24 items-center justify-center rounded-full bg-zinc-900 pointer-events-none">
+          <div className="size-2 rounded-full bg-zinc-800 ml-auto mr-3" />
+        </div>
+        <div className="flex-1 w-full overflow-y-auto pt-4">
+          {children}
+        </div>
       </div>
     </div>
   );
