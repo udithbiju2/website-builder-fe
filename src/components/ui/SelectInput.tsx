@@ -1,4 +1,5 @@
-import { useId } from "react";
+import { Button, Dropdown, Label } from "@heroui/react";
+import { Check, ChevronDown } from "lucide-react";
 
 export type SelectOption<T extends string> = { value: T; label: string };
 
@@ -12,7 +13,6 @@ type SelectInputProps<T extends string> = {
   className?: string;
 };
 
-/** Native select styled like HeroUI fields; native keeps filters simple and accessible. */
 export default function SelectInput<T extends string>({
   value,
   onChange,
@@ -21,27 +21,59 @@ export default function SelectInput<T extends string>({
   ariaLabel,
   className = "",
 }: SelectInputProps<T>) {
-  const id = useId();
+  const selectedOption = options.find((opt) => opt.value === value) ?? options[0];
+
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-ink">
+        <span className="text-sm font-medium text-ink">
           {label}
-        </label>
+        </span>
       )}
-      <select
-        id={id}
-        aria-label={label ? undefined : ariaLabel}
-        value={value}
-        onChange={(event) => onChange(event.target.value as T)}
-        className="h-9 rounded-lg border border-ed-border bg-surface px-3 text-sm text-ink shadow-ed-xs outline-none transition-all duration-150 hover:border-ed-border-strong focus:border-ed-accent focus:ring-2 focus:ring-ed-accent/15"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <Dropdown>
+        <Button
+          aria-label={label ?? ariaLabel ?? "Select option"}
+          variant="secondary"
+          className="flex h-9 w-full items-center justify-between rounded-lg border border-ed-border bg-surface px-3 text-left text-sm font-normal text-ink shadow-ed-xs transition-all duration-150 hover:border-ed-border-strong hover:bg-surface focus-visible:border-ed-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ed-accent/15"
+        >
+          <span className="truncate">{selectedOption?.label ?? String(value)}</span>
+          <ChevronDown className="size-4 shrink-0 text-ink-muted" />
+        </Button>
+        <Dropdown.Popover className="min-w-(--trigger-width) rounded-lg border border-ed-border bg-surface p-1 shadow-ed-pop z-(--z-ed-popover)">
+          <Dropdown.Menu
+            selectionMode="single"
+            selectedKeys={new Set([String(value)])}
+            onAction={(key) => {
+              const option = options.find((opt) => String(opt.value) === String(key));
+              if (option) onChange(option.value);
+            }}
+            className="flex flex-col gap-0.5 outline-none"
+          >
+            {options.map((option) => {
+              const isSelected = option.value === value;
+              return (
+                <Dropdown.Item
+                  key={String(option.value)}
+                  id={String(option.value)}
+                  textValue={option.label}
+                  className={`group flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none transition-colors duration-150 select-none ${
+                    isSelected
+                      ? "bg-ed-accent-soft font-medium text-ed-accent"
+                      : "text-ink hover:bg-canvas"
+                  }`}
+                >
+                  <div className="flex size-4 shrink-0 items-center justify-center">
+                    {isSelected ? <Check className="size-3.5 text-ed-accent" /> : null}
+                  </div>
+                  <Label className="flex-1 cursor-pointer truncate font-inherit">
+                    {option.label}
+                  </Label>
+                </Dropdown.Item>
+              );
+            })}
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
     </div>
   );
 }

@@ -163,6 +163,22 @@ button[role="checkbox"] {
   stroke-width: 2.5 !important;
 }
 
+/* HeroUI Dropdown popover and menu refinements */
+[data-slot="dropdown-popover"] {
+  border-radius: 8px !important;
+  border: 1px solid var(--color-ed-border) !important;
+  background-color: var(--color-surface) !important;
+  box-shadow: var(--shadow-ed-pop) !important;
+  padding: 4px !important;
+  outline: none !important;
+  z-index: var(--z-ed-popover) !important;
+}
+
+[data-slot="dropdown-menu"] {
+  padding: 0 !important;
+  outline: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ed-root *,
   .ed-root *::before,

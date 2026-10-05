@@ -5,7 +5,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { Button, Dropdown, Label } from "@heroui/react";
+import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import type { ImageRef, LinkRef } from "../../../site-kit/index.ts";
 
 const SAFE_HREF =
@@ -137,25 +138,57 @@ export function SelectField<T extends string | number>({
   hint,
 }: SelectFieldProps<T>) {
   const id = useId();
+  const selectedOption = options.find((candidate) => candidate.value === value) ?? options[0];
+
   return (
     <FieldShell id={id} label={label} hint={hint}>
-      <select
-        id={id}
-        value={String(value)}
-        onChange={(event) => {
-          const option = options.find(
-            (candidate) => String(candidate.value) === event.target.value,
-          );
-          if (option) onChange(option.value);
-        }}
-        className={inputClass}
-      >
-        {options.map((option) => (
-          <option key={String(option.value)} value={String(option.value)}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <Dropdown>
+        <Button
+          id={id}
+          aria-label={label}
+          variant="secondary"
+          className="flex h-8 w-full items-center justify-between rounded-ed border border-ed-border bg-ed-panel px-2.5 text-left text-ed-sm font-normal text-ed-text shadow-ed-xs transition-all duration-150 hover:border-ed-border-strong hover:bg-ed-subtle/50 focus-visible:border-ed-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ed-accent/15"
+        >
+          <span className="truncate">{selectedOption?.label ?? String(value)}</span>
+          <ChevronDown className="size-3.5 shrink-0 text-ed-muted" />
+        </Button>
+        <Dropdown.Popover className="min-w-(--trigger-width) rounded-ed-lg border border-ed-border bg-ed-panel p-1 shadow-ed-pop z-(--z-ed-popover)">
+          <Dropdown.Menu
+            selectionMode="single"
+            selectedKeys={new Set([String(value)])}
+            onAction={(key) => {
+              const option = options.find((candidate) => String(candidate.value) === String(key));
+              if (option) onChange(option.value);
+            }}
+            className="flex flex-col gap-0.5 outline-none"
+          >
+            {options.map((option) => {
+              const isSelected = option.value === value;
+              return (
+                <Dropdown.Item
+                  key={String(option.value)}
+                  id={String(option.value)}
+                  textValue={option.label}
+                  className={`group flex w-full cursor-pointer items-center gap-2 rounded-ed px-2 py-1.5 text-ed-sm outline-none transition-colors duration-150 select-none ${
+                    isSelected
+                      ? "bg-ed-accent-soft font-medium text-ed-accent"
+                      : "text-ed-text hover:bg-ed-subtle"
+                  }`}
+                >
+                  <div className="flex size-4 shrink-0 items-center justify-center">
+                    {isSelected ? (
+                      <Check className="size-3.5 text-ed-accent" />
+                    ) : null}
+                  </div>
+                  <Label className="flex-1 cursor-pointer truncate font-inherit">
+                    {option.label}
+                  </Label>
+                </Dropdown.Item>
+              );
+            })}
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
     </FieldShell>
   );
 }
