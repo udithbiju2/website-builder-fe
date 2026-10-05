@@ -5,7 +5,7 @@ import type { EditorDraft } from "../../pages/websites/editor/editor-state.ts";
 import type { FooterData, HeaderData, ThemeSettings } from "../../site-kit/index.ts";
 import type { AutosaveState } from "./autosave/use-autosave.ts";
 
-export type SiteArea = "page" | "header" | "footer" | "theme";
+export type SiteArea = "page" | "theme";
 export type LeftPanelId = "add" | "components" | "pages" | "layers" | "assets" | "templates";
 export type EditorRole = "SUPER_ADMIN" | "CLIENT";
 

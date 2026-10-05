@@ -15,7 +15,11 @@ export default function CanvasViewport({ device, children }: { device: Device; c
   useLayoutEffect(() => {
     const outer = outerRef.current;
     if (!outer) return;
-    const update = () => setBox({ width: outer.clientWidth - GUTTER * 2, height: outer.clientHeight - GUTTER * 2 });
+    const update = () => {
+      const w = Math.max(outer.clientWidth - GUTTER * 2, 0);
+      const h = Math.max(outer.clientHeight - GUTTER * 2, 0);
+      setBox({ width: w, height: h });
+    };
     const observer = new ResizeObserver(update);
     observer.observe(outer);
     update();
@@ -33,7 +37,7 @@ export default function CanvasViewport({ device, children }: { device: Device; c
   return (
     <div
       ref={outerRef}
-      className="relative z-(--z-ed-canvas) min-w-0 flex-1 overflow-hidden bg-ed-app bg-[radial-gradient(var(--color-ed-border)_1px,transparent_1px)] bg-size-[16px_16px]"
+      className="relative z-(--z-ed-canvas) min-w-0 flex-1 h-full overflow-hidden bg-ed-app bg-[radial-gradient(var(--color-ed-border)_1px,transparent_1px)] bg-size-[16px_16px]"
     >
       {box && (
         <div

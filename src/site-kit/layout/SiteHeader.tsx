@@ -2,6 +2,7 @@ import { MenuIcon, SiteButton, SiteImage, SiteLink } from "../primitives.tsx";
 import type { HeaderData } from "../types.ts";
 
 export default function SiteHeader({ header }: { header: HeaderData }) {
+  if (header.hidden) return null;
   const classes = ["wb-header", `wb-header-${header.design}`, header.sticky && "wb-sticky"].filter(Boolean).join(" ");
 
   return (

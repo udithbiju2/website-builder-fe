@@ -21,15 +21,22 @@ const renderLink = (link: LinkRef, update: (link: LinkRef) => void) => <LinkFiel
 
 export function HeaderForm({
   header,
-  pages,
+  pages = [],
   onChange,
 }: {
   header: HeaderData;
-  pages: WebsitePage[];
+  pages?: WebsitePage[];
   onChange: (header: HeaderData) => void;
 }) {
   return (
     <>
+      <FormGroup title="Header visibility">
+        <CheckboxField
+          label="Show header on website"
+          checked={!header.hidden}
+          onChange={(visible) => onChange({ ...header, hidden: !visible })}
+        />
+      </FormGroup>
       <FormGroup title="Header">
         <SelectField
           label="Design"
@@ -91,6 +98,13 @@ export function FooterForm({ footer, onChange }: { footer: FooterData; onChange:
   };
   return (
     <>
+      <FormGroup title="Footer visibility">
+        <CheckboxField
+          label="Show footer on website"
+          checked={!footer.hidden}
+          onChange={(visible) => onChange({ ...footer, hidden: !visible })}
+        />
+      </FormGroup>
       <FormGroup title="Footer">
         <SelectField
           label="Design"

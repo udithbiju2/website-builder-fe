@@ -5,7 +5,9 @@ import ContactSection from "./sections/ContactSection.tsx";
 import CtaSection from "./sections/CtaSection.tsx";
 import FaqSection from "./sections/FaqSection.tsx";
 import FeaturesSection from "./sections/FeaturesSection.tsx";
+import FooterSection from "./sections/FooterSection.tsx";
 import GallerySection from "./sections/GallerySection.tsx";
+import HeaderSection from "./sections/HeaderSection.tsx";
 import HeroSection from "./sections/HeroSection.tsx";
 import LogosSection from "./sections/LogosSection.tsx";
 import MediaSection from "./sections/MediaSection.tsx";
@@ -22,6 +24,10 @@ import type { FooterData, HeaderData, PageData, Section, SiteData, ThemeSettings
 
 export function SectionView({ section }: { section: Section }) {
   switch (section.type) {
+    case "header":
+      return <HeaderSection section={section} />;
+    case "footer":
+      return <FooterSection section={section} />;
     case "hero":
       return <HeroSection section={section} />;
     case "features":

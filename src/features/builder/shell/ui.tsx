@@ -66,7 +66,7 @@ export function SearchField({ value, onChange, placeholder }: { value: string; o
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-8 w-full rounded-ed border border-ed-border bg-ed-subtle pl-7 pr-7 text-ed-sm text-ed-text placeholder:text-ed-faint focus:border-ed-accent focus:bg-ed-panel focus:outline-none"
+        className="h-8 w-full rounded-ed border border-ed-border bg-ed-subtle pl-7 pr-7 text-ed-sm text-ed-text placeholder:text-ed-faint shadow-ed-xs transition-all duration-150 focus:border-ed-accent focus:bg-ed-panel focus:outline-none focus:ring-2 focus:ring-ed-accent/15"
       />
       {value && (
         <button

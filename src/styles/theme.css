@@ -78,10 +78,10 @@
   --accent-foreground: #ffffff;
   --focus: #2447c7;
   --radius: 0.5rem;
-  /* Design reference uses visibly bordered form fields on white cards. */
+  /* Premium standard form field borders */
   --field-border-width: 1px;
-  --field-border: var(--color-line-strong);
-  --field-border-hover: #b9bdc7;
+  --field-border: var(--color-ed-border);
+  --field-border-hover: var(--color-ed-border-strong);
 }
 
 /* Design reference uses squared-off controls rather than HeroUI's pill buttons. */
@@ -109,10 +109,58 @@ body {
   scroll-margin-top: 5rem;
 }
 
+/* Global button/link focus visible outline */
 .ed-focus:focus-visible,
-.ed-root :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+.ed-root :where(button, a, [tabindex]):not(input, select, textarea):focus-visible {
   outline: 2px solid var(--color-ed-accent);
   outline-offset: 1px;
+}
+
+/* Form inputs manage their own sleek, standard focus ring */
+.ed-root :where(input, select, textarea):focus {
+  outline: none !important;
+}
+
+/* HeroUI input wrapper & field styling refinements */
+[data-slot="input-wrapper"],
+[data-slot="inner-wrapper"] {
+  border-radius: 6px !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+[data-slot="input-wrapper"]:focus-within {
+  border-color: var(--color-ed-accent) !important;
+  box-shadow: 0 0 0 3px rgba(36, 71, 199, 0.12) !important;
+  outline: none !important;
+}
+
+/* HeroUI Checkbox: full solid box fill with zero internal spacing */
+[data-slot="control"],
+button[role="checkbox"] {
+  border-radius: 4px !important;
+  border-width: 1px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+[data-slot="indicator"] {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+[data-slot="indicator"] svg {
+  width: 11px !important;
+  height: 11px !important;
+  stroke: currentColor !important;
+  stroke-width: 2.5 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

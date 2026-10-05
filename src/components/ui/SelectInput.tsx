@@ -34,7 +34,7 @@ export default function SelectInput<T extends string>({
         aria-label={label ? undefined : ariaLabel}
         value={value}
         onChange={(event) => onChange(event.target.value as T)}
-        className="h-9 rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink outline-none transition-colors hover:border-[#b9bdc7] focus:border-brand focus:ring-2 focus:ring-brand/20"
+        className="h-9 rounded-lg border border-ed-border bg-surface px-3 text-sm text-ink shadow-ed-xs outline-none transition-all duration-150 hover:border-ed-border-strong focus:border-ed-accent focus:ring-2 focus:ring-ed-accent/15"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

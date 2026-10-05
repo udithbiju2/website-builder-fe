@@ -40,20 +40,20 @@ export default function LeftRail() {
   const Panel = active?.render;
 
   return (
-    <div className="z-(--z-ed-panel) flex h-full shrink-0">
-      <nav aria-label="Editor tools" className="flex w-13 flex-col items-center gap-1 border-r border-ed-border bg-ed-panel py-2">
+    <div className="z-(--z-ed-panel) flex h-full min-h-0 shrink-0 select-none">
+      <nav aria-label="Editor tools" className="flex h-full min-h-0 w-13 shrink-0 flex-col items-center gap-1 border-r border-ed-border bg-ed-panel py-2 overflow-y-auto overscroll-contain">
         {PANELS.map(({ id, label, icon: Icon }) => (
           <RailButton key={id} label={label} active={leftPanel === id} onClick={() => setLeftPanel(leftPanel === id ? null : id)}>
             <Icon className="size-4.5" strokeWidth={1.75} aria-hidden />
           </RailButton>
         ))}
-        <span className="my-1 h-px w-6 bg-ed-border" aria-hidden />
+        <span className="my-1 h-px w-6 shrink-0 bg-ed-border" aria-hidden />
         <RailButton label="AI assistant" active={aiOpen} onClick={() => setAiOpen(!aiOpen)}>
           <Sparkles className="size-4.5" strokeWidth={1.75} aria-hidden />
         </RailButton>
       </nav>
       {active && Panel && (
-        <aside aria-label={active.label} className="flex w-68 flex-col border-r border-ed-border bg-ed-panel">
+        <aside aria-label={active.label} className="flex h-full min-h-0 w-72 shrink-0 flex-col border-r border-ed-border bg-ed-panel overflow-hidden">
           <Panel />
         </aside>
       )}

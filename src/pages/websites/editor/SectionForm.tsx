@@ -622,12 +622,18 @@ export function SectionAdvancedForm({ settings, onChange }: SettingsFormProps) {
   );
 }
 
+import { FooterForm, HeaderForm } from "./SiteSettingsForms.tsx";
+
 export function SectionContentForm({ section, onChange }: { section: Section; onChange: (section: Section) => void }) {
   return <DataForm section={section} onChange={onChange} />;
 }
 
 function DataForm({ section, onChange }: { section: Section; onChange: (section: Section) => void }) {
   switch (section.type) {
+    case "header":
+      return <HeaderForm header={section.data} onChange={(data) => onChange({ ...section, data })} />;
+    case "footer":
+      return <FooterForm footer={section.data} onChange={(data) => onChange({ ...section, data })} />;
     case "hero":
       return <HeroForm data={section.data} onChange={(data) => onChange({ ...section, data })} />;
     case "features":

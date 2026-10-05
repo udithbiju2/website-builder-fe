@@ -50,6 +50,7 @@ export type HeaderData = {
   cta?: LinkRef;
   announcement?: string;
   sticky: boolean;
+  hidden?: boolean;
 };
 
 export type FooterDesign = "columns" | "simple";
@@ -63,6 +64,7 @@ export type FooterData = {
   contact?: { email?: string; phone?: string; address?: string };
   social: LinkRef[];
   copyright: string;
+  hidden?: boolean;
 };
 
 export type SectionBackground = "default" | "surface" | "primary" | "dark";
@@ -219,6 +221,8 @@ export type TeamData = {
 };
 
 export type SectionDataMap = {
+  header: HeaderData;
+  footer: FooterData;
   hero: HeroData;
   features: FeaturesData;
   services: ServicesData;

@@ -83,7 +83,7 @@ export default function TemplatesPanel() {
   return (
     <>
       <PanelHeader title="Templates" description="Reuse saved sections, or save this whole website as a starting point." />
-      <div className="min-h-0 flex-1 overflow-y-auto pb-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-3">
         <div className="flex flex-col gap-1.5 px-3 pb-2">
           <button
             type="button"
@@ -112,19 +112,19 @@ export default function TemplatesPanel() {
         ) : (
           <ul className="flex flex-col gap-0.5 px-1.5">
             {savedSections.map((saved) => (
-              <li key={saved.id} className="group flex items-center rounded-ed hover:bg-ed-hover">
-                <button type="button" onClick={() => insert(saved)} disabled={full} className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left disabled:opacity-50">
+              <li key={saved.id} className="group flex items-center rounded-ed transition-colors hover:bg-ed-hover">
+                <button type="button" onClick={() => insert(saved)} disabled={full} className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1.5 text-left disabled:opacity-50">
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-ed-sm text-ed-text">{saved.name}</span>
+                    <span className="block truncate text-ed-sm font-medium text-ed-text">{saved.name}</span>
                     <span className="block truncate text-ed-2xs text-ed-faint">
                       {SECTION_DEFINITIONS[saved.sectionType].label}
                       {saved.isPlatform ? " · shared" : ""}
                     </span>
                   </span>
-                  <Plus className="size-3.5 shrink-0 text-ed-faint group-hover:text-ed-accent" aria-hidden />
+                  <Plus className="size-3.5 shrink-0 text-ed-faint transition-colors group-hover:text-ed-accent" aria-hidden />
                 </button>
                 {!saved.isPlatform && (
-                  <span className="opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                  <span className="flex shrink-0 items-center pr-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
                     <ToolButton label={`Delete ${saved.name}`} size="sm" onClick={() => setPendingDelete(saved)}>
                       <Trash2 className="size-3.5" aria-hidden />
                     </ToolButton>

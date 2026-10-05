@@ -1,6 +1,8 @@
 import type { Section, SectionDataMap, SectionOf, SectionSettings, SectionType } from "./types.ts";
 
 export type SectionCategory =
+  | "Header"
+  | "Footer"
   | "Hero"
   | "Features"
   | "Services"
@@ -28,6 +30,44 @@ export type SectionDefinition<T extends SectionType> = {
  * Adding a section type means adding it to `SectionDataMap`, here, and in `SectionView`.
  */
 export const SECTION_DEFINITIONS: { [T in SectionType]: SectionDefinition<T> } = {
+  header: {
+    type: "header",
+    label: "Header",
+    category: "Header",
+    description: "Site header with brand logo, navigation menu, and optional action button.",
+    createData: () => ({
+      design: "logo-left",
+      siteName: "My Website",
+      menu: [
+        { label: "Home", href: "/" },
+        { label: "About", href: "/about" },
+        { label: "Contact", href: "/contact" },
+      ],
+      sticky: false,
+    }),
+  },
+  footer: {
+    type: "footer",
+    label: "Footer",
+    category: "Footer",
+    description: "Site footer with brand info, link columns, contact info, and copyright.",
+    createData: () => ({
+      design: "columns",
+      siteName: "My Website",
+      copyright: "© My Website. All rights reserved.",
+      columns: [
+        {
+          title: "Navigation",
+          links: [
+            { label: "Home", href: "/" },
+            { label: "About", href: "/about" },
+            { label: "Contact", href: "/contact" },
+          ],
+        },
+      ],
+      social: [],
+    }),
+  },
   hero: {
     type: "hero",
     label: "Hero",
@@ -270,6 +310,38 @@ export type SectionPreset = {
 };
 
 export const SECTION_PRESETS: SectionPreset[] = [
+  {
+    key: "header-logo-left",
+    type: "header",
+    label: "Header · logo left",
+    category: "Header",
+    description: "Brand on left, navigation links and button on right.",
+    create: () => createSection("header"),
+  },
+  {
+    key: "header-centered",
+    type: "header",
+    label: "Header · centered",
+    category: "Header",
+    description: "Centered logo and navigation links.",
+    create: () => createSection("header", { data: { design: "centered" } }),
+  },
+  {
+    key: "footer-columns",
+    type: "footer",
+    label: "Footer · multi-column",
+    category: "Footer",
+    description: "Brand summary, organized link columns, and social links.",
+    create: () => createSection("footer"),
+  },
+  {
+    key: "footer-simple",
+    type: "footer",
+    label: "Footer · simple",
+    category: "Footer",
+    description: "Minimal single-line footer with copyright and social links.",
+    create: () => createSection("footer", { data: { design: "simple" } }),
+  },
   {
     key: "hero-centered",
     type: "hero",

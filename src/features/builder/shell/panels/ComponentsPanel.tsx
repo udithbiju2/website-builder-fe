@@ -17,7 +17,7 @@ export default function ComponentsPanel() {
     <>
       <PanelHeader title="Components" description="Drag onto the page. For keyboard insertion, use Add sections." />
       <SearchField value={query} onChange={setQuery} placeholder="Search components" />
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-3">
         {types.length === 0 ? (
           <EmptyState icon={<SearchX className="size-4" />} title="No matching components" />
         ) : (

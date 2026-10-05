@@ -9,6 +9,10 @@ const NOT_CHROME = ":not(.wb-editor-chrome, .wb-editor-chrome *)";
 export const SITE_CSS = `
 .wb-site {
   container: wb-site / inline-size;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   background: var(--wb-bg);
   color: var(--wb-text);
   font-family: var(--wb-font-body);
@@ -16,6 +20,12 @@ export const SITE_CSS = `
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   --wb-border: color-mix(in srgb, var(--wb-text) 12%, transparent);
+}
+.wb-site > main {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
 }
 /* Reset: :where() keeps these at class-level specificity so component classes below always win.
    .wb-editor-chrome marks builder controls drawn inside the preview; they keep the builder's own styles. */

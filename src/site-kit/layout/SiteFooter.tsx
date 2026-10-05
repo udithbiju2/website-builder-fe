@@ -15,6 +15,7 @@ function SocialLinks({ footer }: { footer: FooterData }) {
 }
 
 export default function SiteFooter({ footer }: { footer: FooterData }) {
+  if (footer.hidden) return null;
   if (footer.design === "simple") {
     return (
       <footer className="wb-footer wb-footer-simple">

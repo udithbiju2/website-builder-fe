@@ -30,7 +30,7 @@ export default function PagesPanel() {
           </ToolButton>
         }
       />
-      <div className="min-h-0 flex-1 overflow-y-auto py-1.5">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1.5">
         {newName !== null && (
           <form onSubmit={submit} className="mx-2 mb-2 flex flex-col gap-2 rounded-ed border border-ed-border bg-ed-subtle p-2">
             <label htmlFor="new-page-name" className="text-ed-xs font-medium text-ed-text">
@@ -64,7 +64,7 @@ export default function PagesPanel() {
           {pages.map((candidate, index) => {
             const active = candidate.id === current.id;
             return (
-              <li key={candidate.id} className="group flex items-center rounded-ed hover:bg-ed-hover has-[button[aria-current]]:bg-ed-accent-soft">
+              <li key={candidate.id} className="group flex items-center rounded-ed transition-colors hover:bg-ed-hover has-[button[aria-current]]:bg-ed-accent-soft">
                 <button
                   type="button"
                   onClick={() => {
@@ -72,7 +72,7 @@ export default function PagesPanel() {
                     setSiteArea("page");
                   }}
                   aria-current={active ? "page" : undefined}
-                  className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left"
+                  className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1.5 text-left"
                 >
                   {candidate.slug === "/" ? (
                     <Home className={`size-3.5 shrink-0 ${active ? "text-ed-accent" : "text-ed-faint"}`} aria-hidden />
@@ -80,12 +80,12 @@ export default function PagesPanel() {
                     <FileText className={`size-3.5 shrink-0 ${active ? "text-ed-accent" : "text-ed-faint"}`} aria-hidden />
                   )}
                   <span className="min-w-0 flex-1">
-                    <span className={`block truncate text-ed-sm ${active ? "font-medium text-ed-accent" : "text-ed-text"}`}>{candidate.name}</span>
+                    <span className={`block truncate text-ed-sm ${active ? "font-semibold text-ed-accent" : "font-medium text-ed-text"}`}>{candidate.name}</span>
                     <span className="block truncate font-mono text-ed-2xs text-ed-faint">{candidate.slug}</span>
                   </span>
                   {!candidate.visible && <EyeOff className="size-3.5 shrink-0 text-ed-faint" aria-label="Hidden page" />}
                 </button>
-                <span className="flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                <span className="flex shrink-0 items-center pr-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
                   <ToolButton
                     label={`Move ${candidate.name} up`}
                     size="sm"

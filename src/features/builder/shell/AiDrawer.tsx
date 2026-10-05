@@ -73,7 +73,7 @@ export default function AiDrawer() {
         </ToolButton>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-3">
         <div role="note" className="flex gap-2 rounded-ed border border-ed-border bg-ed-subtle p-2.5">
           <PlugZap className="mt-0.5 size-4 shrink-0 text-ed-muted" aria-hidden />
           <p className="text-ed-xs leading-relaxed text-ed-muted">

@@ -10,7 +10,7 @@ import {
   SectionResponsiveForm,
   SectionStyleForm,
 } from "../../../pages/websites/editor/SectionForm.tsx";
-import { FooterForm, HeaderForm, PageForm, ThemeForm } from "../../../pages/websites/editor/SiteSettingsForms.tsx";
+import { PageForm, ThemeForm } from "../../../pages/websites/editor/SiteSettingsForms.tsx";
 import { SECTION_DEFINITIONS, type Section, type SectionSettings } from "../../../site-kit/index.ts";
 import { useEditor, type SiteArea } from "../editor-context.ts";
 import { itemAsSection, type BuilderItem } from "../puck/adapter.ts";
@@ -28,8 +28,6 @@ const SECTION_TABS: { id: SectionTab; label: string }[] = [
 
 const AREA_TABS: { id: SiteArea; label: string }[] = [
   { id: "page", label: "Page" },
-  { id: "header", label: "Header" },
-  { id: "footer", label: "Footer" },
   { id: "theme", label: "Theme" },
 ];
 
@@ -72,7 +70,7 @@ function SectionInspector({ item, index }: { item: BuilderItem; index: number })
         </ToolButton>
       </header>
       <Tabs tabs={SECTION_TABS} value={tab} onChange={setTab} label="Section properties" />
-      <div role="tabpanel" aria-label={SECTION_TABS.find((candidate) => candidate.id === tab)?.label} className="min-h-0 flex-1 overflow-y-auto">
+      <div role="tabpanel" aria-label={SECTION_TABS.find((candidate) => candidate.id === tab)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {tab === "content" && <SectionContentForm key={section.id} section={section} onChange={change} />}
         {tab === "style" && <SectionStyleForm settings={section.settings} onChange={changeSettings} />}
         {tab === "responsive" && <SectionResponsiveForm settings={section.settings} onChange={changeSettings} />}
@@ -112,7 +110,7 @@ function SiteInspector() {
         <p className="text-ed-xs text-ed-muted">Select a section on the canvas to edit it.</p>
       </header>
       <Tabs tabs={AREA_TABS} value={siteArea} onChange={setSiteArea} label="Page and site settings" />
-      <div role="tabpanel" aria-label={AREA_TABS.find((tab) => tab.id === siteArea)?.label} className="min-h-0 flex-1 overflow-y-auto">
+      <div role="tabpanel" aria-label={AREA_TABS.find((tab) => tab.id === siteArea)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {siteArea === "page" && (
           <>
             <PageForm key={page.id} page={page} pages={draft.pages} onChange={(patch) => editDraft((current) => updatePageMeta(current, page.id, patch))} />
@@ -130,10 +128,6 @@ function SiteInspector() {
             )}
           </>
         )}
-        {siteArea === "header" && (
-          <HeaderForm header={draft.header} pages={draft.pages} onChange={(header) => editDraft((current) => ({ ...current, header }))} />
-        )}
-        {siteArea === "footer" && <FooterForm footer={draft.footer} onChange={(footer) => editDraft((current) => ({ ...current, footer }))} />}
         {siteArea === "theme" && (
           <ThemeForm theme={draft.theme} presets={themes} onChange={(theme) => editDraft((current) => ({ ...current, theme }))} />
         )}
@@ -159,7 +153,7 @@ export default function Inspector() {
   );
 
   return (
-    <aside aria-label="Properties" className="z-(--z-ed-panel) flex w-80 shrink-0 flex-col border-l border-ed-border bg-ed-panel">
+    <aside aria-label="Properties" className="z-(--z-ed-panel) flex h-full min-h-0 w-80 shrink-0 flex-col border-l border-ed-border bg-ed-panel overflow-hidden">
       {item && selector ? <SectionInspector key={item.props.id} item={item} index={selector.index} /> : <SiteInspector />}
     </aside>
   );

@@ -67,14 +67,16 @@ function EditorShell({ backTo, onPublish }: { backTo: string; onPublish: () => v
 
   return (
     <BuilderSiteContext.Provider value={site}>
-      <TopBar backTo={backTo} onPublish={onPublish} />
-      <div className="relative flex min-h-0 flex-1">
-        <LeftRail />
-        <CanvasViewport device={device}>
-          <Puck.Preview />
-        </CanvasViewport>
-        <Inspector />
-        <AiDrawer />
+      <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+        <TopBar backTo={backTo} onPublish={onPublish} />
+        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+          <LeftRail />
+          <CanvasViewport device={device}>
+            <Puck.Preview />
+          </CanvasViewport>
+          <Inspector />
+          <AiDrawer />
+        </div>
       </div>
     </BuilderSiteContext.Provider>
   );

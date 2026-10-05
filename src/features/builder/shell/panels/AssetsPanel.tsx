@@ -26,7 +26,7 @@ export default function AssetsPanel() {
     <>
       <PanelHeader title="Assets" description="Images used across this website. Copy a URL to reuse it in any image field." />
       {assets.length > 0 && <SearchField value={query} onChange={setQuery} placeholder="Search by alt text or page" />}
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-3">
         {assets.length === 0 ? (
           <EmptyState icon={<Images className="size-4" />} title="No images yet">
             Add an image URL to a section and it will be listed here.
