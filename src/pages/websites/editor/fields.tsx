@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Button, Dropdown, Label } from "@heroui/react";
+import { Button, Checkbox, Dropdown, Label } from "@heroui/react";
 import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import type { ImageRef, LinkRef } from "../../../site-kit/index.ts";
 
@@ -57,7 +57,7 @@ type TextFieldProps = {
   /** Shows "Required" when empty. */
   required?: boolean;
   error?: string;
-  type?: "text" | "email" | "tel" | "url";
+  type?: "text" | "email" | "tel" | "url" | "number";
   list?: string;
 };
 
@@ -198,6 +198,7 @@ type CheckboxFieldProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
   hint?: string;
+  disabled?: boolean;
 };
 
 export function CheckboxField({
@@ -205,35 +206,27 @@ export function CheckboxField({
   checked,
   onChange,
   hint,
+  disabled,
 }: CheckboxFieldProps) {
   return (
-    <label className="group flex cursor-pointer items-start gap-2 select-none">
-      <div className="relative mt-0.5 flex size-4 shrink-0 items-center justify-center">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(event) => onChange(event.target.checked)}
-          className="peer sr-only"
-        />
-        <div className="flex size-4 items-center justify-center rounded-[4px] border border-ed-border-strong bg-ed-panel text-white shadow-ed-xs transition-all duration-150 group-hover:border-ed-muted peer-checked:border-ed-accent peer-checked:bg-ed-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ed-accent/20 peer-focus-visible:outline-none">
-          <svg
-            className={`size-3 stroke-current transition-all duration-150 ${checked ? "scale-100 opacity-100" : "scale-0 opacity-0"}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+    <Checkbox
+      isSelected={checked}
+      onChange={onChange}
+      isDisabled={disabled}
+      className="group cursor-pointer select-none"
+    >
+      <Checkbox.Content className="items-start gap-2">
+        <Checkbox.Control className="mt-0.5">
+          <Checkbox.Indicator />
+        </Checkbox.Control>
+        <div className="min-w-0 flex-1">
+          <Label className="block text-ed-sm font-medium text-ed-text cursor-pointer leading-tight">
+            {label}
+          </Label>
+          {hint && <p className="text-ed-2xs text-ed-muted leading-normal mt-0.5">{hint}</p>}
         </div>
-      </div>
-      <div className="min-w-0 flex-1">
-        <span className="block text-ed-sm font-medium text-ed-text">{label}</span>
-        {hint && <p className="text-ed-2xs text-ed-muted leading-normal">{hint}</p>}
-      </div>
-    </label>
+      </Checkbox.Content>
+    </Checkbox>
   );
 }
 

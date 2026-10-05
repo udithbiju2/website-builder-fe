@@ -40,30 +40,114 @@ export type ThemeSettings = {
   sectionSpacing: SpacingSize;
 };
 
-export type HeaderDesign = "logo-left" | "centered";
+export const HEADER_DESIGNS = [
+  "logo-left",
+  "centered",
+  "classical",
+  "minimalist",
+  "comprehensive",
+  "ecommerce",
+  "floating",
+  "transparent",
+] as const;
+
+export type HeaderDesign = (typeof HEADER_DESIGNS)[number];
+
+export type HeaderSubMenuItem = {
+  label: string;
+  href: string;
+  description?: string;
+  badge?: string;
+  icon?: string;
+};
+
+export type HeaderMenuItem = {
+  label: string;
+  href: string;
+  badge?: string;
+  icon?: string;
+  children?: HeaderSubMenuItem[];
+};
 
 export type HeaderData = {
   design: HeaderDesign;
   siteName: string;
   logo?: ImageRef;
-  menu: LinkRef[];
+  menu: HeaderMenuItem[];
   cta?: LinkRef;
+  secondaryCta?: LinkRef;
   announcement?: string;
+  announcementLink?: LinkRef;
+  position?: "static" | "sticky" | "fixed" | "floating";
   sticky: boolean;
+  overlay?: boolean;
+  showSearch?: boolean;
+  showAccount?: boolean;
+  showCart?: boolean;
+  cartCount?: number;
+  currency?: string;
+  mobileMenuType?: "drawer" | "fullscreen" | "dropdown";
   hidden?: boolean;
 };
 
-export type FooterDesign = "columns" | "simple";
+export const FOOTER_DESIGNS = [
+  "columns",
+  "simple",
+  "mega",
+  "newsletter",
+  "split",
+  "inline",
+  "centered",
+  "cta-banner",
+] as const;
+
+export type FooterDesign = (typeof FOOTER_DESIGNS)[number];
+
+export type FooterNewsletter = {
+  enabled?: boolean;
+  title?: string;
+  description?: string;
+  placeholder?: string;
+  buttonText?: string;
+};
+
+export type FooterCtaBanner = {
+  enabled?: boolean;
+  heading?: string;
+  subheading?: string;
+  primaryCta?: LinkRef;
+  secondaryCta?: LinkRef;
+};
+
+export type FooterPaymentMethods = {
+  enabled?: boolean;
+  methods?: string[];
+};
+
+export type FooterContact = {
+  title?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  hours?: string;
+};
 
 export type FooterData = {
   design: FooterDesign;
   siteName: string;
   logo?: ImageRef;
+  tagline?: string;
   description?: string;
   columns: { title: string; links: LinkRef[] }[];
-  contact?: { email?: string; phone?: string; address?: string };
+  menu?: LinkRef[];
+  contact?: FooterContact;
   social: LinkRef[];
+  newsletter?: FooterNewsletter;
+  ctaBanner?: FooterCtaBanner;
+  paymentMethods?: FooterPaymentMethods;
+  legalLinks?: LinkRef[];
   copyright: string;
+  themeMode?: "dark" | "light" | "auto";
   hidden?: boolean;
 };
 

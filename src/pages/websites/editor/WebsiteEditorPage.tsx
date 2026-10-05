@@ -418,7 +418,7 @@ export default function WebsiteEditorPage() {
       inspector = <HeaderForm header={draft.header} pages={pages} onChange={(header) => edit((current) => ({ ...current, header }))} />;
     } else if (selection.kind === "footer") {
       inspectorTitle = "Footer";
-      inspector = <FooterForm footer={draft.footer} onChange={(footer) => edit((current) => ({ ...current, footer }))} />;
+      inspector = <FooterForm footer={draft.footer} pages={pages} onChange={(footer) => edit((current) => ({ ...current, footer }))} />;
     } else if (selection.kind === "theme") {
       inspectorTitle = "Colours & fonts";
       inspector = <ThemeForm theme={draft.theme} presets={themes} onChange={(theme) => edit((current) => ({ ...current, theme }))} />;

@@ -311,6 +311,172 @@ export type SectionPreset = {
 
 export const SECTION_PRESETS: SectionPreset[] = [
   {
+    key: "header-classical",
+    type: "header",
+    label: "Classical header",
+    category: "Header",
+    description: "Logo left, centered nav with dropdowns, dual action buttons.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "classical",
+          siteName: "Modulus",
+          menu: [
+            {
+              label: "Solutions",
+              href: "/solutions",
+              children: [
+                { label: "Analytics", href: "/analytics", description: "Real-time metrics & reporting" },
+                { label: "Engagement", href: "/engagement", description: "Automated customer workflows" },
+              ],
+            },
+            { label: "About us", href: "/about" },
+            { label: "Pricing", href: "/pricing" },
+            { label: "Resources", href: "/resources" },
+          ],
+          secondaryCta: { label: "Log in", href: "/login" },
+          cta: { label: "Sign up", href: "/signup" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-minimalist",
+    type: "header",
+    label: "Minimalist header",
+    category: "Header",
+    description: "Nav on left, centered logo, sign in and CTA on right.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "minimalist",
+          siteName: "Modulus",
+          menu: [
+            { label: "Solutions", href: "/solutions" },
+            { label: "About us", href: "/about" },
+            { label: "Pricing", href: "/pricing" },
+          ],
+          secondaryCta: { label: "Sign in", href: "/login" },
+          cta: { label: "Try for free", href: "/signup" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-comprehensive",
+    type: "header",
+    label: "Comprehensive header",
+    category: "Header",
+    description: "Mega dropdowns, search trigger, sales & booking CTAs.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "comprehensive",
+          siteName: "Modulus",
+          menu: [
+            {
+              label: "Product",
+              href: "/product",
+              children: [
+                { label: "Core Engine", href: "/core", description: "Fast scalable foundation" },
+                { label: "Integrations", href: "/integrations", description: "Connect 100+ tools" },
+              ],
+            },
+            {
+              label: "Solutions",
+              href: "/solutions",
+              children: [
+                { label: "For Startups", href: "/startups", description: "Build & launch fast" },
+                { label: "For Enterprise", href: "/enterprise", description: "Custom compliance & security" },
+              ],
+            },
+            { label: "Company", href: "/company" },
+            { label: "Customers", href: "/customers" },
+            { label: "App", href: "/app" },
+          ],
+          showSearch: true,
+          secondaryCta: { label: "Contact Sales", href: "/contact" },
+          cta: { label: "Book a demo", href: "/demo" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-ecommerce",
+    type: "header",
+    label: "E-commerce header",
+    category: "Header",
+    description: "Top utility bar with search, cart badge, and bottom category tabs.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "ecommerce",
+          siteName: "Modulus",
+          menu: [
+            { label: "Products", href: "/products" },
+            { label: "Solutions", href: "/solutions" },
+            { label: "Categories", href: "/categories" },
+            { label: "App", href: "/app" },
+            { label: "Resources", href: "/resources" },
+            { label: "Affiliates", href: "/affiliates" },
+            { label: "About", href: "/about" },
+          ],
+          showSearch: true,
+          showAccount: true,
+          showCart: true,
+          cartCount: 1,
+          currency: "USD $",
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-floating",
+    type: "header",
+    label: "Floating pill header",
+    category: "Header",
+    description: "Modern blurred floating island navbar with rounded pill styling.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "floating",
+          siteName: "Modulus",
+          menu: [
+            { label: "Courses", href: "/courses" },
+            { label: "Platform", href: "/platform" },
+            { label: "Lectors", href: "/lectors" },
+            { label: "Community", href: "/community" },
+          ],
+          secondaryCta: { label: "Sign in", href: "/login" },
+          cta: { label: "Start Learning", href: "/signup" },
+          position: "floating",
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-transparent",
+    type: "header",
+    label: "Transparent overlay",
+    category: "Header",
+    description: "Transparent overlay header floating over hero sections.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "transparent",
+          siteName: "Modulus",
+          overlay: true,
+          menu: [
+            { label: "Features", href: "/features" },
+            { label: "Pricing", href: "/pricing" },
+            { label: "About", href: "/about" },
+          ],
+          cta: { label: "Get started", href: "/signup" },
+          sticky: false,
+        },
+      }),
+  },
+  {
     key: "header-logo-left",
     type: "header",
     label: "Header · logo left",
@@ -327,11 +493,276 @@ export const SECTION_PRESETS: SectionPreset[] = [
     create: () => createSection("header", { data: { design: "centered" } }),
   },
   {
+    key: "footer-mega",
+    type: "footer",
+    label: "Footer · mega store",
+    category: "Footer",
+    description: "E-commerce footer with social icons, category columns, contact info, and payment badges.",
+    create: () =>
+      createSection("footer", {
+        data: {
+          design: "mega",
+          siteName: "YOURSTORE",
+          tagline: "Online Store",
+          description: "Quality goods delivered worldwide. Dedicated customer support 24/7.",
+          columns: [
+            {
+              title: "Categories",
+              links: [
+                { label: "Outdoors", href: "/outdoors" },
+                { label: "Jewellery", href: "/jewellery" },
+                { label: "Footwear", href: "/footwear" },
+                { label: "Men", href: "/men" },
+                { label: "Women", href: "/women" },
+              ],
+            },
+            {
+              title: "Information",
+              links: [
+                { label: "Specials", href: "/specials" },
+                { label: "New Products", href: "/new" },
+                { label: "Best Sellers", href: "/bestsellers" },
+                { label: "Our Stores", href: "/stores" },
+                { label: "Contact Us", href: "/contact" },
+              ],
+            },
+            {
+              title: "My Account",
+              links: [
+                { label: "My Orders", href: "/orders" },
+                { label: "My Credit Slips", href: "/credit-slips" },
+                { label: "My Addresses", href: "/addresses" },
+                { label: "My Personal Info", href: "/account" },
+              ],
+            },
+          ],
+          contact: {
+            title: "Contact Us",
+            address: "42 Avenue Des Champs-Elysées, 75008 Paris, France",
+            phone: "0123-456-789",
+            email: "sales@yourcompany.com",
+          },
+          social: [
+            { label: "Facebook", href: "https://facebook.com" },
+            { label: "Twitter", href: "https://twitter.com" },
+            { label: "Instagram", href: "https://instagram.com" },
+            { label: "Pinterest", href: "https://pinterest.com" },
+          ],
+          paymentMethods: {
+            enabled: true,
+            methods: ["paypal", "amex", "discover", "mastercard", "visa"],
+          },
+          legalLinks: [
+            { label: "Privacy Policy", href: "/privacy" },
+            { label: "Terms of Service", href: "/terms" },
+          ],
+          copyright: "© 2026 YourStore. All rights reserved.",
+        },
+      }),
+  },
+  {
+    key: "footer-newsletter",
+    type: "footer",
+    label: "Footer · newsletter & links",
+    category: "Footer",
+    description: "Horizontal navigation bar, contact details, newsletter signup, and payment methods.",
+    create: () =>
+      createSection("footer", {
+        data: {
+          design: "newsletter",
+          siteName: "YOURSTORE",
+          tagline: "Online Store",
+          menu: [
+            { label: "Woman", href: "/woman" },
+            { label: "Man", href: "/man" },
+            { label: "Lookbook", href: "/lookbook" },
+            { label: "Sale", href: "/sale" },
+            { label: "Blog", href: "/blog" },
+            { label: "Contact", href: "/contact" },
+          ],
+          newsletter: {
+            enabled: true,
+            title: "Subscribe to News",
+            description: "Get updates on new releases and promotions.",
+            placeholder: "Enter email address",
+            buttonText: "Subscribe",
+          },
+          contact: {
+            address: "42 Avenue Des Champs-Elysées, 75008 Paris",
+            phone: "0123-456-789",
+            email: "sales@yourcompany.com",
+          },
+          social: [
+            { label: "Facebook", href: "https://facebook.com" },
+            { label: "Twitter", href: "https://twitter.com" },
+            { label: "Instagram", href: "https://instagram.com" },
+            { label: "Pinterest", href: "https://pinterest.com" },
+          ],
+          paymentMethods: {
+            enabled: true,
+            methods: ["paypal", "amex", "discover", "mastercard", "visa"],
+          },
+          copyright: "© 2026 YourStore. All rights reserved.",
+        },
+      }),
+  },
+  {
+    key: "footer-split",
+    type: "footer",
+    label: "Footer · split navigation",
+    category: "Footer",
+    description: "Brand & social on left, horizontal links in middle, contact & payment badges on right.",
+    create: () =>
+      createSection("footer", {
+        data: {
+          design: "split",
+          siteName: "YOURSTORE",
+          tagline: "Online Store",
+          menu: [
+            { label: "Woman", href: "/woman" },
+            { label: "Man", href: "/man" },
+            { label: "Lookbook", href: "/lookbook" },
+            { label: "Sale", href: "/sale" },
+            { label: "Blog", href: "/blog" },
+            { label: "Contact", href: "/contact" },
+          ],
+          contact: {
+            address: "42 Avenue Des Champs-Elysées, Paris",
+            phone: "0123-456-789",
+          },
+          social: [
+            { label: "Facebook", href: "https://facebook.com" },
+            { label: "Twitter", href: "https://twitter.com" },
+            { label: "Instagram", href: "https://instagram.com" },
+            { label: "Pinterest", href: "https://pinterest.com" },
+          ],
+          paymentMethods: {
+            enabled: true,
+            methods: ["paypal", "amex", "discover", "mastercard", "visa"],
+          },
+          copyright: "Design by Web builder · All Right Reserved",
+        },
+      }),
+  },
+  {
+    key: "footer-inline",
+    type: "footer",
+    label: "Footer · inline logo & links",
+    category: "Footer",
+    description: "Minimal single-tier bar with logo, horizontal navigation links, and circular social icons.",
+    create: () =>
+      createSection("footer", {
+        data: {
+          design: "inline",
+          siteName: "YOURSTORE",
+          menu: [
+            { label: "Woman", href: "/woman" },
+            { label: "Man", href: "/man" },
+            { label: "Lookbook", href: "/lookbook" },
+            { label: "Sale", href: "/sale" },
+            { label: "Blog", href: "/blog" },
+            { label: "Contact", href: "/contact" },
+          ],
+          social: [
+            { label: "Facebook", href: "https://facebook.com" },
+            { label: "Twitter", href: "https://twitter.com" },
+            { label: "Instagram", href: "https://instagram.com" },
+            { label: "Pinterest", href: "https://pinterest.com" },
+          ],
+          copyright: "© 2026 YourStore. All rights reserved.",
+        },
+      }),
+  },
+  {
+    key: "footer-centered",
+    type: "footer",
+    label: "Footer · centered brand",
+    category: "Footer",
+    description: "Centered brand logo, navigation links, social button row, and contact/copyright info.",
+    create: () =>
+      createSection("footer", {
+        data: {
+          design: "centered",
+          siteName: "YOURSTORE",
+          tagline: "Online Store",
+          menu: [
+            { label: "Woman", href: "/woman" },
+            { label: "Man", href: "/man" },
+            { label: "Lookbook", href: "/lookbook" },
+            { label: "Sale", href: "/sale" },
+            { label: "Blog", href: "/blog" },
+            { label: "Contact", href: "/contact" },
+          ],
+          social: [
+            { label: "Facebook", href: "https://facebook.com" },
+            { label: "Twitter", href: "https://twitter.com" },
+            { label: "Instagram", href: "https://instagram.com" },
+            { label: "Pinterest", href: "https://pinterest.com" },
+          ],
+          contact: {
+            address: "42 Avenue Des Champs-Elysées, 75008 Paris, France",
+            phone: "0123-456-789",
+            email: "sales@yourcompany.com",
+          },
+          copyright: "© 2026 YourStore. All rights reserved.",
+        },
+      }),
+  },
+  {
+    key: "footer-cta-banner",
+    type: "footer",
+    label: "Footer · CTA banner",
+    category: "Footer",
+    description: "Prominent call-to-action banner atop link columns, social links, and copyright.",
+    create: () =>
+      createSection("footer", {
+        data: {
+          design: "cta-banner",
+          siteName: "Acme Inc.",
+          ctaBanner: {
+            enabled: true,
+            heading: "Ready to grow your online store?",
+            subheading: "Join over 10,000+ happy merchants and launch in minutes.",
+            primaryCta: { label: "Get started free", href: "/signup" },
+            secondaryCta: { label: "Book a demo", href: "/demo" },
+          },
+          columns: [
+            {
+              title: "Product",
+              links: [
+                { label: "Features", href: "/features" },
+                { label: "Integrations", href: "/integrations" },
+                { label: "Pricing", href: "/pricing" },
+              ],
+            },
+            {
+              title: "Company",
+              links: [
+                { label: "About us", href: "/about" },
+                { label: "Blog", href: "/blog" },
+                { label: "Careers", href: "/careers" },
+              ],
+            },
+          ],
+          social: [
+            { label: "Twitter", href: "https://twitter.com" },
+            { label: "GitHub", href: "https://github.com" },
+            { label: "LinkedIn", href: "https://linkedin.com" },
+          ],
+          legalLinks: [
+            { label: "Privacy Policy", href: "/privacy" },
+            { label: "Terms", href: "/terms" },
+          ],
+          copyright: "© 2026 Acme Inc. All rights reserved.",
+        },
+      }),
+  },
+  {
     key: "footer-columns",
     type: "footer",
     label: "Footer · multi-column",
     category: "Footer",
-    description: "Brand summary, organized link columns, and social links.",
+    description: "Brand summary, organized link columns, contact info, and social links.",
     create: () => createSection("footer"),
   },
   {
