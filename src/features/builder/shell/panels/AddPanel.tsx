@@ -1,4 +1,4 @@
-import { useMemo, useState, type ComponentType } from "react";
+import { useMemo, useState, type CSSProperties, type ComponentType } from "react";
 import {
   Briefcase,
   CreditCard,
@@ -14,8 +14,8 @@ import {
   PanelTop,
   PlaySquare,
   Plus,
+  Rocket,
   SearchX,
-  Sparkles,
   Users,
   type LucideProps,
 } from "lucide-react";
@@ -44,7 +44,7 @@ type CategoryItem = {
 const CATEGORIES: CategoryItem[] = [
   { id: "all", category: "All", label: "All sections", shortLabel: "All", icon: Grid },
   { id: "header", category: "Header", label: "Header", shortLabel: "Header", icon: PanelTop },
-  { id: "hero", category: "Hero", label: "Hero", shortLabel: "Hero", icon: Sparkles },
+  { id: "hero", category: "Hero", label: "Hero", shortLabel: "Hero", icon: Rocket },
   { id: "features", category: "Features", label: "Features", shortLabel: "Features", icon: Layers },
   { id: "services", category: "Services", label: "Services", shortLabel: "Services", icon: Briefcase },
   { id: "social-proof", category: "Social proof", label: "Testimonials & Social", shortLabel: "Proof", icon: MessageSquareQuote },
@@ -59,14 +59,20 @@ const CATEGORIES: CategoryItem[] = [
   { id: "footer", category: "Footer", label: "Footer", shortLabel: "Footer", icon: PanelBottom },
 ];
 
-const PREVIEW_WIDTH = 1080;
-const PREVIEW_SCALE = 0.28;
+const PREVIEW_WIDTH = 1040;
+const PREVIEW_SCALE = 0.27;
 
 function SectionLivePreview({ preset, theme }: { preset: SectionPreset; theme: ThemeSettings }) {
   const section = useMemo(() => preset.create(), [preset.key]);
+  const isHeaderOrFooter = preset.type === "header" || preset.type === "footer";
+  const heightClass = isHeaderOrFooter ? "h-20" : "h-32";
 
   return (
-    <div className="relative h-24 w-full overflow-hidden rounded-md border border-ed-border/70 bg-white dark:bg-zinc-950 pointer-events-none select-none" aria-hidden inert>
+    <div
+      className={`relative ${heightClass} w-full overflow-hidden rounded-md border border-ed-border/70 bg-white dark:bg-zinc-950 pointer-events-none select-none`}
+      aria-hidden
+      inert
+    >
       <SiteStyles />
       <div
         className="origin-top-left"
@@ -74,7 +80,11 @@ function SectionLivePreview({ preset, theme }: { preset: SectionPreset; theme: T
       >
         <div
           className={`wb-site wb-buttons-${theme.buttonStyle} wb-cards-${theme.cardStyle}`}
-          style={themeToCssVars(theme)}
+          style={{
+            ...themeToCssVars(theme),
+            "--wb-section-y": isHeaderOrFooter ? "16px" : "24px",
+            "--wb-container": "1000px",
+          } as CSSProperties}
         >
           <SectionView section={section} />
         </div>
