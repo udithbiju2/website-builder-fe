@@ -1,16 +1,14 @@
 import type { ComponentType, ReactNode } from "react";
-import { Blocks, Files, Images, Layers, LayoutTemplate, Plus, Sparkles, type LucideProps } from "lucide-react";
+import { Files, Images, Layers, LayoutTemplate, Plus, Sparkles, type LucideProps } from "lucide-react";
 import { useEditor, type LeftPanelId } from "../editor-context.ts";
 import AddPanel from "./panels/AddPanel.tsx";
 import AssetsPanel from "./panels/AssetsPanel.tsx";
-import ComponentsPanel from "./panels/ComponentsPanel.tsx";
 import LayersPanel from "./panels/LayersPanel.tsx";
 import PagesPanel from "./panels/PagesPanel.tsx";
 import TemplatesPanel from "./panels/TemplatesPanel.tsx";
 
 const PANELS: { id: LeftPanelId; label: string; icon: ComponentType<LucideProps>; render: ComponentType }[] = [
   { id: "add", label: "Add sections", icon: Plus, render: AddPanel },
-  { id: "components", label: "Components", icon: Blocks, render: ComponentsPanel },
   { id: "pages", label: "Pages", icon: Files, render: PagesPanel },
   { id: "layers", label: "Layers", icon: Layers, render: LayersPanel },
   { id: "assets", label: "Assets", icon: Images, render: AssetsPanel },
