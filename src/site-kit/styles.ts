@@ -199,9 +199,11 @@ export const SITE_CSS = `
   z-index: 9999;
   display: flex;
   justify-content: flex-end;
+  overflow: hidden;
+  border-radius: inherit;
 }
 .wb-drawer-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
@@ -211,7 +213,7 @@ export const SITE_CSS = `
 .wb-drawer-panel {
   position: relative;
   width: 100%;
-  max-width: 440px;
+  max-width: 380px;
   height: 100%;
   background: var(--wb-bg);
   color: var(--wb-text);
@@ -220,7 +222,7 @@ export const SITE_CSS = `
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
   animation: wbSlideIn 220ms cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
-  z-index: 10000;
+  z-index: 10;
 }
 @keyframes wbSlideIn {
   from { transform: translateX(100%); }
@@ -1432,7 +1434,7 @@ export const SITE_CSS = `
   .wb-member-photo { width: 96px; height: 96px; }
 
   /* Mobile Full-width Drawer */
-  .wb-drawer-panel { width: 100vw !important; max-width: 100% !important; border-radius: 0; }
+  .wb-drawer-panel { width: 100% !important; max-width: 100% !important; border-radius: 0; }
   .wb-drawer-header { padding: 14px 16px; min-height: 58px; }
   .wb-drawer-body { padding: 18px 16px 28px; }
 }

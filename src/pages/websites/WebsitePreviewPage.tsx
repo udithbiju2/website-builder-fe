@@ -169,7 +169,11 @@ export default function WebsitePreviewPage() {
 
       {/* Realistic Website Preview Frame */}
       {site && page && (
-        <main className="flex-1 w-full overflow-y-auto overflow-x-hidden relative">
+        <main
+          className={`flex-1 w-full relative bg-[#f4f5f8] ${
+            device === "desktop" ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden"
+          }`}
+        >
           <PreviewFrame device={device} onLinkClick={openLink}>
             <SitePage site={site} page={page} />
           </PreviewFrame>
