@@ -108,24 +108,20 @@ function ActionButtons({ header }: { header: HeaderData }) {
 export default function SiteHeader({ header }: { header: HeaderData }) {
   if (header.hidden) return null;
 
-  const isFixed = header.position === "fixed";
-  const isSticky = header.position === "sticky" || (header.sticky === true && header.position !== "static");
-  const isFloating = header.position === "floating" || header.design === "floating";
-  const isTransparent = !isSticky && !isFixed && (header.design === "transparent" || header.overlay);
+  const position = header.position ?? (header.sticky ? "sticky" : "static");
 
-  const positionClass = isFixed
-    ? "wb-fixed"
-    : isSticky
-      ? isFloating
-        ? "wb-floating"
-        : "wb-sticky"
-      : isFloating
-        ? "wb-floating"
-        : isTransparent
-          ? "wb-transparent"
-          : "";
+  let posClass = "wb-pos-static";
+  if (position === "fixed") {
+    posClass = "wb-pos-fixed";
+  } else if (position === "floating") {
+    posClass = "wb-pos-floating";
+  } else if (position === "sticky") {
+    posClass = "wb-pos-sticky";
+  }
 
-  const classes = ["wb-header", `wb-header-${header.design}`, positionClass].filter(Boolean).join(" ");
+  const isTransparent = position === "static" && (header.design === "transparent" || header.overlay);
+  const designClass = isTransparent ? "wb-header-transparent" : `wb-header-${header.design}`;
+  const classes = ["wb-header", designClass, posClass].filter(Boolean).join(" ");
 
   const brand = (
     <SiteBrand
@@ -175,7 +171,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
   );
 
   // 1. Floating Pill Design
-  if (header.design === "floating" || isFloating) {
+  if (header.design === "floating") {
     return (
       <>
         {announcement}

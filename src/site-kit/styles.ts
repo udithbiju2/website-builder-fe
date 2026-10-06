@@ -96,10 +96,12 @@ export const SITE_CSS = `
 .wb-announcement { background: var(--wb-text); color: var(--wb-bg); text-align: center; font-size: 13px; padding: 8px 24px; font-weight: 500; }
 .wb-announcement a { text-decoration: underline; text-underline-offset: 2px; margin-left: 6px; }
 .wb-header { background: var(--wb-bg); border-bottom: 1px solid var(--wb-border); position: relative; z-index: 40; transition: background 150ms ease, box-shadow 150ms ease; }
-.wb-header.wb-sticky { position: -webkit-sticky; position: sticky; top: 0; z-index: 40; width: 100%; }
-.wb-header.wb-fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 40; width: 100%; }
-.wb-header.wb-transparent { position: absolute; top: 0; left: 0; right: 0; background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.15); z-index: 40; width: 100%; }
-.wb-header.wb-floating { position: -webkit-sticky; position: sticky; top: 12px; background: transparent; border-bottom: none; padding: 8px 16px; z-index: 40; width: 100%; }
+.wb-header.wb-pos-static { position: relative; }
+.wb-header.wb-pos-sticky, .wb-header.wb-sticky { position: -webkit-sticky; position: sticky; top: 0; z-index: 40; width: 100%; }
+.wb-header.wb-pos-fixed, .wb-header.wb-fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 40; width: 100%; }
+.wb-header.wb-pos-floating { position: -webkit-sticky; position: sticky; top: 12px; z-index: 40; width: 100%; }
+.wb-header.wb-header-transparent { position: absolute; top: 0; left: 0; right: 0; background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.15); z-index: 40; width: 100%; }
+.wb-header.wb-header-floating { background: transparent; border-bottom: none; padding: 8px 16px; }
 .wb-header-floating-pill { max-width: 1100px; margin: 0 auto; background: color-mix(in srgb, var(--wb-bg) 90%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--wb-border); border-radius: 9999px; box-shadow: 0 10px 28px -6px rgb(0 0 0 / 0.12); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 56px; }
 .wb-header-inner { display: flex; align-items: center; gap: 28px; min-height: 72px; }
 .wb-brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--wb-font-heading); font-weight: 700; font-size: 20px; text-decoration: none; shrink-0; }
