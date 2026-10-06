@@ -147,23 +147,194 @@ export const SITE_CSS = `
 .wb-search-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 9999px; border: 1px solid var(--wb-border); background: var(--wb-surface); font-size: 13px; color: var(--wb-muted); cursor: pointer; min-width: 180px; }
 .wb-search-pill svg { width: 14px; height: 14px; opacity: 0.6; }
 .wb-header-centered .wb-header-inner { flex-direction: column; gap: 12px; padding: 20px 24px 16px; }
-.wb-header-centered .wb-nav { margin-left: 0; }
-.wb-mobile-nav { display: none; margin-left: auto; }
-.wb-mobile-nav > summary {
-  list-style: none; cursor: pointer; display: grid; place-items: center;
-  width: 42px; height: 42px; border-radius: var(--wb-radius); border: 1px solid var(--wb-border);
+/* Fixed Header Top Spacing Clearance (content never goes behind/overlaps fixed header unless transparent overlay) */
+.wb-site:has(.wb-header.wb-pos-fixed:not(.wb-header-transparent)) > main,
+.wb-site:has(.wb-header.wb-fixed:not(.wb-header-transparent)) > main,
+.wb-header.wb-pos-fixed:not(.wb-header-transparent) ~ main,
+.wb-header.wb-fixed:not(.wb-header-transparent) ~ main {
+  padding-top: var(--wb-header-height, 72px);
 }
-.wb-mobile-nav > summary::-webkit-details-marker { display: none; }
-.wb-mobile-nav > summary svg { width: 22px; height: 22px; }
-.wb-mobile-nav[open] .wb-mobile-panel {
-  position: absolute; left: 0; right: 0; top: 100%;
-  display: flex; flex-direction: column; gap: 8px; padding: 16px 20px 24px;
-  background: var(--wb-bg); border-bottom: 1px solid var(--wb-border);
-  box-shadow: 0 16px 32px rgb(0 0 0 / 0.12); max-height: 80vh; overflow-y: auto;
+
+/* Editor Canvas In-flow Positioning (enables clean selection, dragging, deleting, and editing) */
+.wb-editor-section-wrap {
+  width: 100%;
+  position: relative;
 }
-.wb-mobile-panel a { padding: 8px 0; font-weight: 500; font-size: 15px; }
-.wb-mobile-submenu { margin: 4px 0 8px 8px; padding-left: 12px; border-left: 2px solid var(--wb-border); display: flex; flex-direction: column; gap: 4px; }
-.wb-mobile-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; pt: 12px; border-top: 1px solid var(--wb-border); }
+.wb-editor-section-wrap .wb-header {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+  z-index: 1 !important;
+}
+.wb-editor-section-wrap .wb-header.wb-header-floating {
+  padding: 8px 16px;
+}
+
+/* Mobile Toggle Button & Full-width Drawer */
+.wb-mobile-toggle-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--wb-radius);
+  border: 1px solid var(--wb-border);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+.wb-mobile-toggle-btn:hover {
+  background: var(--wb-surface);
+  color: var(--wb-primary);
+}
+.wb-mobile-toggle-btn svg { width: 22px; height: 22px; }
+
+.wb-drawer-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-end;
+}
+.wb-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: wbFadeIn 180ms ease;
+}
+.wb-drawer-panel {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  background: var(--wb-bg);
+  color: var(--wb-text);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
+  animation: wbSlideIn 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  z-index: 10000;
+}
+@keyframes wbSlideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.wb-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--wb-border);
+  min-height: 64px;
+  background: var(--wb-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.wb-drawer-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--wb-border);
+  background: var(--wb-surface);
+  color: var(--wb-text);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.wb-drawer-close-btn:hover {
+  background: var(--wb-primary);
+  color: var(--wb-on-primary, #ffffff);
+  border-color: var(--wb-primary);
+}
+.wb-drawer-close-btn svg { width: 18px; height: 18px; }
+.wb-drawer-body {
+  flex: 1 1 auto;
+  padding: 24px 20px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+}
+.wb-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wb-drawer-item-group {
+  display: flex;
+  flex-direction: column;
+}
+.wb-drawer-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--wb-text);
+  border-radius: var(--wb-radius);
+  text-decoration: none;
+  transition: background 120ms ease, color 120ms ease;
+}
+.wb-drawer-link:hover {
+  background: var(--wb-surface);
+  color: var(--wb-primary);
+}
+.wb-drawer-submenu {
+  margin: 4px 0 8px 12px;
+  padding-left: 14px;
+  border-left: 2px solid var(--wb-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wb-drawer-sublink {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border-radius: calc(var(--wb-radius) - 2px);
+  text-decoration: none;
+  transition: background 120ms ease;
+}
+.wb-drawer-sublink:hover {
+  background: var(--wb-surface);
+  color: var(--wb-primary);
+}
+.wb-drawer-sublink-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 500;
+  font-size: 14px;
+}
+.wb-drawer-sublink-desc {
+  font-size: 12px;
+  color: var(--wb-muted);
+  margin-top: 2px;
+}
+.wb-drawer-actions {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--wb-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wb-drawer-actions .wb-btn {
+  width: 100%;
+  min-height: 44px;
+  justify-content: center;
+}
 @keyframes wbFadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Hero Builder Styles */
@@ -815,8 +986,8 @@ export const SITE_CSS = `
 .wb-member .wb-muted { font-size: 15px; margin-top: 6px; }
 .wb-member-link { margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--wb-primary); }
 
-@container wb-site (min-width: 601px) {
-  .wb-hide-desktop { display: none; }
+@container wb-site (min-width: 901px) {
+  .wb-mobile-toggle-btn { display: none !important; }
 }
 
 /* Tablet */
@@ -829,7 +1000,12 @@ export const SITE_CSS = `
   .wb-grid { grid-template-columns: repeat(var(--wb-cols-tablet, 2), minmax(0, 1fr)); }
   .wb-hero-split .wb-hero-grid, .wb-contact-grid { grid-template-columns: 1fr; gap: 40px; }
   .wb-footer-grid { grid-template-columns: repeat(2, 1fr); }
-  .wb-nav { gap: 18px; }
+  
+  /* Header Tablet Responsive */
+  .wb-nav, .wb-nav-left, .wb-actions-right, .wb-header-cta { display: none !important; }
+  .wb-mobile-toggle-btn { display: inline-flex !important; }
+  .wb-header-inner { justify-content: space-between; }
+  .wb-header-floating-pill { padding: 6px 16px; min-height: 52px; width: 100%; justify-content: space-between; }
 }
 
 /* Mobile */
@@ -837,17 +1013,22 @@ export const SITE_CSS = `
   .wb-site h1 { font-size: 32px; }
   .wb-site h2 { font-size: 25px; }
   .wb-section { padding: calc(var(--wb-section-y) * 0.6) 0; }
-  .wb-container { padding: 0 20px; }
+  .wb-container { padding: 0 16px; }
   .wb-grid { grid-template-columns: repeat(var(--wb-cols-mobile, 1), minmax(0, 1fr)); gap: 16px; }
   .wb-hide-mobile { display: none; }
-  .wb-nav, .wb-header-cta { display: none; }
-  .wb-mobile-nav { display: block; }
-  .wb-header-centered .wb-header-inner { flex-direction: row; padding: 0 20px; }
+  .wb-nav, .wb-nav-left, .wb-actions-right, .wb-header-cta { display: none !important; }
+  .wb-mobile-toggle-btn { display: inline-flex !important; }
+  .wb-header-centered .wb-header-inner { flex-direction: row; padding: 0 16px; }
   .wb-hero-sub, .wb-section-head p, .wb-cta p { font-size: 17px; }
   .wb-section-head { margin-bottom: 32px; }
   .wb-footer-grid { grid-template-columns: 1fr; gap: 28px; }
   .wb-actions .wb-btn { flex: 1 1 100%; }
   .wb-member-photo { width: 96px; height: 96px; }
+
+  /* Mobile Full-width Drawer */
+  .wb-drawer-panel { width: 100vw !important; max-width: 100% !important; border-radius: 0; }
+  .wb-drawer-header { padding: 14px 16px; min-height: 58px; }
+  .wb-drawer-body { padding: 18px 16px 28px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

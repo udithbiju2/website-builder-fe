@@ -1,5 +1,7 @@
+import { useState, type ReactNode } from "react";
 import {
   ChevronDownIcon,
+  CloseIcon,
   MenuIcon,
   SiteButton,
   SiteImage,
@@ -21,14 +23,13 @@ export function SiteBrand({
   const hasLogo = Boolean(logo?.url);
   const mode = displayMode ?? "auto";
 
-  let content: React.ReactNode = null;
+  let content: ReactNode = null;
 
   if (mode === "text_only" || (!hasLogo && mode !== "logo_only")) {
     content = <span className="wb-brand-text">{siteName}</span>;
   } else if (mode === "logo_only") {
     content = hasLogo ? <SiteImage image={logo!} /> : <span className="wb-brand-text">{siteName}</span>;
   } else if (mode === "logo_right") {
-    // Brand Name on Left, Logo on Right
     content = (
       <span className="wb-brand-combo wb-brand-logo-right">
         {siteName && <span className="wb-brand-text">{siteName}</span>}
@@ -36,7 +37,6 @@ export function SiteBrand({
       </span>
     );
   } else if (mode === "logo_top") {
-    // Logo on Top, Brand Name below
     content = (
       <span className="wb-brand-combo wb-brand-logo-top">
         {hasLogo && <SiteImage image={logo!} />}
@@ -44,7 +44,6 @@ export function SiteBrand({
       </span>
     );
   } else if (mode === "logo_left") {
-    // Logo on Left, Brand Name on Right
     content = (
       <span className="wb-brand-combo wb-brand-logo-left">
         {hasLogo && <SiteImage image={logo!} />}
@@ -52,7 +51,6 @@ export function SiteBrand({
       </span>
     );
   } else {
-    // "auto" mode: if logo image exists, show logo image; otherwise show site name
     content = hasLogo ? <SiteImage image={logo!} /> : <span className="wb-brand-text">{siteName}</span>;
   }
 
@@ -105,8 +103,100 @@ function ActionButtons({ header }: { header: HeaderData }) {
   );
 }
 
+function MobileDrawer({
+  isOpen,
+  onClose,
+  header,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  header: HeaderData;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="wb-drawer-portal">
+      <div className="wb-drawer-backdrop" onClick={onClose} aria-hidden="true" />
+      <div className="wb-drawer-panel" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+        {/* Drawer Header: Brand + Clear Close X Button */}
+        <div className="wb-drawer-header">
+          <SiteBrand
+            siteName={header.siteName}
+            logo={header.logo}
+            displayMode={header.logoDisplay}
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            className="wb-drawer-close-btn"
+            aria-label="Close navigation menu"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        {/* Drawer Body: Navigation Items & Submenus */}
+        <div className="wb-drawer-body">
+          <nav className="wb-drawer-nav" aria-label="Mobile Navigation">
+            {header.menu.map((item) => (
+              <div key={`${item.label}-${item.href}`} className="wb-drawer-item-group">
+                <a
+                  href={item.href}
+                  onClick={onClose}
+                  className="wb-drawer-link"
+                >
+                  <span>{item.label}</span>
+                  {item.badge && <span className="wb-badge">{item.badge}</span>}
+                </a>
+                {item.children && item.children.length > 0 && (
+                  <div className="wb-drawer-submenu">
+                    {item.children.map((sub) => (
+                      <a
+                        key={`${sub.label}-${sub.href}`}
+                        href={sub.href}
+                        onClick={onClose}
+                        className="wb-drawer-sublink"
+                      >
+                        <span className="wb-drawer-sublink-title">
+                          <span>{sub.label}</span>
+                          {sub.badge && <span className="wb-badge ml-1.5">{sub.badge}</span>}
+                        </span>
+                        {sub.description && (
+                          <span className="wb-drawer-sublink-desc">{sub.description}</span>
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          {/* Drawer Footer Actions */}
+          {(header.secondaryCta || header.cta) && (
+            <div className="wb-drawer-actions">
+              {header.secondaryCta && (
+                <div onClick={onClose}>
+                  <SiteButton link={header.secondaryCta} tone="secondary" />
+                </div>
+              )}
+              {header.cta && (
+                <div onClick={onClose}>
+                  <SiteButton link={header.cta} tone="primary" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SiteHeader({ header }: { header: HeaderData }) {
   if (header.hidden) return null;
+
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const position = header.position ?? (header.sticky ? "sticky" : "static");
 
@@ -140,34 +230,15 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     </div>
   );
 
-  const mobileNav = (
-    <details className="wb-mobile-nav">
-      <summary aria-label="Open menu">
-        <MenuIcon />
-      </summary>
-      <nav className="wb-mobile-panel" aria-label="Mobile">
-        {header.menu.map((item) => (
-          <div key={`${item.label}-${item.href}`} className="flex flex-col">
-            <SiteLink link={item} />
-            {item.children && item.children.length > 0 && (
-              <div className="wb-mobile-submenu">
-                {item.children.map((sub) => (
-                  <a key={`${sub.label}-${sub.href}`} href={sub.href} className="text-sm text-[var(--wb-muted)]">
-                    {sub.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-        {(header.secondaryCta || header.cta) && (
-          <div className="wb-mobile-actions">
-            {header.secondaryCta && <SiteButton link={header.secondaryCta} tone="secondary" />}
-            {header.cta && <SiteButton link={header.cta} tone="primary" />}
-          </div>
-        )}
-      </nav>
-    </details>
+  const mobileToggle = (
+    <button
+      type="button"
+      onClick={() => setMobileOpen(true)}
+      className="wb-mobile-toggle-btn"
+      aria-label="Open menu"
+    >
+      <MenuIcon />
+    </button>
   );
 
   // 1. Floating Pill Design
@@ -185,12 +256,13 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
                 ))}
               </nav>
             )}
-            <div className="flex items-center gap-3">
+            <div className="wb-header-actions">
               <ActionButtons header={header} />
-              {mobileNav}
+              {mobileToggle}
             </div>
           </div>
         </header>
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
       </>
     );
   }
@@ -202,18 +274,19 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
         {announcement}
         <header className={classes}>
           <div className="wb-container wb-header-inner">
-            <div className="wb-nav-left hidden sm:flex">
+            <div className="wb-nav-left">
               {header.menu.map((item) => (
                 <NavItem key={`${item.label}-${item.href}`} item={item} />
               ))}
             </div>
             <div className="wb-brand-center">{brand}</div>
-            <div className="wb-actions-right hidden sm:flex">
+            <div className="wb-actions-right">
               <ActionButtons header={header} />
+              {mobileToggle}
             </div>
-            {mobileNav}
           </div>
         </header>
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
       </>
     );
   }
@@ -227,18 +300,19 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
           <div className="wb-container wb-header-inner">
             {brand}
             {header.menu.length > 0 && (
-              <nav className="wb-nav hidden sm:flex" aria-label="Main">
+              <nav className="wb-nav" aria-label="Main">
                 {header.menu.map((item) => (
                   <NavItem key={`${item.label}-${item.href}`} item={item} />
                 ))}
               </nav>
             )}
-            <div className="flex items-center gap-3 ml-auto">
+            <div className="wb-header-actions">
               <ActionButtons header={header} />
-              {mobileNav}
+              {mobileToggle}
             </div>
           </div>
         </header>
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
       </>
     );
   }
@@ -252,18 +326,19 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
           <div className="wb-container wb-header-inner">
             {brand}
             {header.menu.length > 0 && (
-              <nav className="wb-nav hidden sm:flex" aria-label="Main">
+              <nav className="wb-nav" aria-label="Main">
                 {header.menu.map((item) => (
                   <NavItem key={`${item.label}-${item.href}`} item={item} />
                 ))}
               </nav>
             )}
-            <div className="flex items-center gap-3 ml-auto">
+            <div className="wb-header-actions">
               <ActionButtons header={header} />
-              {mobileNav}
+              {mobileToggle}
             </div>
           </div>
         </header>
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
       </>
     );
   }
@@ -276,18 +351,19 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
         <div className="wb-container wb-header-inner">
           {brand}
           {header.menu.length > 0 && (
-            <nav className="wb-nav hidden sm:flex" aria-label="Main">
+            <nav className="wb-nav" aria-label="Main">
               {header.menu.map((item) => (
                 <NavItem key={`${item.label}-${item.href}`} item={item} />
               ))}
             </nav>
           )}
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="wb-header-actions">
             <ActionButtons header={header} />
-            {mobileNav}
+            {mobileToggle}
           </div>
         </div>
       </header>
+      <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
     </>
   );
 }

@@ -10,7 +10,7 @@ import {
   SectionResponsiveForm,
   SectionStyleForm,
 } from "../../../pages/websites/editor/SectionForm.tsx";
-import { PageForm, ThemeForm } from "../../../pages/websites/editor/SiteSettingsForms.tsx";
+import { FooterForm, HeaderForm, PageForm, ThemeForm } from "../../../pages/websites/editor/SiteSettingsForms.tsx";
 import { SECTION_DEFINITIONS, type Section, type SectionSettings } from "../../../site-kit/index.ts";
 import { useEditor, type SiteArea } from "../editor-context.ts";
 import { itemAsSection, type BuilderItem } from "../puck/adapter.ts";
@@ -27,8 +27,10 @@ const SECTION_TABS: { id: SectionTab; label: string }[] = [
 ];
 
 const AREA_TABS: { id: SiteArea; label: string }[] = [
+  { id: "header", label: "Header" },
   { id: "page", label: "Page" },
   { id: "theme", label: "Theme" },
+  { id: "footer", label: "Footer" },
 ];
 
 function SectionInspector({ item, index }: { item: BuilderItem; index: number }) {
@@ -71,7 +73,21 @@ function SectionInspector({ item, index }: { item: BuilderItem; index: number })
       </header>
       <Tabs tabs={SECTION_TABS} value={tab} onChange={setTab} label="Section properties" />
       <div role="tabpanel" aria-label={SECTION_TABS.find((candidate) => candidate.id === tab)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        {tab === "content" && <SectionContentForm key={section.id} section={section} onChange={change} />}
+        {tab === "content" && (
+          <div className="flex flex-col">
+            <SectionContentForm key={section.id} section={section} onChange={change} />
+            <div className="border-t border-ed-border/70 p-3 mt-4">
+              <button
+                type="button"
+                onClick={() => removeSection(dispatch, index)}
+                className="flex w-full items-center justify-center gap-1.5 rounded-ed border border-ed-danger/40 bg-ed-danger-soft/50 py-2 text-ed-xs font-semibold text-ed-danger hover:bg-ed-danger hover:text-white transition-colors"
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+                Delete {definition.label.toLowerCase()}
+              </button>
+            </div>
+          </div>
+        )}
         {tab === "style" && <SectionStyleForm settings={section.settings} onChange={changeSettings} />}
         {tab === "responsive" && <SectionResponsiveForm settings={section.settings} onChange={changeSettings} />}
         {tab === "advanced" && <SectionAdvancedForm settings={section.settings} onChange={changeSettings} />}
@@ -94,6 +110,53 @@ function SectionInspector({ item, index }: { item: BuilderItem; index: number })
 function SiteInspector() {
   const { draft, page, themes, editDraft, selectPage, siteArea, setSiteArea } = useEditor();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const dispatch = useBuilderPuck((state) => state.dispatch);
+  const content = useBuilderPuck((state) => state.appState.data.content);
+
+  // Check if this page has a Header or Footer section in Puck content
+  const pageHeaderIndex = content.findIndex((item) => item.type === "header");
+  const pageHeaderItem = pageHeaderIndex !== -1 ? content[pageHeaderIndex] : null;
+
+  const pageFooterIndex = content.findIndex((item) => item.type === "footer");
+  const pageFooterItem = pageFooterIndex !== -1 ? content[pageFooterIndex] : null;
+
+  function handleHeaderChange(header: typeof draft.header) {
+    if (pageHeaderItem) {
+      const section = itemAsSection(pageHeaderItem);
+      replaceSection(dispatch, pageHeaderIndex, { ...section, type: "header", data: header } as Section);
+    }
+    editDraft((current) => ({ ...current, header }));
+  }
+
+  function handleRemoveHeader() {
+    if (pageHeaderIndex !== -1) {
+      removeSection(dispatch, pageHeaderIndex);
+    } else {
+      editDraft((current) => ({
+        ...current,
+        header: { ...current.header, hidden: true },
+      }));
+    }
+  }
+
+  function handleFooterChange(footer: typeof draft.footer) {
+    if (pageFooterItem) {
+      const section = itemAsSection(pageFooterItem);
+      replaceSection(dispatch, pageFooterIndex, { ...section, type: "footer", data: footer } as Section);
+    }
+    editDraft((current) => ({ ...current, footer }));
+  }
+
+  function handleRemoveFooter() {
+    if (pageFooterIndex !== -1) {
+      removeSection(dispatch, pageFooterIndex);
+    } else {
+      editDraft((current) => ({
+        ...current,
+        footer: { ...current.footer, hidden: true },
+      }));
+    }
+  }
 
   function removePage() {
     const remaining = deletePage(draft, page.id);
@@ -111,6 +174,48 @@ function SiteInspector() {
       </header>
       <Tabs tabs={AREA_TABS} value={siteArea} onChange={setSiteArea} label="Page and site settings" />
       <div role="tabpanel" aria-label={AREA_TABS.find((tab) => tab.id === siteArea)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {siteArea === "header" && (
+          <div className="flex flex-col">
+            {pageHeaderItem && (
+              <div className="m-3 flex items-center justify-between rounded-ed border border-ed-accent/30 bg-ed-accent-soft/40 p-2.5">
+                <span className="text-ed-xs font-medium text-ed-accent">
+                  Header section on page
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => selectSection(dispatch, pageHeaderIndex)}
+                    className="flex items-center gap-1 rounded-ed bg-white dark:bg-zinc-800 px-2 py-1 text-ed-2xs font-medium text-ed-text shadow-2xs hover:text-ed-accent"
+                  >
+                    Select on canvas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveHeader}
+                    className="flex items-center gap-1 rounded-ed bg-ed-danger-soft px-2 py-1 text-ed-2xs font-medium text-ed-danger hover:bg-ed-danger hover:text-white"
+                  >
+                    <Trash2 className="size-3" aria-hidden /> Delete
+                  </button>
+                </div>
+              </div>
+            )}
+            <HeaderForm
+              header={pageHeaderItem ? (pageHeaderItem.props.data as typeof draft.header) : draft.header}
+              pages={draft.pages}
+              onChange={handleHeaderChange}
+            />
+            <div className="border-t border-ed-border/70 p-3 mt-4">
+              <button
+                type="button"
+                onClick={handleRemoveHeader}
+                className="flex w-full items-center justify-center gap-1.5 rounded-ed border border-ed-danger/40 bg-ed-danger-soft/50 py-2 text-ed-xs font-semibold text-ed-danger hover:bg-ed-danger hover:text-white transition-colors"
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+                Delete header from this page
+              </button>
+            </div>
+          </div>
+        )}
         {siteArea === "page" && (
           <>
             <PageForm key={page.id} page={page} pages={draft.pages} onChange={(patch) => editDraft((current) => updatePageMeta(current, page.id, patch))} />
@@ -130,6 +235,48 @@ function SiteInspector() {
         )}
         {siteArea === "theme" && (
           <ThemeForm theme={draft.theme} presets={themes} onChange={(theme) => editDraft((current) => ({ ...current, theme }))} />
+        )}
+        {siteArea === "footer" && (
+          <div className="flex flex-col">
+            {pageFooterItem && (
+              <div className="m-3 flex items-center justify-between rounded-ed border border-ed-accent/30 bg-ed-accent-soft/40 p-2.5">
+                <span className="text-ed-xs font-medium text-ed-accent">
+                  Footer section on page
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => selectSection(dispatch, pageFooterIndex)}
+                    className="flex items-center gap-1 rounded-ed bg-white dark:bg-zinc-800 px-2 py-1 text-ed-2xs font-medium text-ed-text shadow-2xs hover:text-ed-accent"
+                  >
+                    Select on canvas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFooter}
+                    className="flex items-center gap-1 rounded-ed bg-ed-danger-soft px-2 py-1 text-ed-2xs font-medium text-ed-danger hover:bg-ed-danger hover:text-white"
+                  >
+                    <Trash2 className="size-3" aria-hidden /> Delete
+                  </button>
+                </div>
+              </div>
+            )}
+            <FooterForm
+              footer={pageFooterItem ? (pageFooterItem.props.data as typeof draft.footer) : draft.footer}
+              pages={draft.pages}
+              onChange={handleFooterChange}
+            />
+            <div className="border-t border-ed-border/70 p-3 mt-4">
+              <button
+                type="button"
+                onClick={handleRemoveFooter}
+                className="flex w-full items-center justify-center gap-1.5 rounded-ed border border-ed-danger/40 bg-ed-danger-soft/50 py-2 text-ed-xs font-semibold text-ed-danger hover:bg-ed-danger hover:text-white transition-colors"
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+                Delete footer from this page
+              </button>
+            </div>
+          </div>
         )}
       </div>
       <ConfirmDialog

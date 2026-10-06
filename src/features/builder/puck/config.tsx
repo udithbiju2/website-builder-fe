@@ -20,8 +20,8 @@ function sectionComponent<T extends SectionType>(type: T): ComponentConfig<Secti
     render: ({ id, data, settings, hidden, puck }) => {
       const section = itemToSection(type, { id, data: data as SectionDataMap[T], settings, hidden });
       const view = <SectionView section={section} />;
-      if (!hidden) return view;
-      return puck.isEditing ? <div className="wb-editor-hidden">{view}</div> : <></>;
+      if (!hidden) return <div className="wb-editor-section-wrap w-full">{view}</div>;
+      return puck.isEditing ? <div className="wb-editor-hidden wb-editor-section-wrap w-full">{view}</div> : <></>;
     },
   };
 }
@@ -44,6 +44,7 @@ function EmptyCanvas() {
 
 function RootRender({ children }: { children: ReactNode }) {
   const site = useBuilderSite();
+
   return (
     <div onClickCapture={blockLinkNavigation} className="min-h-full h-full flex flex-col flex-1">
       <SiteStyles />
