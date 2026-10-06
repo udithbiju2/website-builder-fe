@@ -1,12 +1,6 @@
 import type { CSSProperties } from "react";
-import type { FontKey, RadiusSize, SpacingSize, ThemeSettings } from "./types.ts";
-
-export const FONT_STACKS: Record<FontKey, string> = {
-  "plex-sans": '"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif',
-  system: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-  serif: 'Georgia, Cambria, "Times New Roman", serif',
-  mono: '"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace',
-};
+import { fontStack, isFontKey } from "./fonts.ts";
+import type { RadiusSize, SpacingSize, ThemeSettings } from "./types.ts";
 
 const RADIUS: Record<RadiusSize, string> = {
   none: "0px",
@@ -76,10 +70,20 @@ export function themeToCssVars(theme: ThemeSettings): CSSProperties {
     "--wb-surface": colors.surface,
     "--wb-text": colors.text,
     "--wb-muted": colors.muted,
-    "--wb-font-heading": FONT_STACKS[theme.fonts.heading] ?? FONT_STACKS["plex-sans"],
-    "--wb-font-body": FONT_STACKS[theme.fonts.body] ?? FONT_STACKS["plex-sans"],
+    "--wb-font-heading": fontStack(theme.fonts.heading),
+    "--wb-font-body": fontStack(theme.fonts.body),
     "--wb-radius": RADIUS[theme.radius] ?? RADIUS.md,
     "--wb-container": `${container}px`,
     "--wb-section-y": SECTION_SPACING[theme.sectionSpacing] ?? SECTION_SPACING.normal,
   } as CSSProperties;
+}
+
+/**
+ * Inline style for a section font override. Inherited `font-family` is already
+ * resolved at the site root, so body text needs the property itself, not just the variable.
+ */
+export function sectionFontStyle(font: string | undefined): CSSProperties {
+  if (!isFontKey(font)) return {};
+  const stack = fontStack(font);
+  return { "--wb-font-heading": stack, "--wb-font-body": stack, fontFamily: stack } as CSSProperties;
 }

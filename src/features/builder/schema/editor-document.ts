@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SECTION_TYPES, type SectionType } from "../../../site-kit/index.ts";
+import { FONT_KEYS, SECTION_TYPES, type SectionType } from "../../../site-kit/index.ts";
 
 /** Stored editor document format. The server rejects any other version. */
 export const EDITOR_SCHEMA_VERSION = 1;
@@ -24,6 +24,7 @@ export const sectionSettingsSchema = z.object({
   align: z.enum(["center", "left"]).optional(),
   anchor: z.string().max(40).optional(),
   customColors: sectionCustomColorsSchema,
+  font: z.enum(FONT_KEYS).optional(),
 });
 
 /**

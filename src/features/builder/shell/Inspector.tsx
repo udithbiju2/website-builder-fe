@@ -11,7 +11,13 @@ import {
   SectionStyleForm,
 } from "../../../pages/websites/editor/SectionForm.tsx";
 import { FooterForm, HeaderForm, PageForm, ThemeForm } from "../../../pages/websites/editor/SiteSettingsForms.tsx";
-import { SECTION_DEFINITIONS, type Section, type SectionSettings } from "../../../site-kit/index.ts";
+import {
+  DEFAULT_FONT,
+  isFontKey,
+  SECTION_DEFINITIONS,
+  type Section,
+  type SectionSettings,
+} from "../../../site-kit/index.ts";
 import { useEditor, type SiteArea } from "../editor-context.ts";
 import { itemAsSection, type BuilderItem } from "../puck/adapter.ts";
 import { duplicateSection, removeSection, replaceSection, selectSection, useBuilderPuck } from "../puck/puck-api.ts";
@@ -34,7 +40,8 @@ const AREA_TABS: { id: SiteArea; label: string }[] = [
 ];
 
 function SectionInspector({ item, index }: { item: BuilderItem; index: number }) {
-  const { website, setSavedSections, notify } = useEditor();
+  const { website, draft, setSavedSections, notify } = useEditor();
+  const siteFont = isFontKey(draft.theme.fonts.heading) ? draft.theme.fonts.heading : DEFAULT_FONT;
   const dispatch = useBuilderPuck((state) => state.dispatch);
   const [tab, setTab] = useState<SectionTab>("content");
   const [saving, setSaving] = useState(false);
@@ -88,7 +95,7 @@ function SectionInspector({ item, index }: { item: BuilderItem; index: number })
             </div>
           </div>
         )}
-        {tab === "style" && <SectionStyleForm settings={section.settings} onChange={changeSettings} />}
+        {tab === "style" && <SectionStyleForm settings={section.settings} siteFont={siteFont} onChange={changeSettings} />}
         {tab === "responsive" && <SectionResponsiveForm settings={section.settings} onChange={changeSettings} />}
         {tab === "advanced" && <SectionAdvancedForm settings={section.settings} onChange={changeSettings} />}
       </div>

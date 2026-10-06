@@ -4,6 +4,7 @@ import type {
   FaqData,
   FeatureItem,
   FeaturesData,
+  FontKey,
   GalleryData,
   GridColumns,
   HeroData,
@@ -37,6 +38,7 @@ import {
   TextAreaField,
   TextField,
 } from "./fields.tsx";
+import { FontPicker } from "./FontPicker.tsx";
 
 type DataFormProps<T> = { data: T; onChange: (data: T) => void };
 
@@ -1639,7 +1641,11 @@ type SettingsFormProps = {
   onChange: (settings: SectionSettings) => void;
 };
 
-export function SectionStyleForm({ settings, onChange }: SettingsFormProps) {
+export function SectionStyleForm({
+  settings,
+  siteFont,
+  onChange,
+}: SettingsFormProps & { siteFont: FontKey }) {
   const customColors = settings.customColors ?? {};
   const updateCustomColor = (
     patch: Partial<NonNullable<SectionSettings["customColors"]>>,
@@ -1683,6 +1689,18 @@ export function SectionStyleForm({ settings, onChange }: SettingsFormProps) {
           value={settings.align ?? "center"}
           options={ALIGN_OPTIONS}
           onChange={(align) => onChange({ ...settings, align })}
+        />
+      </FormGroup>
+
+      <FormGroup title="Section font">
+        <FontPicker
+          label="Section font"
+          value={settings.font}
+          inheritFrom={siteFont}
+          onChange={(font) => {
+            const { font: _previous, ...rest } = settings;
+            onChange(font ? { ...rest, font } : rest);
+          }}
         />
       </FormGroup>
 
@@ -1927,9 +1945,11 @@ function DataForm({
 
 export default function SectionForm({
   section,
+  siteFont,
   onChange,
 }: {
   section: Section;
+  siteFont: FontKey;
   onChange: (section: Section) => void;
 }) {
   const changeSettings = (settings: SectionSettings) =>
@@ -1937,7 +1957,7 @@ export default function SectionForm({
   return (
     <>
       <DataForm section={section} onChange={onChange} />
-      <SectionStyleForm settings={section.settings} onChange={changeSettings} />
+      <SectionStyleForm settings={section.settings} siteFont={siteFont} onChange={changeSettings} />
       <SectionResponsiveForm
         settings={section.settings}
         onChange={changeSettings}

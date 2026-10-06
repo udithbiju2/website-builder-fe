@@ -3,6 +3,10 @@
  * publish renderer. Everything here must stay JSON-serializable.
  */
 
+import type { FontKey } from "./fonts.ts";
+
+export type { FontKey };
+
 export type ImageRef = {
   url: string;
   alt: string;
@@ -13,7 +17,6 @@ export type LinkRef = {
   href: string;
 };
 
-export type FontKey = "plex-sans" | "system" | "serif" | "mono";
 export type ButtonStyle = "filled" | "outline";
 export type CardStyle = "border" | "shadow" | "flat";
 export type RadiusSize = "none" | "sm" | "md" | "lg";
@@ -186,6 +189,8 @@ export type SectionSettings = {
   /** In-page anchor id, so links like `#pricing` can jump to the section. */
   anchor?: string;
   customColors?: SectionCustomColors;
+  /** Overrides the theme font for this section only; unset follows the theme. */
+  font?: FontKey;
 };
 
 export type IconName =

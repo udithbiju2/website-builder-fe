@@ -1,13 +1,14 @@
 import { useState } from "react";
 import type { ThemeOption, WebsitePage } from "../../../api/websites.ts";
-import type {
-  FontKey,
-  FooterData,
-  HeaderData,
-  HeaderMenuItem,
-  HeaderSubMenuItem,
-  LinkRef,
-  ThemeSettings,
+import {
+  DEFAULT_FONT,
+  isFontKey,
+  type FooterData,
+  type HeaderData,
+  type HeaderMenuItem,
+  type HeaderSubMenuItem,
+  type LinkRef,
+  type ThemeSettings,
 } from "../../../site-kit/index.ts";
 import { LIMITS, menuFromPages, PAGE_SLUG_PATTERN, type PageMetaPatch } from "./editor-state.ts";
 import {
@@ -22,6 +23,7 @@ import {
   TextAreaField,
   TextField,
 } from "./fields.tsx";
+import { FontPicker } from "./FontPicker.tsx";
 
 const linkTitle = (link: { label: string }) => link.label;
 const newLink = (): LinkRef => ({ label: "Link", href: "/" });
@@ -550,13 +552,6 @@ export function FooterForm({
   );
 }
 
-const FONT_OPTIONS: { value: FontKey; label: string }[] = [
-  { value: "plex-sans", label: "Modern sans" },
-  { value: "system", label: "Clean system" },
-  { value: "serif", label: "Classic serif" },
-  { value: "mono", label: "Monospace" },
-];
-
 const COLOR_LABELS: [keyof ThemeSettings["colors"], string][] = [
   ["primary", "Primary"],
   ["secondary", "Secondary"],
@@ -610,9 +605,15 @@ export function ThemeForm({
           />
         ))}
       </FormGroup>
-      <FormGroup title="Fonts">
-        <SelectField label="Headings" value={theme.fonts.heading} options={FONT_OPTIONS} onChange={(heading) => onChange({ ...theme, fonts: { ...theme.fonts, heading } })} />
-        <SelectField label="Body text" value={theme.fonts.body} options={FONT_OPTIONS} onChange={(body) => onChange({ ...theme, fonts: { ...theme.fonts, body } })} />
+      <FormGroup title="Site font">
+        <p className="-mt-1 text-ed-2xs leading-normal text-ed-muted">
+          Used across the whole website. Any section can override it from its Style tab.
+        </p>
+        <FontPicker
+          label="Site font"
+          value={isFontKey(theme.fonts.heading) ? theme.fonts.heading : DEFAULT_FONT}
+          onChange={(font) => onChange({ ...theme, fonts: { heading: font, body: font } })}
+        />
       </FormGroup>
       <FormGroup title="Style">
         <SelectField

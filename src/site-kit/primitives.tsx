@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { isExternalHref, safeHref } from "./links.ts";
+import { sectionFontStyle } from "./theme.ts";
 import type { GridColumns, IconName, ImageRef, LinkRef, SectionSettings } from "./types.ts";
 
 type SiteLinkProps = {
@@ -368,6 +369,7 @@ type SectionShellProps = {
 export function SectionShell({ sectionId, settings, className, label, children }: SectionShellProps) {
   const customColors = settings.customColors;
   const customStyle: CSSProperties = {
+    ...sectionFontStyle(settings.font),
     ...(customColors?.background ? { "--wb-bg": customColors.background, backgroundColor: customColors.background } : {}),
     ...(customColors?.text ? { "--wb-text": customColors.text, color: customColors.text } : {}),
     ...(customColors?.primary ? { "--wb-primary": customColors.primary } : {}),

@@ -25,7 +25,14 @@ import ConfirmDialog from "../../../components/ui/ConfirmDialog.tsx";
 import FormAlert from "../../../components/ui/FormAlert.tsx";
 import { DeviceToggle, PreviewFrame, type Device } from "../../../components/websites/DevicePreview.tsx";
 import { WebsiteStatusChip } from "../../../components/websites/website-labels.tsx";
-import { SECTION_DEFINITIONS, SitePage, type Section, type SitePageEditorHooks } from "../../../site-kit/index.ts";
+import {
+  DEFAULT_FONT,
+  isFontKey,
+  SECTION_DEFINITIONS,
+  SitePage,
+  type Section,
+  type SitePageEditorHooks,
+} from "../../../site-kit/index.ts";
 import type { CreatedState } from "../CreateWebsitePage.tsx";
 import ComponentLibrary from "./ComponentLibrary.tsx";
 import {
@@ -399,6 +406,7 @@ export default function WebsiteEditorPage() {
           <SectionForm
             key={selectedSection.id}
             section={selectedSection}
+            siteFont={isFontKey(draft.theme.fonts.heading) ? draft.theme.fonts.heading : DEFAULT_FONT}
             onChange={(updated) =>
               editSections((sections) => sections.map((section) => (section.id === updated.id ? updated : section)))
             }
