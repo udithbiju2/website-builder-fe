@@ -16,6 +16,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage.tsx";
 import SignupPage from "./pages/auth/SignupPage.tsx";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage.tsx";
 import DashboardPage from "./pages/client/DashboardPage.tsx";
+import MediaLibraryPage from "./pages/media/MediaLibraryPage.tsx";
 import LandingPage from "./pages/public/LandingPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
 import CreateWebsitePage from "./pages/websites/CreateWebsitePage.tsx";
@@ -42,6 +43,7 @@ export default function App() {
           <Route element={<RequireAuth roles={["CLIENT"]} />}>
             <Route element={<ClientLayout />}>
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="media" element={<MediaLibraryPage />} />
             </Route>
           </Route>
 
@@ -58,6 +60,7 @@ export default function App() {
               <Route path="clients/:id" element={<ClientFormPage />} />
               <Route path="websites" element={<AllWebsitesPage />} />
               <Route path="sections" element={<SectionLibraryPage />} />
+              <Route path="media" element={<MediaLibraryPage />} />
               <Route path="settings/email" element={<EmailSettingsPage />} />
             </Route>
           </Route>

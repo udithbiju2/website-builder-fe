@@ -17,7 +17,7 @@ const ADMIN_NAV: ShellNavItem[] = [
   { label: "Headers and footers", icon: PanelsTopLeft },
   { label: "Reusable sections", icon: Rows3, to: "/admin/sections" },
   { label: "Domains", icon: Server },
-  { label: "Media", icon: Image },
+  { label: "Media", icon: Image, to: "/admin/media" },
   { label: "Email settings", icon: Mail, to: "/admin/settings/email" },
 ];
 

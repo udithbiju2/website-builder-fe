@@ -67,7 +67,7 @@ export function setSessionExpiredHandler(handler: (() => void) | null): void {
 
 async function send(path: string, init: RequestInit): Promise<Response> {
   const headers = new Headers(init.headers);
-  if (init.body !== undefined && !headers.has("Content-Type")) {
+  if (init.body !== undefined && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   return fetch(`${env.apiUrl}${path}`, {
@@ -107,7 +107,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   const { body, ...rest } = options;
   const init: RequestInit = {
     ...rest,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body),
   };
 
   const startedAt = Date.now();
