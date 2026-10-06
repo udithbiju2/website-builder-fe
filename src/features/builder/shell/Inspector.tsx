@@ -10,7 +10,7 @@ import {
   SectionResponsiveForm,
   SectionStyleForm,
 } from "../../../pages/websites/editor/SectionForm.tsx";
-import { FooterForm, HeaderForm, PageForm, ThemeForm } from "../../../pages/websites/editor/SiteSettingsForms.tsx";
+import { PageForm, ThemeForm } from "../../../pages/websites/editor/SiteSettingsForms.tsx";
 import {
   DEFAULT_FONT,
   isFontKey,
@@ -18,8 +18,8 @@ import {
   type Section,
   type SectionSettings,
 } from "../../../site-kit/index.ts";
-import { useEditor, type SiteArea } from "../editor-context.ts";
-import { getSectionType, itemAsSection, type BuilderItem } from "../puck/adapter.ts";
+import { useEditor } from "../editor-context.ts";
+import { itemAsSection, type BuilderItem } from "../puck/adapter.ts";
 import { duplicateSection, removeSection, replaceSection, selectSection, useBuilderPuck } from "../puck/puck-api.ts";
 import { Tabs, ToolButton } from "./ui.tsx";
 
@@ -32,11 +32,11 @@ const SECTION_TABS: { id: SectionTab; label: string }[] = [
   { id: "advanced", label: "Advanced" },
 ];
 
-const AREA_TABS: { id: SiteArea; label: string }[] = [
-  { id: "header", label: "Header" },
+type SiteAreaTab = "page" | "theme";
+
+const AREA_TABS: { id: SiteAreaTab; label: string }[] = [
   { id: "page", label: "Page" },
   { id: "theme", label: "Theme" },
-  { id: "footer", label: "Footer" },
 ];
 
 function SectionInspector({ item, index }: { item: BuilderItem; index: number }) {
@@ -115,55 +115,9 @@ function SectionInspector({ item, index }: { item: BuilderItem; index: number })
 }
 
 function SiteInspector() {
-  const { draft, page, themes, editDraft, selectPage, siteArea, setSiteArea } = useEditor();
+  const { draft, page, themes, editDraft, selectPage } = useEditor();
+  const [tab, setTab] = useState<SiteAreaTab>("page");
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const dispatch = useBuilderPuck((state) => state.dispatch);
-  const content = useBuilderPuck((state) => state.appState.data.content);
-
-  // Check if this page has a Header or Footer section in Puck content
-  const pageHeaderIndex = content.findIndex((item) => getSectionType(item.type) === "header");
-  const pageHeaderItem = pageHeaderIndex !== -1 ? content[pageHeaderIndex] : null;
-
-  const pageFooterIndex = content.findIndex((item) => getSectionType(item.type) === "footer");
-  const pageFooterItem = pageFooterIndex !== -1 ? content[pageFooterIndex] : null;
-
-  function handleHeaderChange(header: typeof draft.header) {
-    if (pageHeaderItem) {
-      const section = itemAsSection(pageHeaderItem);
-      replaceSection(dispatch, pageHeaderIndex, { ...section, type: "header", data: header } as Section);
-    }
-    editDraft((current) => ({ ...current, header }));
-  }
-
-  function handleRemoveHeader() {
-    if (pageHeaderIndex !== -1) {
-      removeSection(dispatch, pageHeaderIndex);
-    } else {
-      editDraft((current) => ({
-        ...current,
-        header: { ...current.header, hidden: true },
-      }));
-    }
-  }
-
-  function handleFooterChange(footer: typeof draft.footer) {
-    if (pageFooterItem) {
-      const section = itemAsSection(pageFooterItem);
-      replaceSection(dispatch, pageFooterIndex, { ...section, type: "footer", data: footer } as Section);
-    }
-    editDraft((current) => ({ ...current, footer }));
-  }
-
-  function handleRemoveFooter() {
-    if (pageFooterIndex !== -1) {
-      removeSection(dispatch, pageFooterIndex);
-    } else {
-      editDraft((current) => ({
-        ...current,
-        footer: { ...current.footer, hidden: true },
-      }));
-    }
-  }
 
   function removePage() {
     const remaining = deletePage(draft, page.id);
@@ -179,28 +133,9 @@ function SiteInspector() {
         <MousePointerClick className="size-4 text-ed-faint" aria-hidden />
         <p className="text-ed-xs text-ed-muted">Select a section on the canvas to edit it.</p>
       </header>
-      <Tabs tabs={AREA_TABS} value={siteArea} onChange={setSiteArea} label="Page and site settings" />
-      <div role="tabpanel" aria-label={AREA_TABS.find((tab) => tab.id === siteArea)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        {siteArea === "header" && (
-          <div className="flex flex-col">
-            <HeaderForm
-              header={pageHeaderItem ? (pageHeaderItem.props.data as typeof draft.header) : draft.header}
-              pages={draft.pages}
-              onChange={handleHeaderChange}
-            />
-            <div className="border-t border-ed-border/70 p-3 mt-4">
-              <button
-                type="button"
-                onClick={handleRemoveHeader}
-                className="flex w-full items-center justify-center gap-1.5 rounded-ed border border-ed-danger/40 bg-ed-danger-soft/50 py-2 text-ed-xs font-semibold text-ed-danger hover:bg-ed-danger hover:text-white transition-colors"
-              >
-                <Trash2 className="size-3.5" aria-hidden />
-                Delete header from this page
-              </button>
-            </div>
-          </div>
-        )}
-        {siteArea === "page" && (
+      <Tabs tabs={AREA_TABS} value={tab} onChange={setTab} label="Page and site settings" />
+      <div role="tabpanel" aria-label={AREA_TABS.find((t) => t.id === tab)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {tab === "page" && (
           <>
             <PageForm key={page.id} page={page} pages={draft.pages} onChange={(patch) => editDraft((current) => updatePageMeta(current, page.id, patch))} />
             {page.slug !== "/" && (
@@ -217,27 +152,8 @@ function SiteInspector() {
             )}
           </>
         )}
-        {siteArea === "theme" && (
+        {tab === "theme" && (
           <ThemeForm theme={draft.theme} presets={themes} onChange={(theme) => editDraft((current) => ({ ...current, theme }))} />
-        )}
-        {siteArea === "footer" && (
-          <div className="flex flex-col">
-            <FooterForm
-              footer={pageFooterItem ? (pageFooterItem.props.data as typeof draft.footer) : draft.footer}
-              pages={draft.pages}
-              onChange={handleFooterChange}
-            />
-            <div className="border-t border-ed-border/70 p-3 mt-4">
-              <button
-                type="button"
-                onClick={handleRemoveFooter}
-                className="flex w-full items-center justify-center gap-1.5 rounded-ed border border-ed-danger/40 bg-ed-danger-soft/50 py-2 text-ed-xs font-semibold text-ed-danger hover:bg-ed-danger hover:text-white transition-colors"
-              >
-                <Trash2 className="size-3.5" aria-hidden />
-                Delete footer from this page
-              </button>
-            </div>
-          </div>
         )}
       </div>
       <ConfirmDialog
