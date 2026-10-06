@@ -181,11 +181,36 @@ export default function FeaturesSection({ section }: { section: SectionOf<"featu
   const renderFeatureItem = (item: FeatureItem, index: number, isStacked = false) => {
     const itemColor = getItemColor(item, index);
     const colorClass = `wb-color-${itemColor}`;
+    const itemAlign = isStacked ? "left" : align;
+
+    const isDarkBg =
+      item.backgroundColor &&
+      (item.backgroundColor === "#0f172a" ||
+        item.backgroundColor === "#020617" ||
+        item.backgroundColor.toLowerCase().includes("0f172a") ||
+        item.backgroundColor.toLowerCase().includes("#000") ||
+        item.backgroundColor.toLowerCase().includes("black"));
+
+    const cardCustomStyle = item.backgroundColor
+      ? {
+          backgroundColor: item.backgroundColor,
+          background: item.backgroundColor,
+          ...(isDarkBg
+            ? {
+                color: "#ffffff",
+                borderColor: "rgba(255, 255, 255, 0.15)",
+              }
+            : {}),
+        }
+      : undefined;
 
     return (
       <div
         key={index}
-        className={`wb-feature-card ${isStacked ? "wb-feature-card-stacked" : "wb-feature-card-grid"} wb-feature-card-${cardStyle} wb-feature-align-${align}`}
+        className={`wb-feature-card ${isStacked ? "wb-feature-card-stacked" : "wb-feature-card-grid"} wb-feature-card-${cardStyle} wb-feature-align-${itemAlign} ${
+          item.backgroundColor ? "wb-feature-card-has-custom-bg" : ""
+        } ${isDarkBg ? "wb-feature-card-dark" : ""}`}
+        style={cardCustomStyle}
       >
         {item.icon && iconStyle !== "none" && (
           <div className={`wb-feature-icon-wrap wb-icon-style-${iconStyle} ${colorClass}`}>

@@ -295,11 +295,14 @@ export type FeatureColor =
   | "cyan"
   | "indigo"
   | "red"
+  | "gray"
+  | "none"
   | "default";
 
 export type FeatureItem = {
   icon?: IconName | string;
   iconColor?: FeatureColor;
+  backgroundColor?: string;
   badge?: string;
   title: string;
   description: string;

@@ -77,6 +77,8 @@ const ICON_OPTIONS: { value: IconName | ""; label: string }[] = [
 
 const FEATURE_COLOR_OPTIONS = [
   { value: "default", label: "Auto (Palette cycled)" },
+  { value: "none", label: "None / Neutral (No color tint)" },
+  { value: "gray", label: "Gray / Slate" },
   { value: "orange", label: "Orange" },
   { value: "green", label: "Green" },
   { value: "blue", label: "Blue" },
@@ -86,6 +88,20 @@ const FEATURE_COLOR_OPTIONS = [
   { value: "pink", label: "Pink" },
   { value: "indigo", label: "Indigo" },
   { value: "red", label: "Red" },
+];
+
+const FEATURE_CARD_BG_PRESETS = [
+  { value: "", label: "Default section theme" },
+  { value: "#ffffff", label: "Pure White (#ffffff)" },
+  { value: "#f8fafc", label: "Light Slate (#f8fafc)" },
+  { value: "#f1f5f9", label: "Soft Gray (#f1f5f9)" },
+  { value: "#fff7ed", label: "Soft Orange tint (#fff7ed)" },
+  { value: "#f0fdf4", label: "Soft Green tint (#f0fdf4)" },
+  { value: "#eff6ff", label: "Soft Blue tint (#eff6ff)" },
+  { value: "#fefce8", label: "Soft Yellow tint (#fefce8)" },
+  { value: "#faf5ff", label: "Soft Purple tint (#faf5ff)" },
+  { value: "#fdf2f8", label: "Soft Pink tint (#fdf2f8)" },
+  { value: "#0f172a", label: "Dark Slate (#0f172a)" },
 ];
 
 const BACKGROUND_OPTIONS: { value: SectionBackground; label: string }[] = [
@@ -849,6 +865,42 @@ function FeaturesForm({ data, onChange }: DataFormProps<FeaturesData>) {
                     })
                   }
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 items-end">
+                <SelectField
+                  label="Card background"
+                  value={item.backgroundColor ?? ""}
+                  options={[
+                    ...FEATURE_CARD_BG_PRESETS,
+                    ...(item.backgroundColor &&
+                    !FEATURE_CARD_BG_PRESETS.some(
+                      (p) =>
+                        p.value.toLowerCase() ===
+                        item.backgroundColor?.toLowerCase(),
+                    )
+                      ? [
+                          {
+                            value: item.backgroundColor,
+                            label: `Custom (${item.backgroundColor})`,
+                          },
+                        ]
+                      : []),
+                  ]}
+                  onChange={(val) =>
+                    update({ ...item, backgroundColor: val || undefined })
+                  }
+                />
+                <div className="pb-0.5">
+                  <ColorField
+                    label="Custom card background"
+                    value={item.backgroundColor}
+                    onChange={(color) =>
+                      update({ ...item, backgroundColor: color || undefined })
+                    }
+                    fallback="#ffffff"
+                  />
+                </div>
               </div>
               <TextField
                 label="Title"

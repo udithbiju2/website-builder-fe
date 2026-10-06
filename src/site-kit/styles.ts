@@ -768,10 +768,11 @@ export const SITE_CSS = `
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 .wb-feature-card-stacked {
-  display: flex;
-  align-items: flex-start;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
   gap: 20px;
-  padding: 24px 28px;
+  padding: 22px 26px;
   background: var(--wb-bg);
   border: 1px solid var(--wb-border);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
@@ -782,6 +783,16 @@ export const SITE_CSS = `
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
   border-color: color-mix(in srgb, var(--wb-primary) 35%, var(--wb-border));
 }
+.wb-feature-card-stacked .wb-feature-icon-wrap {
+  margin: 2px 0 0 0 !important;
+  flex-shrink: 0;
+}
+.wb-feature-card-stacked .wb-feature-content {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
 .wb-feature-card-grid {
   display: flex;
   flex-direction: column;
@@ -790,16 +801,42 @@ export const SITE_CSS = `
 .wb-feature-card-grid:hover {
   transform: translateY(-2px);
 }
-.wb-feature-align-center {
+
+/* Card Alignment */
+.wb-feature-card-grid.wb-feature-align-center {
   text-align: center;
   align-items: center;
 }
-.wb-feature-align-center .wb-feature-header-row {
-  justify-content: center;
+.wb-feature-card-grid.wb-feature-align-center .wb-feature-icon-wrap {
+  margin-left: auto;
+  margin-right: auto;
 }
-.wb-feature-align-left {
+.wb-feature-card-grid.wb-feature-align-center .wb-feature-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.wb-feature-card-grid.wb-feature-align-center .wb-feature-header-row {
+  justify-content: center;
+  width: 100%;
+}
+
+.wb-feature-card-grid.wb-feature-align-left {
   text-align: left;
   align-items: flex-start;
+}
+.wb-feature-card-grid.wb-feature-align-left .wb-feature-icon-wrap {
+  margin-left: 0;
+  margin-right: auto;
+}
+.wb-feature-card-grid.wb-feature-align-left .wb-feature-content {
+  text-align: left;
+  width: 100%;
+}
+.wb-feature-card-grid.wb-feature-align-left .wb-feature-header-row {
+  justify-content: flex-start;
 }
 
 /* Card Surface Variants */
@@ -824,72 +861,122 @@ export const SITE_CSS = `
   box-shadow: none;
   padding: 16px 12px;
 }
+.wb-feature-card-has-custom-bg {
+  border-color: color-mix(in srgb, var(--wb-border) 60%, transparent);
+}
+.wb-feature-card-dark,
+.wb-feature-card-dark h3,
+.wb-feature-card-dark .wb-feature-title {
+  color: #ffffff !important;
+}
+.wb-feature-card-dark p,
+.wb-feature-card-dark .wb-feature-desc,
+.wb-feature-card-dark .wb-muted {
+  color: #cbd5e1 !important;
+}
 
-/* Icon Badges */
+/* Feature Icon Badges - Pixel-Perfect Centering & Alignment */
 .wb-feature-icon-wrap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   flex-shrink: 0;
-  transition: transform 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  line-height: 0 !important;
+  box-sizing: border-box;
 }
 .wb-feature-card:hover .wb-feature-icon-wrap {
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
+
+/* Hard reset for inherited global .wb-icon styling */
+.wb-feature-icon-wrap .wb-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  line-height: 0 !important;
+}
+
+.wb-feature-icon-wrap .wb-icon svg {
+  display: block !important;
+  margin: auto !important;
+  stroke: currentColor;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wb-feature-icon-wrap .wb-icon-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* 1. Pastel Circular Badge (Image 1 reference) */
 .wb-icon-style-pastel-circle {
   width: 56px;
   height: 56px;
-  border-radius: 999px;
-  margin-bottom: 18px;
-}
-.wb-icon-style-pastel-circle .wb-icon {
-  width: 26px;
-  height: 26px;
+  min-width: 56px;
+  min-height: 56px;
+  border-radius: 9999px;
+  margin-bottom: 20px;
 }
 .wb-icon-style-pastel-circle .wb-icon svg {
-  width: 26px;
-  height: 26px;
+  width: 26px !important;
+  height: 26px !important;
 }
+
+/* 2. Modern Rounded Squircle Badge (Image 2 reference) */
 .wb-icon-style-square-badge {
-  width: 54px;
-  height: 54px;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
   border-radius: 14px;
   margin-bottom: 0;
 }
-.wb-icon-style-square-badge .wb-icon {
-  width: 24px;
-  height: 24px;
-}
 .wb-icon-style-square-badge .wb-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 24px !important;
+  height: 24px !important;
 }
+
+/* 3. Minimal Accent Icon (Image 3 reference) */
 .wb-icon-style-minimal-accent {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   margin-bottom: 18px;
-  background: transparent;
+  background: transparent !important;
   color: var(--wb-primary);
 }
-.wb-icon-style-minimal-accent .wb-icon {
-  width: 32px;
-  height: 32px;
-}
 .wb-icon-style-minimal-accent .wb-icon svg {
-  width: 32px;
-  height: 32px;
-  stroke-width: 2;
+  width: 32px !important;
+  height: 32px !important;
+  stroke-width: 2.2px;
 }
+
+/* 4. Solid / Gradient Colored Circle */
 .wb-icon-style-colored-circle {
   width: 54px;
   height: 54px;
-  border-radius: 999px;
-  color: #ffffff;
-  margin-bottom: 16px;
+  min-width: 54px;
+  min-height: 54px;
+  border-radius: 9999px;
+  color: #ffffff !important;
+  margin-bottom: 18px;
 }
-.wb-icon-style-colored-circle .wb-icon {
-  width: 24px;
-  height: 24px;
+.wb-icon-style-colored-circle .wb-icon svg {
+  width: 24px !important;
+  height: 24px !important;
 }
 
 /* Curated Pastel & Color Palette Badges */
@@ -928,6 +1015,16 @@ export const SITE_CSS = `
 .wb-color-red.wb-icon-style-pastel-circle { background: #fee2e2; color: #dc2626; }
 .wb-color-red.wb-icon-style-square-badge { background: #fef2f2; border: 1px solid #fee2e2; color: #ef4444; }
 .wb-color-red.wb-icon-style-colored-circle { background: linear-gradient(135deg, #f87171, #dc2626); }
+
+.wb-color-gray.wb-icon-style-pastel-circle { background: #f1f5f9; color: #475569; }
+.wb-color-gray.wb-icon-style-square-badge { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; }
+.wb-color-gray.wb-icon-style-colored-circle { background: linear-gradient(135deg, #94a3b8, #475569); }
+.wb-color-gray.wb-icon-style-minimal-accent { color: #64748b; }
+
+.wb-color-none.wb-icon-style-pastel-circle { background: color-mix(in srgb, var(--wb-text) 8%, transparent); color: var(--wb-text); }
+.wb-color-none.wb-icon-style-square-badge { background: transparent; border: 1px solid var(--wb-border); color: var(--wb-text); }
+.wb-color-none.wb-icon-style-colored-circle { background: var(--wb-text); color: var(--wb-bg); }
+.wb-color-none.wb-icon-style-minimal-accent { color: var(--wb-text); }
 
 /* Typography & Content within card */
 .wb-feature-content {
