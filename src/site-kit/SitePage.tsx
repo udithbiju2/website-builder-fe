@@ -20,7 +20,7 @@ import TestimonialsSection from "./sections/TestimonialsSection.tsx";
 import TextSection from "./sections/TextSection.tsx";
 import { SITE_CSS } from "./styles.ts";
 import { themeToCssVars } from "./theme.ts";
-import type { FooterData, HeaderData, PageData, Section, SiteData, ThemeSettings } from "./types.ts";
+import type { FooterData, HeaderData, PageData, Section, SectionOf, SiteData, ThemeSettings } from "./types.ts";
 
 export function SectionView({ section }: { section: Section }) {
   switch (section.type) {
@@ -111,27 +111,40 @@ type SitePageProps = {
 
 /** One full page of a client website: header, visible sections, footer. */
 export default function SitePage({ site, page, editor }: SitePageProps) {
-  const hasHeaderSection = page.sections.some((section) => section.type === "header" && (editor || !section.hidden));
-  const hasFooterSection = page.sections.some((section) => section.type === "footer" && (editor || !section.hidden));
+  // If page contains an explicit header or footer section, use it; otherwise fallback to global site header/footer
+  const pageHeaderSection = page.sections.find(
+    (section): section is SectionOf<"header"> => section.type === "header" && (Boolean(editor) || !section.hidden),
+  );
+  const pageFooterSection = page.sections.find(
+    (section): section is SectionOf<"footer"> => section.type === "footer" && (Boolean(editor) || !section.hidden),
+  );
 
-  const header = !hasHeaderSection && site.header ? <SiteHeader header={site.header} /> : null;
-  const footer = !hasFooterSection && site.footer ? <SiteFooter footer={site.footer} /> : null;
+  const effectiveHeader = pageHeaderSection
+    ? <SiteHeader header={pageHeaderSection.data} />
+    : (site.header && !site.header.hidden && (!page.sections || page.sections.length === 0))
+      ? <SiteHeader header={site.header} />
+      : null;
+
+  const effectiveFooter = pageFooterSection ? <SiteFooter footer={pageFooterSection.data} /> : null;
+
+  // Filter out header and footer sections from main content body so they never render twice or overlap
+  const bodySections = page.sections.filter(
+    (section) => section.type !== "header" && section.type !== "footer" && (editor || !section.hidden),
+  );
 
   return (
     <SiteFrame
       theme={site.theme}
-      header={editor && header ? editor.renderHeader(header) : header}
-      footer={editor && footer ? editor.renderFooter(footer) : footer}
+      header={editor && effectiveHeader ? editor.renderHeader(effectiveHeader) : effectiveHeader}
+      footer={editor && effectiveFooter ? editor.renderFooter(effectiveFooter) : effectiveFooter}
     >
       {editor
-        ? page.sections.length === 0
+        ? bodySections.length === 0
           ? editor.emptyState
-          : page.sections.map((section) => (
+          : bodySections.map((section) => (
               <Fragment key={section.id}>{editor.renderSection(section, <SectionView section={section} />)}</Fragment>
             ))
-        : page.sections
-            .filter((section) => !section.hidden)
-            .map((section) => <SectionView key={section.id} section={section} />)}
+        : bodySections.map((section) => <SectionView key={section.id} section={section} />)}
     </SiteFrame>
   );
 }

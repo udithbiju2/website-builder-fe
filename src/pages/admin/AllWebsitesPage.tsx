@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, SearchField, Spinner } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
-import { Globe, Plus, X } from "lucide-react";
+import { Globe, Plus, Trash2, X } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { errorMessage } from "../../api/http.ts";
-import { websitesApi, type BuilderType, type WebsiteList, type WebsiteStatus } from "../../api/websites.ts";
+import { websitesApi, type BuilderType, type WebsiteList, type WebsiteStatus, type WebsiteSummary } from "../../api/websites.ts";
 import { formatDate } from "../../components/admin/client-labels.tsx";
 import PageHeader from "../../components/app/PageHeader.tsx";
+import CommonModal from "../../components/ui/CommonModal.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
 import SelectInput, { type SelectOption } from "../../components/ui/SelectInput.tsx";
 import { WebsiteStatusChip } from "../../components/websites/website-labels.tsx";
@@ -40,6 +41,9 @@ export default function AllWebsitesPage() {
   const [data, setData] = useState<WebsiteList | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [websiteToDelete, setWebsiteToDelete] = useState<WebsiteSummary | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -66,6 +70,21 @@ export default function AllWebsitesPage() {
     void load();
   }, [load]);
 
+  async function handleDeleteConfirm() {
+    if (!websiteToDelete) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await websitesApi.delete(websiteToDelete.id);
+      setWebsiteToDelete(null);
+      void load();
+    } catch (err) {
+      setDeleteError(errorMessage(err));
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   function resetPageAnd<T>(setter: (value: T) => void) {
     return (value: T) => {
       setter(value);
@@ -77,6 +96,7 @@ export default function AllWebsitesPage() {
   const hasFilters = Boolean(debouncedSearch || clientId || builderType || status);
   const filteredClientName = clientId ? data?.items[0]?.clientName : undefined;
   const createHref = clientId ? `/websites/new?clientId=${encodeURIComponent(clientId)}` : "/websites/new";
+  const isDraft = websiteToDelete?.status === "DRAFT";
 
   return (
     <div className="px-6 py-8 sm:px-8">
@@ -170,9 +190,24 @@ export default function AllWebsitesPage() {
                       </td>
                       <td className="px-5 py-3 text-ink-body">{formatDate(website.updatedAt)}</td>
                       <td className="px-5 py-3">
-                        <Link to={`/websites/${website.id}/preview`} className="font-medium text-brand hover:underline">
-                          Preview
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          <Link to={`/websites/${website.id}/edit`} className="font-medium text-ink hover:text-brand">
+                            Edit
+                          </Link>
+                          <Link to={`/websites/${website.id}/preview`} className="font-medium text-brand hover:underline">
+                            Preview
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleteError(null);
+                              setWebsiteToDelete(website);
+                            }}
+                            className="font-medium text-ed-danger hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -198,6 +233,49 @@ export default function AllWebsitesPage() {
           </div>
         </div>
       )}
+
+      {/* Delete confirmation modal */}
+      <CommonModal
+        isOpen={Boolean(websiteToDelete)}
+        onClose={() => {
+          if (!isDeleting) {
+            setWebsiteToDelete(null);
+            setDeleteError(null);
+          }
+        }}
+        headerDetails={{
+          icon: <Trash2 className="size-4.5" />,
+          title: isDraft ? "Delete draft" : "Delete website",
+          description: websiteToDelete
+            ? `Client: ${websiteToDelete.clientName} · ${websiteToDelete.subdomain}`
+            : undefined,
+        }}
+        iconTone="danger"
+        size="sm"
+        primaryAction={{
+          label: isDraft ? "Delete draft" : "Delete website",
+          onPress: handleDeleteConfirm,
+          isPending: isDeleting,
+          tone: "danger",
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onPress: () => {
+            setWebsiteToDelete(null);
+            setDeleteError(null);
+          },
+          isDisabled: isDeleting,
+        }}
+      >
+        <div className="space-y-2.5">
+          <p>
+            Are you sure you want to delete{" "}
+            <strong className="font-semibold text-ink">“{websiteToDelete?.name}”</strong>? This action cannot be
+            undone and all pages and configuration will be permanently deleted.
+          </p>
+          {deleteError && <FormAlert status="danger">{deleteError}</FormAlert>}
+        </div>
+      </CommonModal>
     </div>
   );
 }

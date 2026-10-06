@@ -3,6 +3,10 @@
  * publish renderer. Everything here must stay JSON-serializable.
  */
 
+import type { FontKey } from "./fonts.ts";
+
+export type { FontKey };
+
 export type ImageRef = {
   url: string;
   alt: string;
@@ -13,7 +17,6 @@ export type LinkRef = {
   href: string;
 };
 
-export type FontKey = "plex-sans" | "system" | "serif" | "mono";
 export type ButtonStyle = "filled" | "outline";
 export type CardStyle = "border" | "shadow" | "flat";
 export type RadiusSize = "none" | "sm" | "md" | "lg";
@@ -61,6 +64,17 @@ export type HeaderSubMenuItem = {
   icon?: string;
 };
 
+export const BRAND_DISPLAY_MODES = [
+  "auto",
+  "logo_left",
+  "logo_right",
+  "logo_top",
+  "logo_only",
+  "text_only",
+] as const;
+
+export type BrandDisplayMode = (typeof BRAND_DISPLAY_MODES)[number];
+
 export type HeaderMenuItem = {
   label: string;
   href: string;
@@ -73,6 +87,7 @@ export type HeaderData = {
   design: HeaderDesign;
   siteName: string;
   logo?: ImageRef;
+  logoDisplay?: BrandDisplayMode;
   menu: HeaderMenuItem[];
   cta?: LinkRef;
   secondaryCta?: LinkRef;
@@ -136,6 +151,7 @@ export type FooterData = {
   design: FooterDesign;
   siteName: string;
   logo?: ImageRef;
+  logoDisplay?: BrandDisplayMode;
   tagline?: string;
   description?: string;
   columns: { title: string; links: LinkRef[] }[];
@@ -173,9 +189,35 @@ export type SectionSettings = {
   /** In-page anchor id, so links like `#pricing` can jump to the section. */
   anchor?: string;
   customColors?: SectionCustomColors;
+  /** Overrides the theme font for this section only; unset follows the theme. */
+  font?: FontKey;
 };
 
-export type IconName = "check" | "star" | "bolt" | "shield" | "heart" | "chat";
+export type IconName =
+  | "check"
+  | "star"
+  | "bolt"
+  | "shield"
+  | "heart"
+  | "chat"
+  | "gear"
+  | "user"
+  | "mail"
+  | "phone"
+  | "chart"
+  | "clock"
+  | "tools"
+  | "bell"
+  | "wallet"
+  | "pointer"
+  | "help"
+  | "sparkles"
+  | "rocket"
+  | "layers"
+  | "box"
+  | "lock"
+  | "cloud"
+  | "code";
 
 export const HERO_VARIANTS = [
   "centered",
@@ -248,12 +290,53 @@ export type HeroData = {
 
 export type GridColumns = 1 | 2 | 3 | 4;
 
+export type FeatureColor =
+  | "orange"
+  | "green"
+  | "blue"
+  | "yellow"
+  | "purple"
+  | "pink"
+  | "cyan"
+  | "indigo"
+  | "red"
+  | "gray"
+  | "none"
+  | "default";
+
+export type FeatureItem = {
+  icon?: IconName | string;
+  iconColor?: FeatureColor;
+  backgroundColor?: string;
+  badge?: string;
+  title: string;
+  description: string;
+  link?: LinkRef;
+  image?: ImageRef;
+};
+
 export type FeaturesData = {
   heading: string;
+  eyebrow?: string;
   intro?: string;
+  variant?: "grid" | "split" | "minimal" | "cards" | "pastel-icons";
+  iconStyle?:
+    | "pastel-circle"
+    | "square-badge"
+    | "minimal-accent"
+    | "colored-circle"
+    | "none";
+  cardStyle?: "transparent" | "surface" | "bordered" | "glass";
+  align?: "left" | "center";
   columns: GridColumns;
   mobileColumns: GridColumns;
-  items: { icon?: IconName; title: string; description: string }[];
+  items: FeatureItem[];
+  // Split showcase options
+  splitPosition?: "left" | "right";
+  splitImage?: ImageRef;
+  splitCta?: LinkRef;
+  secondaryCta?: LinkRef;
+  bottomCta?: LinkRef;
 };
 
 export type ServicesData = {

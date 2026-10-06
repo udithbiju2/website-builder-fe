@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { WebsitePage } from "../../api/websites.ts";
 import type { EditorDraft } from "../../pages/websites/editor/editor-state.ts";
-import { createSection } from "../../site-kit/index.ts";
+import { createSection, DEFAULT_THEME, FONT_KEYS, FONTS, fontStack, sectionFontStyle, themeToCssVars } from "../../site-kit/index.ts";
 import { collectAssets } from "./assets.ts";
 import { planSave } from "./autosave/save-plan.ts";
 import { SerialSaver } from "./autosave/serial-saver.ts";
@@ -49,6 +49,43 @@ describe("puck adapter", () => {
   it("rejects more sections than a page allows", () => {
     const item = sectionsToPuckData([createSection("text")]).content[0]!;
     expect(puckContentSchema.safeParse(Array.from({ length: 61 }, () => item)).success).toBe(false);
+  });
+
+  it("accepts a known section font and rejects anything else", () => {
+    const item = sectionsToPuckData([createSection("text")]).content[0]!;
+    const withFont = (font: unknown) => ({ ...item, props: { ...item.props, settings: { ...item.props.settings, font } } });
+    expect(puckContentSchema.safeParse([item]).success).toBe(true);
+    expect(puckContentSchema.safeParse([withFont("inter")]).success).toBe(true);
+    expect(puckContentSchema.safeParse([withFont("comic-sans; color: red")]).success).toBe(false);
+  });
+});
+
+describe("fonts", () => {
+  it("gives every font a stack with a generic fallback", () => {
+    for (const key of FONT_KEYS) {
+      expect(FONTS[key].stack).toMatch(/(sans-serif|serif|monospace)$/);
+    }
+  });
+
+  it("falls back to the default stack for unknown keys", () => {
+    expect(fontStack("not-a-font")).toBe(FONTS["plex-sans"].stack);
+    expect(fontStack(undefined)).toBe(FONTS["plex-sans"].stack);
+  });
+
+  it("applies the theme font to headings and body text", () => {
+    const vars = themeToCssVars({ ...DEFAULT_THEME, fonts: { heading: "playfair-display", body: "inter" } }) as Record<string, string>;
+    expect(vars["--wb-font-heading"]).toBe(FONTS["playfair-display"].stack);
+    expect(vars["--wb-font-body"]).toBe(FONTS.inter.stack);
+  });
+
+  it("overrides a section's font only when one is set", () => {
+    expect(sectionFontStyle(undefined)).toEqual({});
+    expect(sectionFontStyle("unknown")).toEqual({});
+    expect(sectionFontStyle("lora")).toEqual({
+      "--wb-font-heading": FONTS.lora.stack,
+      "--wb-font-body": FONTS.lora.stack,
+      fontFamily: FONTS.lora.stack,
+    });
   });
 });
 

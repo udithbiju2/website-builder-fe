@@ -37,8 +37,8 @@ export function DeviceToggle({ value, onChange, tone = "light" }: DeviceTogglePr
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors ${
             value === id
               ? dark
-                ? "bg-white text-ink"
-                : "bg-ink text-white"
+                ? "bg-white text-ink font-medium shadow-sm"
+                : "bg-ink text-white font-medium shadow-sm"
               : dark
                 ? "text-white/70 hover:text-white"
                 : "text-ink-body hover:text-ink"
@@ -124,38 +124,105 @@ export function PreviewFrame({ device, onLinkClick, fit = false, children }: Pre
 
   if (device === "tablet") {
     return (
-      <div className="flex justify-center py-8 px-4 overflow-x-auto bg-zinc-950/80 min-h-[calc(100vh-56px)]" onClickCapture={handleClickCapture}>
+      <div
+        className="relative flex items-center justify-center w-full h-[calc(100vh-56px)] py-6 px-4 overflow-hidden bg-[#f4f5f8] bg-[radial-gradient(#d1d5db_1px,transparent_1px)] [background-size:20px_20px]"
+        onClickCapture={handleClickCapture}
+      >
         <SiteStyles />
-        <div
-          className="relative mx-auto flex flex-col overflow-hidden rounded-[28px] border-[10px] border-zinc-900 bg-white shadow-2xl ring-1 ring-white/10 shrink-0"
-          style={{ width: 768, minHeight: 900 }}
-        >
-          {/* Tablet status / camera dot */}
-          <div className="flex h-5 w-full items-center justify-center bg-zinc-900 shrink-0">
-            <div className="size-2 rounded-full bg-zinc-700" />
-          </div>
-          <div className="flex-1 w-full overflow-y-auto">
-            {children}
+
+        {/* iPad Pro Hardware Shell */}
+        <div className="relative shrink-0 flex flex-col items-center justify-center h-full max-h-full select-none">
+          {/* Studio Ambient Floor Shadow */}
+          <div className="absolute -inset-3 rounded-[40px] bg-black/25 blur-2xl pointer-events-none" />
+
+          {/* iPad Bezel Outer Chassis */}
+          <div
+            className="relative flex flex-col rounded-[32px] p-[12px] bg-gradient-to-b from-[#2d2f34] via-[#1c1d21] to-[#111214] ring-1 ring-white/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.9),inset_0_1px_1.5px_rgba(255,255,255,0.25)] shrink-0"
+            style={{ width: 792, height: "min(780px, calc(100vh - 90px))", maxHeight: "calc(100vh - 90px)" }}
+          >
+            {/* Top iPad Camera & Sensor Dot (Neatly centered within the 12px bezel) */}
+            <div className="absolute top-[4px] left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-none">
+              <div className="size-[5px] rounded-full bg-[#05070a] ring-1 ring-white/10 relative flex items-center justify-center shadow-inner">
+                <div className="size-[1.5px] rounded-full bg-blue-500/70" />
+              </div>
+              <div className="size-[3px] rounded-full bg-[#05070a]" />
+            </div>
+
+            {/* Inner Screen Display Glass (traps fixed modals/drawers inside device) */}
+            <div
+              className="relative flex flex-col flex-1 min-h-0 w-full overflow-hidden rounded-[20px] bg-white ring-1 ring-black/10 shadow-inner"
+              style={{ transform: "translateZ(0)" }}
+            >
+              {/* Scrollable Content */}
+              <div className="flex-1 min-h-0 w-full overflow-y-auto overscroll-contain">
+                {children}
+              </div>
+
+              {/* iOS Home Indicator Bar */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+                <div className="h-1 w-36 rounded-full bg-zinc-800/40 backdrop-blur-sm" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Mobile frame
+  // Mobile frame (iPhone 18 Pro)
   return (
-    <div className="flex justify-center py-8 px-4 overflow-x-auto bg-zinc-950/80 min-h-[calc(100vh-56px)]" onClickCapture={handleClickCapture}>
+    <div
+      className="relative flex items-center justify-center w-full h-[calc(100vh-56px)] py-6 px-4 overflow-hidden bg-[#f4f5f8] bg-[radial-gradient(#d1d5db_1px,transparent_1px)] [background-size:20px_20px]"
+      onClickCapture={handleClickCapture}
+    >
       <SiteStyles />
-      <div
-        className="relative mx-auto flex flex-col overflow-hidden rounded-[40px] border-[10px] border-zinc-900 bg-white shadow-2xl ring-1 ring-white/10 shrink-0"
-        style={{ width: 390, minHeight: 780 }}
-      >
-        {/* Dynamic Island Notch */}
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 flex h-4 w-24 items-center justify-center rounded-full bg-zinc-900 pointer-events-none">
-          <div className="size-2 rounded-full bg-zinc-800 ml-auto mr-3" />
-        </div>
-        <div className="flex-1 w-full overflow-y-auto pt-4">
-          {children}
+
+      {/* iPhone Pro Hardware Shell */}
+      <div className="relative shrink-0 flex flex-col items-center justify-center h-full max-h-full select-none">
+        {/* Studio Ambient Floor Shadow */}
+        <div className="absolute -inset-3 rounded-[58px] bg-black/25 blur-2xl pointer-events-none" />
+
+        {/* iPhone Outer Titanium Chassis */}
+        <div
+          className="relative flex flex-col rounded-[50px] p-[10px] bg-gradient-to-b from-[#2d2f34] via-[#1c1d21] to-[#111214] ring-1 ring-white/20 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.9),inset_0_1px_1.5px_rgba(255,255,255,0.25)] shrink-0"
+          style={{ width: 410, height: "min(760px, calc(100vh - 90px))", maxHeight: "calc(100vh - 90px)" }}
+        >
+          {/* Seamless Integrated Side Buttons (Left: Action + Volume) */}
+          <div className="absolute -left-[2px] top-24 h-6 w-[2px] rounded-l-[1px] bg-[#3f3f46] border-l border-white/20 pointer-events-none" />
+          <div className="absolute -left-[2px] top-34 h-10 w-[2px] rounded-l-[1px] bg-[#3f3f46] border-l border-white/20 pointer-events-none" />
+          <div className="absolute -left-[2px] top-48 h-10 w-[2px] rounded-l-[1px] bg-[#3f3f46] border-l border-white/20 pointer-events-none" />
+
+          {/* Seamless Integrated Side Button (Right: Power) */}
+          <div className="absolute -right-[2px] top-36 h-14 w-[2px] rounded-r-[1px] bg-[#3f3f46] border-r border-white/20 pointer-events-none" />
+
+          {/* Top Micro-Speaker Slit */}
+          <div className="absolute top-[3.5px] left-1/2 -translate-x-1/2 h-[3px] w-12 rounded-full bg-[#05070a] ring-1 ring-white/10 z-30 pointer-events-none" />
+
+          {/* Inner Screen Display Glass (traps fixed modals/drawers inside device) */}
+          <div
+            className="relative flex flex-col flex-1 min-h-0 w-full overflow-hidden rounded-[40px] bg-white ring-1 ring-black/10 shadow-inner"
+            style={{ transform: "translateZ(0)" }}
+          >
+            {/* Dynamic Island Floating Pill (Compact & Elegant) */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-2 z-30 flex items-center justify-between px-2 h-[22px] w-[92px] rounded-full bg-black shadow-md pointer-events-none">
+              {/* Lens */}
+              <div className="size-2 rounded-full bg-[#080d1a] ring-1 ring-white/15 relative flex items-center justify-center">
+                <div className="size-0.5 rounded-full bg-blue-500/70" />
+              </div>
+              {/* Sensor */}
+              <div className="size-1.5 rounded-full bg-[#0a0c10] ml-auto" />
+            </div>
+
+            {/* Scrollable Website Preview (pt-8 provides clean breathing room under Dynamic Island) */}
+            <div className="flex-1 min-h-0 w-full overflow-y-auto overscroll-contain pt-8 pb-5">
+              {children}
+            </div>
+
+            {/* Bottom iOS Home Indicator Pill */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+              <div className="h-1 w-32 rounded-full bg-zinc-900/40 backdrop-blur-sm" />
+            </div>
+          </div>
         </div>
       </div>
     </div>

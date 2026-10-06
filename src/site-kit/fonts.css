@@ -1,0 +1,48 @@
+/*
+ * @font-face rules for every family in fonts.ts (self-hosted woff2,
+ * font-display: swap). Poppins has no variable build, so each weight the site
+ * CSS uses (400–900) is listed. Declaring a face costs no download; the browser
+ * fetches a file only when rendered text uses that family and unicode range.
+ * IBM Plex Sans/Mono are loaded by the app stylesheet.
+ */
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/manrope";
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/outfit";
+@import "@fontsource-variable/sora";
+@import "@fontsource-variable/figtree";
+@import "@fontsource-variable/onest";
+@import "@fontsource-variable/urbanist";
+@import "@fontsource-variable/lexend";
+@import "@fontsource-variable/rubik";
+@import "@fontsource-variable/open-sans";
+@import "@fontsource-variable/roboto";
+@import "@fontsource-variable/montserrat";
+@import "@fontsource-variable/raleway";
+@import "@fontsource-variable/nunito";
+@import "@fontsource-variable/work-sans";
+@import "@fontsource-variable/mulish";
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+@import "@fontsource/poppins/800.css";
+@import "@fontsource/poppins/900.css";
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/syne";
+@import "@fontsource-variable/unbounded";
+@import "@fontsource-variable/archivo";
+@import "@fontsource-variable/playfair-display";
+@import "@fontsource-variable/lora";
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/merriweather";
+@import "@fontsource-variable/eb-garamond";
+@import "@fontsource-variable/cormorant";
+@import "@fontsource-variable/source-serif-4";
+@import "@fontsource-variable/noto-serif";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/fira-code";
+@import "@fontsource-variable/roboto-mono";

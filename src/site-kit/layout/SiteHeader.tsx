@@ -1,14 +1,65 @@
+import { useState, type ReactNode } from "react";
 import {
-  CartIcon,
   ChevronDownIcon,
+  CloseIcon,
   MenuIcon,
-  SearchIcon,
   SiteButton,
   SiteImage,
   SiteLink,
-  UserIcon,
 } from "../primitives.tsx";
-import type { HeaderData, HeaderMenuItem } from "../types.ts";
+import type { BrandDisplayMode, HeaderData, HeaderMenuItem, ImageRef } from "../types.ts";
+
+export function SiteBrand({
+  siteName,
+  logo,
+  displayMode = "auto",
+  className = "",
+}: {
+  siteName: string;
+  logo?: ImageRef;
+  displayMode?: BrandDisplayMode;
+  className?: string;
+}) {
+  const hasLogo = Boolean(logo?.url);
+  const mode = displayMode ?? "auto";
+
+  let content: ReactNode = null;
+
+  if (mode === "text_only" || (!hasLogo && mode !== "logo_only")) {
+    content = <span className="wb-brand-text">{siteName}</span>;
+  } else if (mode === "logo_only") {
+    content = hasLogo ? <SiteImage image={logo!} /> : <span className="wb-brand-text">{siteName}</span>;
+  } else if (mode === "logo_right") {
+    content = (
+      <span className="wb-brand-combo wb-brand-logo-right">
+        {siteName && <span className="wb-brand-text">{siteName}</span>}
+        {hasLogo && <SiteImage image={logo!} />}
+      </span>
+    );
+  } else if (mode === "logo_top") {
+    content = (
+      <span className="wb-brand-combo wb-brand-logo-top">
+        {hasLogo && <SiteImage image={logo!} />}
+        {siteName && <span className="wb-brand-text">{siteName}</span>}
+      </span>
+    );
+  } else if (mode === "logo_left") {
+    content = (
+      <span className="wb-brand-combo wb-brand-logo-left">
+        {hasLogo && <SiteImage image={logo!} />}
+        {siteName && <span className="wb-brand-text">{siteName}</span>}
+      </span>
+    );
+  } else {
+    content = hasLogo ? <SiteImage image={logo!} /> : <span className="wb-brand-text">{siteName}</span>;
+  }
+
+  return (
+    <a href="/" className={`wb-brand ${className}`.trim()}>
+      {content}
+    </a>
+  );
+}
 
 function NavItem({ item }: { item: HeaderMenuItem }) {
   if (item.children && item.children.length > 0) {
@@ -52,33 +103,92 @@ function ActionButtons({ header }: { header: HeaderData }) {
   );
 }
 
-function UtilityControls({ header }: { header: HeaderData }) {
-  const hasUtilities = header.showSearch || header.showAccount || header.showCart || header.currency;
-  if (!hasUtilities) return null;
+function MobileDrawer({
+  isOpen,
+  onClose,
+  header,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  header: HeaderData;
+}) {
+  if (!isOpen) return null;
 
   return (
-    <div className="wb-header-actions">
-      {header.currency && (
-        <span className="text-xs font-semibold px-2 py-1 rounded-full border border-[var(--wb-border)]">
-          {header.currency}
-        </span>
-      )}
-      {header.showSearch && (
-        <button type="button" className="wb-header-icon-btn" aria-label="Search">
-          <SearchIcon />
-        </button>
-      )}
-      {header.showAccount && (
-        <a href="/login" className="wb-header-icon-btn" aria-label="Account">
-          <UserIcon />
-        </a>
-      )}
-      {header.showCart && (
-        <a href="/cart" className="wb-header-icon-btn" aria-label="Cart">
-          <CartIcon />
-          {(header.cartCount ?? 0) > 0 && <span className="wb-cart-badge">{header.cartCount}</span>}
-        </a>
-      )}
+    <div className="wb-drawer-portal">
+      <div className="wb-drawer-backdrop" onClick={onClose} aria-hidden="true" />
+      <div className="wb-drawer-panel" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+        {/* Drawer Header: Brand + Clear Close X Button */}
+        <div className="wb-drawer-header">
+          <SiteBrand
+            siteName={header.siteName}
+            logo={header.logo}
+            displayMode={header.logoDisplay}
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            className="wb-drawer-close-btn"
+            aria-label="Close navigation menu"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        {/* Drawer Body: Navigation Items & Submenus */}
+        <div className="wb-drawer-body">
+          <nav className="wb-drawer-nav" aria-label="Mobile Navigation">
+            {header.menu.map((item) => (
+              <div key={`${item.label}-${item.href}`} className="wb-drawer-item-group">
+                <a
+                  href={item.href}
+                  onClick={onClose}
+                  className="wb-drawer-link"
+                >
+                  <span>{item.label}</span>
+                  {item.badge && <span className="wb-badge">{item.badge}</span>}
+                </a>
+                {item.children && item.children.length > 0 && (
+                  <div className="wb-drawer-submenu">
+                    {item.children.map((sub) => (
+                      <a
+                        key={`${sub.label}-${sub.href}`}
+                        href={sub.href}
+                        onClick={onClose}
+                        className="wb-drawer-sublink"
+                      >
+                        <span className="wb-drawer-sublink-title">
+                          <span>{sub.label}</span>
+                          {sub.badge && <span className="wb-badge ml-1.5">{sub.badge}</span>}
+                        </span>
+                        {sub.description && (
+                          <span className="wb-drawer-sublink-desc">{sub.description}</span>
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          {/* Drawer Footer Actions */}
+          {(header.secondaryCta || header.cta) && (
+            <div className="wb-drawer-actions">
+              {header.secondaryCta && (
+                <div onClick={onClose}>
+                  <SiteButton link={header.secondaryCta} tone="secondary" />
+                </div>
+              )}
+              {header.cta && (
+                <div onClick={onClose}>
+                  <SiteButton link={header.cta} tone="primary" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -86,27 +196,29 @@ function UtilityControls({ header }: { header: HeaderData }) {
 export default function SiteHeader({ header }: { header: HeaderData }) {
   if (header.hidden) return null;
 
-  const isSticky = header.sticky || header.position === "sticky";
-  const isFixed = header.position === "fixed";
-  const isFloating = header.design === "floating" || header.position === "floating";
-  const isTransparent = header.design === "transparent" || header.overlay;
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const positionClass = isFloating
-    ? "wb-floating"
-    : isTransparent
-      ? "wb-transparent"
-      : isFixed
-        ? "wb-fixed"
-        : isSticky
-          ? "wb-sticky"
-          : "";
+  const position = header.position ?? (header.sticky ? "sticky" : "static");
 
-  const classes = ["wb-header", `wb-header-${header.design}`, positionClass].filter(Boolean).join(" ");
+  let posClass = "wb-pos-static";
+  if (position === "fixed") {
+    posClass = "wb-pos-fixed";
+  } else if (position === "floating") {
+    posClass = "wb-pos-floating";
+  } else if (position === "sticky") {
+    posClass = "wb-pos-sticky";
+  }
+
+  const isTransparent = position === "static" && (header.design === "transparent" || header.overlay);
+  const designClass = isTransparent ? "wb-header-transparent" : `wb-header-${header.design}`;
+  const classes = ["wb-header", designClass, posClass].filter(Boolean).join(" ");
 
   const brand = (
-    <a href="/" className="wb-brand">
-      {header.logo ? <SiteImage image={header.logo} /> : header.siteName}
-    </a>
+    <SiteBrand
+      siteName={header.siteName}
+      logo={header.logo}
+      displayMode={header.logoDisplay}
+    />
   );
 
   const announcement = header.announcement && (
@@ -118,44 +230,19 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     </div>
   );
 
-  const mobileNav = (
-    <details className="wb-mobile-nav">
-      <summary aria-label="Open menu">
-        <MenuIcon />
-      </summary>
-      <nav className="wb-mobile-panel" aria-label="Mobile">
-        {header.menu.map((item) => (
-          <div key={`${item.label}-${item.href}`} className="flex flex-col">
-            <SiteLink link={item} />
-            {item.children && item.children.length > 0 && (
-              <div className="wb-mobile-submenu">
-                {item.children.map((sub) => (
-                  <a key={`${sub.label}-${sub.href}`} href={sub.href} className="text-sm text-[var(--wb-muted)]">
-                    {sub.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-        {(header.secondaryCta || header.cta || header.showSearch || header.showCart) && (
-          <div className="wb-mobile-actions">
-            {header.showSearch && (
-              <div className="wb-search-pill mb-2">
-                <SearchIcon />
-                <span>Search products or pages...</span>
-              </div>
-            )}
-            {header.secondaryCta && <SiteButton link={header.secondaryCta} tone="secondary" />}
-            {header.cta && <SiteButton link={header.cta} tone="primary" />}
-          </div>
-        )}
-      </nav>
-    </details>
+  const mobileToggle = (
+    <button
+      type="button"
+      onClick={() => setMobileOpen(true)}
+      className="wb-mobile-toggle-btn"
+      aria-label="Open menu"
+    >
+      <MenuIcon />
+    </button>
   );
 
   // 1. Floating Pill Design
-  if (header.design === "floating" || isFloating) {
+  if (header.design === "floating") {
     return (
       <>
         {announcement}
@@ -169,82 +256,42 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
                 ))}
               </nav>
             )}
-            <div className="flex items-center gap-3">
-              <UtilityControls header={header} />
+            <div className="wb-header-actions">
               <ActionButtons header={header} />
-              {mobileNav}
+              {mobileToggle}
             </div>
           </div>
         </header>
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
       </>
     );
   }
 
-  // 2. E-commerce Dual-Tier Design
-  if (header.design === "ecommerce") {
-    return (
-      <>
-        {announcement}
-        <header className={classes}>
-          <div className="wb-container">
-            <div className="wb-ecommerce-top">
-              {brand}
-              {header.showSearch !== false && (
-                <div className="hidden sm:inline-flex wb-search-pill">
-                  <SearchIcon />
-                  <span>Search store...</span>
-                </div>
-              )}
-              <div className="flex items-center gap-3">
-                <UtilityControls header={header} />
-                <ActionButtons header={header} />
-                {mobileNav}
-              </div>
-            </div>
-            {header.menu.length > 0 && (
-              <nav className="wb-ecommerce-bottom hidden sm:flex" aria-label="Categories">
-                {header.menu.map((item, idx) => (
-                  <a
-                    key={`${item.label}-${item.href}`}
-                    href={item.href}
-                    className={`wb-ecommerce-tab ${idx === 0 ? "active" : ""}`}
-                  >
-                    {item.label}
-                  </a>
-                ))}
-              </nav>
-            )}
-          </div>
-        </header>
-      </>
-    );
-  }
-
-  // 3. Minimalist Design (Nav left, Centered logo, Actions right)
+  // 2. Minimalist Design (Nav left, Centered logo, Actions right)
   if (header.design === "minimalist") {
     return (
       <>
         {announcement}
         <header className={classes}>
           <div className="wb-container wb-header-inner">
-            <div className="wb-nav-left hidden sm:flex">
+            <div className="wb-nav-left">
               {header.menu.map((item) => (
                 <NavItem key={`${item.label}-${item.href}`} item={item} />
               ))}
             </div>
             <div className="wb-brand-center">{brand}</div>
-            <div className="wb-actions-right hidden sm:flex">
-              <UtilityControls header={header} />
+            <div className="wb-actions-right">
               <ActionButtons header={header} />
+              {mobileToggle}
             </div>
-            {mobileNav}
           </div>
         </header>
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
       </>
     );
   }
 
-  // 4. Classical Design (Logo left, Nav center, Actions right)
+  // 3. Classical Design (Logo left, Nav center, Actions right)
   if (header.design === "classical") {
     return (
       <>
@@ -253,24 +300,24 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
           <div className="wb-container wb-header-inner">
             {brand}
             {header.menu.length > 0 && (
-              <nav className="wb-nav hidden sm:flex" aria-label="Main">
+              <nav className="wb-nav" aria-label="Main">
                 {header.menu.map((item) => (
                   <NavItem key={`${item.label}-${item.href}`} item={item} />
                 ))}
               </nav>
             )}
-            <div className="flex items-center gap-3 ml-auto">
-              <UtilityControls header={header} />
+            <div className="wb-header-actions">
               <ActionButtons header={header} />
-              {mobileNav}
+              {mobileToggle}
             </div>
           </div>
         </header>
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
       </>
     );
   }
 
-  // 5. Comprehensive Design (Logo left, Mega nav, Search + Action buttons)
+  // 4. Comprehensive Design (Logo left, Expanded nav, Action buttons)
   if (header.design === "comprehensive") {
     return (
       <>
@@ -279,24 +326,24 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
           <div className="wb-container wb-header-inner">
             {brand}
             {header.menu.length > 0 && (
-              <nav className="wb-nav hidden sm:flex" aria-label="Main">
+              <nav className="wb-nav" aria-label="Main">
                 {header.menu.map((item) => (
                   <NavItem key={`${item.label}-${item.href}`} item={item} />
                 ))}
               </nav>
             )}
-            <div className="flex items-center gap-3 ml-auto">
-              <UtilityControls header={header} />
+            <div className="wb-header-actions">
               <ActionButtons header={header} />
-              {mobileNav}
+              {mobileToggle}
             </div>
           </div>
         </header>
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
       </>
     );
   }
 
-  // 6. Standard (logo-left, centered, transparent)
+  // 5. Standard (logo-left, centered, transparent)
   return (
     <>
       {announcement}
@@ -304,19 +351,19 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
         <div className="wb-container wb-header-inner">
           {brand}
           {header.menu.length > 0 && (
-            <nav className="wb-nav hidden sm:flex" aria-label="Main">
+            <nav className="wb-nav" aria-label="Main">
               {header.menu.map((item) => (
                 <NavItem key={`${item.label}-${item.href}`} item={item} />
               ))}
             </nav>
           )}
-          <div className="flex items-center gap-3 ml-auto">
-            <UtilityControls header={header} />
+          <div className="wb-header-actions">
             <ActionButtons header={header} />
-            {mobileNav}
+            {mobileToggle}
           </div>
         </div>
       </header>
+      <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} header={header} />
     </>
   );
 }

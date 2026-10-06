@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { SearchField, Spinner } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { errorMessage } from "../../api/http.ts";
 import { websitesApi, type WebsiteStatus, type WebsiteSummary } from "../../api/websites.ts";
 import PageHeader from "../../components/app/PageHeader.tsx";
+import CommonModal from "../../components/ui/CommonModal.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
 import SelectInput, { type SelectOption } from "../../components/ui/SelectInput.tsx";
 import BuilderChoices from "../../components/websites/BuilderChoices.tsx";
@@ -27,6 +28,9 @@ export default function MyWebsitesPage() {
   const [hasAny, setHasAny] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [websiteToDelete, setWebsiteToDelete] = useState<WebsiteSummary | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +51,29 @@ export default function MyWebsitesPage() {
   }, [debouncedSearch, status]);
 
   const hasFilters = Boolean(debouncedSearch || status);
+  const isDraft = websiteToDelete?.status === "DRAFT";
+
+  function closeDelete() {
+    if (isDeleting) return;
+    setWebsiteToDelete(null);
+    setDeleteError(null);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!websiteToDelete) return;
+    const target = websiteToDelete;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await websitesApi.delete(target.id);
+      setWebsites((prev) => (prev ? prev.filter((website) => website.id !== target.id) : prev));
+      setWebsiteToDelete(null);
+    } catch (err) {
+      setDeleteError(errorMessage(err));
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   return (
     <div className="px-6 py-8 sm:px-8">
@@ -104,7 +131,14 @@ export default function MyWebsitesPage() {
       {websites && websites.length > 0 && (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {websites.map((website) => (
-            <WebsiteCard key={website.id} website={website} />
+            <WebsiteCard
+              key={website.id}
+              website={website}
+              onDelete={(target) => {
+                setDeleteError(null);
+                setWebsiteToDelete(target);
+              }}
+            />
           ))}
           {!hasFilters && (
             <Link
@@ -122,6 +156,38 @@ export default function MyWebsitesPage() {
           )}
         </div>
       )}
+
+      <CommonModal
+        isOpen={Boolean(websiteToDelete)}
+        onClose={closeDelete}
+        headerDetails={{
+          icon: <Trash2 className="size-4.5" />,
+          title: isDraft ? "Delete draft" : "Delete website",
+          description: websiteToDelete ? `${websiteToDelete.name} · ${websiteToDelete.subdomain}` : undefined,
+        }}
+        iconTone="danger"
+        size="sm"
+        primaryAction={{
+          label: isDraft ? "Delete draft" : "Delete website",
+          onPress: handleDeleteConfirm,
+          isPending: isDeleting,
+          tone: "danger",
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onPress: closeDelete,
+          isDisabled: isDeleting,
+        }}
+      >
+        <div className="space-y-2.5">
+          <p>
+            Are you sure you want to delete{" "}
+            <strong className="font-semibold text-ink">“{websiteToDelete?.name}”</strong>? This action cannot be undone
+            and all associated draft pages and customizations will be permanently removed.
+          </p>
+          {deleteError && <FormAlert status="danger">{deleteError}</FormAlert>}
+        </div>
+      </CommonModal>
     </div>
   );
 }

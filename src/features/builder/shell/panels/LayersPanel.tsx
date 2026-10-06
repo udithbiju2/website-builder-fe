@@ -1,12 +1,13 @@
 import { ChevronDown, ChevronUp, Eye, EyeOff, Layers } from "lucide-react";
-import { SECTION_DEFINITIONS, type SectionType } from "../../../../site-kit/index.ts";
-import { itemAsSection, type BuilderItem } from "../../puck/adapter.ts";
+import { SECTION_DEFINITIONS } from "../../../../site-kit/index.ts";
+import { getSectionType, itemAsSection, type BuilderItem } from "../../puck/adapter.ts";
 import { moveSection, replaceSection, selectSection, useBuilderPuck } from "../../puck/puck-api.ts";
 import { EmptyState, PanelHeader, ToolButton } from "../ui.tsx";
 
 export function itemTitle(item: BuilderItem): string {
   const data = item.props.data as { heading?: string; siteName?: string };
-  return data.heading?.trim() || data.siteName?.trim() || SECTION_DEFINITIONS[item.type as SectionType].label;
+  const type = getSectionType(item.type);
+  return data.heading?.trim() || data.siteName?.trim() || SECTION_DEFINITIONS[type]?.label || item.type;
 }
 
 export default function LayersPanel() {
@@ -42,7 +43,7 @@ export default function LayersPanel() {
                       {itemTitle(item)}
                     </span>
                     <span className="block truncate text-ed-2xs text-ed-muted">
-                      {SECTION_DEFINITIONS[item.type as SectionType].label}
+                      {SECTION_DEFINITIONS[getSectionType(item.type)]?.label || item.type}
                       {hidden ? " · hidden" : ""}
                     </span>
                   </button>

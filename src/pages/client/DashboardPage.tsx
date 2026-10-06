@@ -1,13 +1,14 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Spinner } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
-import { ArrowRight, Globe, Image, Plus } from "lucide-react";
+import { ArrowRight, Globe, Image, Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { errorMessage } from "../../api/http.ts";
 import { formatBytes, mediaApi, type StorageUsage } from "../../api/media.ts";
 import { websitesApi, type WebsiteSummary } from "../../api/websites.ts";
 import { useAuth } from "../../auth/auth-context.ts";
 import PageHeader from "../../components/app/PageHeader.tsx";
+import CommonModal from "../../components/ui/CommonModal.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
 import BuilderChoices from "../../components/websites/BuilderChoices.tsx";
 import WebsiteCard from "../../components/websites/WebsiteCard.tsx";
@@ -23,7 +24,7 @@ type Overview = {
 
 function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
   return (
-    <div className="rounded-xl border border-line bg-surface p-5">
+<div className="rounded-xl border border-line bg-surface p-5">
       <p className="text-sm text-ink-muted">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-ink">{value}</p>
       {hint && <p className="mt-1 text-xs text-ink-muted">{hint}</p>}
@@ -35,6 +36,11 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [websiteToDelete, setWebsiteToDelete] = useState<WebsiteSummary | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +55,30 @@ export default function DashboardPage() {
     };
   }, []);
 
+  async function handleDeleteConfirm() {
+    if (!websiteToDelete) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await websitesApi.delete(websiteToDelete.id);
+      setOverview((prev) =>
+        prev
+          ? {
+              ...prev,
+              websites: prev.websites.filter((w) => w.id !== websiteToDelete.id),
+              totalWebsites: Math.max(0, prev.totalWebsites - 1),
+            }
+          : prev,
+      );
+      setWebsiteToDelete(null);
+    } catch (err) {
+      setDeleteError(errorMessage(err));
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  const isDraft = websiteToDelete?.status === "DRAFT";
   const published = overview?.websites.filter((website) => website.status === "PUBLISHED").length ?? 0;
   const pendingChanges = overview?.websites.filter((website) => website.hasUnpublishedChanges).length ?? 0;
   const recent = overview?.websites.slice(0, RECENT_COUNT) ?? [];
@@ -111,7 +141,14 @@ export default function DashboardPage() {
               </div>
               <div className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                 {recent.map((website) => (
-                  <WebsiteCard key={website.id} website={website} />
+                  <WebsiteCard
+                    key={website.id}
+                    website={website}
+                    onDelete={(target) => {
+                      setDeleteError(null);
+                      setWebsiteToDelete(target);
+                    }}
+                  />
                 ))}
               </div>
             </section>
@@ -139,6 +176,52 @@ export default function DashboardPage() {
           </section>
         </>
       )}
+
+      {/* Reusable HeroUI Delete Confirmation Modal */}
+      <CommonModal
+        isOpen={Boolean(websiteToDelete)}
+        onClose={() => {
+          if (!isDeleting) {
+            setWebsiteToDelete(null);
+            setDeleteError(null);
+          }
+        }}
+        headerDetails={{
+          icon: <Trash2 className="size-4.5" />,
+          title: isDraft ? "Delete draft" : "Delete website",
+          description: websiteToDelete
+            ? `${websiteToDelete.name} · ${websiteToDelete.subdomain}`
+            : undefined,
+        }}
+        iconTone="danger"
+        size="sm"
+        primaryAction={{
+          label: isDraft ? "Delete draft" : "Delete website",
+          onPress: handleDeleteConfirm,
+          isPending: isDeleting,
+          tone: "danger",
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onPress: () => {
+            setWebsiteToDelete(null);
+            setDeleteError(null);
+          },
+          isDisabled: isDeleting,
+        }}
+      >
+        <div className="space-y-2.5">
+          <p>
+            Are you sure you want to delete{" "}
+            <strong className="font-semibold text-ink">
+              “{websiteToDelete?.name}”
+            </strong>
+            ? This action cannot be undone and all associated draft pages and
+            customizations will be permanently removed.
+          </p>
+          {deleteError && <FormAlert status="danger">{deleteError}</FormAlert>}
+        </div>
+      </CommonModal>
     </div>
   );
 }

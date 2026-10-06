@@ -1,45 +1,51 @@
 import type { ReactNode } from "react";
-import { Button, Modal } from "@heroui/react";
+import { AlertTriangle, Info } from "lucide-react";
+import { ConfirmModal } from "./AppModal.tsx";
 
-type ConfirmDialogProps = {
+export type ConfirmDialogProps = {
   isOpen: boolean;
   title: string;
+  subtitle?: ReactNode;
   children: ReactNode;
   confirmLabel: string;
-  tone?: "danger" | "default";
-  onConfirm: () => void;
+  cancelLabel?: string;
+  tone?: "danger" | "default" | "brand" | "warning";
+  icon?: ReactNode;
+  isPending?: boolean;
+  onConfirm: () => void | Promise<unknown> | unknown;
   onCancel: () => void;
 };
 
 export default function ConfirmDialog({
   isOpen,
   title,
+  subtitle,
   children,
   confirmLabel,
+  cancelLabel = "Cancel",
   tone = "default",
+  icon,
+  isPending = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const defaultIcon =
+    icon ?? (tone === "danger" ? <AlertTriangle className="size-5" /> : <Info className="size-5" />);
+
   return (
-    <Modal.Backdrop isOpen={isOpen} onOpenChange={(open) => !open && onCancel()}>
-      <Modal.Container size="sm">
-        <Modal.Dialog aria-label={title}>
-          <Modal.Header>
-            <Modal.Heading>{title}</Modal.Heading>
-          </Modal.Header>
-          <Modal.Body>
-            <div className="text-sm text-ink-body">{children}</div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="outline" onPress={onCancel}>
-              Cancel
-            </Button>
-            <Button variant={tone === "danger" ? "danger" : "primary"} onPress={onConfirm}>
-              {confirmLabel}
-            </Button>
-          </Modal.Footer>
-        </Modal.Dialog>
-      </Modal.Container>
-    </Modal.Backdrop>
+    <ConfirmModal
+      isOpen={isOpen}
+      onClose={onCancel}
+      onConfirm={onConfirm}
+      title={title}
+      subtitle={subtitle}
+      confirmLabel={confirmLabel}
+      cancelLabel={cancelLabel}
+      tone={tone}
+      icon={defaultIcon}
+      isPending={isPending}
+    >
+      {children}
+    </ConfirmModal>
   );
 }

@@ -7,7 +7,6 @@ type SelectInputProps<T extends string> = {
   value: T;
   onChange: (value: T) => void;
   options: SelectOption<T>[];
-  /** Visible label; when omitted, `ariaLabel` must describe the control. */
   label?: string;
   ariaLabel?: string;
   className?: string;
@@ -21,22 +20,21 @@ export default function SelectInput<T extends string>({
   ariaLabel,
   className = "",
 }: SelectInputProps<T>) {
-  const selectedOption = options.find((opt) => opt.value === value) ?? options[0];
+  const selectedOption =
+    options.find((opt) => opt.value === value) ?? options[0];
 
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
-      {label && (
-        <span className="text-sm font-medium text-ink">
-          {label}
-        </span>
-      )}
+      {label && <span className="text-sm font-medium text-ink">{label}</span>}
       <Dropdown>
         <Button
           aria-label={label ?? ariaLabel ?? "Select option"}
           variant="secondary"
           className="flex h-9 w-full items-center justify-between rounded-lg border border-ed-border bg-surface px-3 text-left text-sm font-normal text-ink shadow-ed-xs transition-all duration-150 hover:border-ed-border-strong hover:bg-surface focus-visible:border-ed-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ed-accent/15"
         >
-          <span className="truncate">{selectedOption?.label ?? String(value)}</span>
+          <span className="truncate">
+            {selectedOption?.label ?? String(value)}
+          </span>
           <ChevronDown className="size-4 shrink-0 text-ink-muted" />
         </Button>
         <Dropdown.Popover className="min-w-(--trigger-width) rounded-lg border border-ed-border bg-surface p-1 shadow-ed-pop z-(--z-ed-popover)">
@@ -44,7 +42,9 @@ export default function SelectInput<T extends string>({
             selectionMode="single"
             selectedKeys={new Set([String(value)])}
             onAction={(key) => {
-              const option = options.find((opt) => String(opt.value) === String(key));
+              const option = options.find(
+                (opt) => String(opt.value) === String(key),
+              );
               if (option) onChange(option.value);
             }}
             className="flex flex-col gap-0.5 outline-none"
@@ -63,7 +63,9 @@ export default function SelectInput<T extends string>({
                   }`}
                 >
                   <div className="flex size-4 shrink-0 items-center justify-center">
-                    {isSelected ? <Check className="size-3.5 text-ed-accent" /> : null}
+                    {isSelected ? (
+                      <Check className="size-3.5 text-ed-accent" />
+                    ) : null}
                   </div>
                   <Label className="flex-1 cursor-pointer truncate font-inherit">
                     {option.label}

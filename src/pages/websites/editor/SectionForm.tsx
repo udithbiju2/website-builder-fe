@@ -2,7 +2,9 @@ import type {
   ContactData,
   CtaData,
   FaqData,
+  FeatureItem,
   FeaturesData,
+  FontKey,
   GalleryData,
   GridColumns,
   HeroData,
@@ -35,7 +37,9 @@ import {
   SelectField,
   TextAreaField,
   TextField,
+  VideoField,
 } from "./fields.tsx";
+import { FontPicker } from "./FontPicker.tsx";
 
 type DataFormProps<T> = { data: T; onChange: (data: T) => void };
 
@@ -48,12 +52,59 @@ const COLUMN_OPTIONS: { value: GridColumns; label: string }[] = [
 
 const ICON_OPTIONS: { value: IconName | ""; label: string }[] = [
   { value: "", label: "No icon" },
-  { value: "check", label: "Check" },
-  { value: "star", label: "Star" },
-  { value: "bolt", label: "Lightning" },
-  { value: "shield", label: "Shield" },
-  { value: "heart", label: "Heart" },
-  { value: "chat", label: "Chat" },
+  { value: "gear", label: "Settings / Gear ⚙️" },
+  { value: "user", label: "User / Profile 👤" },
+  { value: "mail", label: "Mail / Contact ✉️" },
+  { value: "phone", label: "Phone / Callback 📞" },
+  { value: "chart", label: "Chart / Analytics 📊" },
+  { value: "clock", label: "Clock / Real-time ⏱️" },
+  { value: "tools", label: "Tools / Wrench 🛠️" },
+  { value: "bell", label: "Bell / Notification 🔔" },
+  { value: "wallet", label: "Wallet / Cost 💳" },
+  { value: "pointer", label: "Pointer / Interactive 👆" },
+  { value: "help", label: "Help / Support ❓" },
+  { value: "sparkles", label: "Sparkles / AI ✨" },
+  { value: "rocket", label: "Rocket / Speed 🚀" },
+  { value: "layers", label: "Layers / Stack 🥞" },
+  { value: "box", label: "Box / Package 📦" },
+  { value: "lock", label: "Lock / Security 🔒" },
+  { value: "cloud", label: "Cloud / Sync ☁️" },
+  { value: "code", label: "Code / API 💻" },
+  { value: "check", label: "Checkmark ✓" },
+  { value: "star", label: "Star ★" },
+  { value: "bolt", label: "Lightning ⚡" },
+  { value: "shield", label: "Shield 🛡️" },
+  { value: "heart", label: "Heart ❤️" },
+  { value: "chat", label: "Chat 💬" },
+];
+
+const FEATURE_COLOR_OPTIONS = [
+  { value: "default", label: "Auto (Palette cycled)" },
+  { value: "none", label: "None / Neutral (No color tint)" },
+  { value: "gray", label: "Gray / Slate" },
+  { value: "orange", label: "Orange" },
+  { value: "green", label: "Green" },
+  { value: "blue", label: "Blue" },
+  { value: "yellow", label: "Yellow" },
+  { value: "cyan", label: "Cyan" },
+  { value: "purple", label: "Purple" },
+  { value: "pink", label: "Pink" },
+  { value: "indigo", label: "Indigo" },
+  { value: "red", label: "Red" },
+];
+
+const FEATURE_CARD_BG_PRESETS = [
+  { value: "", label: "Default section theme" },
+  { value: "#ffffff", label: "Pure White (#ffffff)" },
+  { value: "#f8fafc", label: "Light Slate (#f8fafc)" },
+  { value: "#f1f5f9", label: "Soft Gray (#f1f5f9)" },
+  { value: "#fff7ed", label: "Soft Orange tint (#fff7ed)" },
+  { value: "#f0fdf4", label: "Soft Green tint (#f0fdf4)" },
+  { value: "#eff6ff", label: "Soft Blue tint (#eff6ff)" },
+  { value: "#fefce8", label: "Soft Yellow tint (#fefce8)" },
+  { value: "#faf5ff", label: "Soft Purple tint (#faf5ff)" },
+  { value: "#fdf2f8", label: "Soft Pink tint (#fdf2f8)" },
+  { value: "#0f172a", label: "Dark Slate (#0f172a)" },
 ];
 
 const BACKGROUND_OPTIONS: { value: SectionBackground; label: string }[] = [
@@ -135,11 +186,6 @@ function ColumnsFields<
 }
 
 function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
-  const rating = data.rating ?? {};
-  const updateRating = (patch: Partial<NonNullable<HeroData["rating"]>>) => {
-    onChange({ ...data, rating: { ...rating, ...patch } });
-  };
-
   const trustedBy = data.trustedBy ?? {};
   const updateTrustedBy = (
     patch: Partial<NonNullable<HeroData["trustedBy"]>>,
@@ -152,21 +198,13 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
       <FormGroup title="Hero style & layout">
         <SelectField
           label="Hero design style"
-          value={data.variant}
+          value={data.variant === "split-left" ? "split" : data.variant}
           options={[
             {
               value: "centered",
               label: "Centered (Heading, dual CTAs, visual showcase)",
             },
-            { value: "split", label: "Split screen (Text left, image right)" },
-            {
-              value: "split-left",
-              label: "Split screen (Image left, text right)",
-            },
-            {
-              value: "floating-cards",
-              label: "Floating stats cards (Metric badges & growth pill)",
-            },
+            { value: "split", label: "Split screen (Side-by-side headline & media mockup)" },
             {
               value: "gradient",
               label: "Vibrant gradient (Mesh glow & trusted logos)",
@@ -200,6 +238,37 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
             onChange({ ...data, variant: variant as HeroData["variant"] })
           }
         />
+        {(data.variant === "split" ||
+          data.variant === "split-left" ||
+          data.imagePosition === "left" ||
+          data.imagePosition === "right") && (
+          <SelectField
+            label="Media position (Left / Right)"
+            value={
+              data.variant === "split-left" || data.imagePosition === "left"
+                ? "left"
+                : "right"
+            }
+            options={[
+              {
+                value: "right",
+                label: "Right side (Headline on left, mockup on right)",
+              },
+              {
+                value: "left",
+                label: "Left side (Mockup on left, headline on right)",
+              },
+            ]}
+            onChange={(side) =>
+              onChange({
+                ...data,
+                variant: side === "left" ? "split-left" : "split",
+                imagePosition: side as "left" | "right",
+              })
+            }
+            hint="Switch mockup and visual placement between the left and right side."
+          />
+        )}
         <SelectField
           label="Section height"
           value={data.minHeight ?? "auto"}
@@ -343,6 +412,14 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
           }
           options={[
             {
+              value: "right",
+              label: "Split right (Headline left, media on right)",
+            },
+            {
+              value: "left",
+              label: "Split left (Media on left, headline right)",
+            },
+            {
               value: "bottom",
               label: "Foreground showcase card / player (Below CTA buttons)",
             },
@@ -350,22 +427,19 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
               value: "background",
               label: "Full background cover (Edge-to-edge behind text)",
             },
-            {
-              value: "right",
-              label: "Split right (Side-by-side on desktop)",
-            },
-            {
-              value: "left",
-              label: "Split left (Side-by-side on desktop)",
-            },
           ]}
-          onChange={(imagePosition) =>
+          onChange={(imagePosition) => {
+            const pos = imagePosition as HeroData["imagePosition"];
+            let variant = data.variant;
+            if (pos === "left") variant = "split-left";
+            else if (pos === "right" && data.variant === "split-left") variant = "split";
             onChange({
               ...data,
-              imagePosition: imagePosition as HeroData["imagePosition"],
-            })
-          }
-          hint="Choose whether your media acts as a foreground showcase player/card or fills the full section background."
+              imagePosition: pos,
+              variant,
+            });
+          }}
+          hint="Choose whether your media is positioned side-by-side (left/right), below headline/CTAs, or fills the background."
         />
 
         <ImageField
@@ -399,15 +473,14 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
           }
         />
 
-        <TextField
-          label="Playable video URL (optional)"
-          value={data.videoUrl ?? ""}
+        <VideoField
+          label="Playable video demo (optional)"
+          value={data.videoUrl}
           onChange={(videoUrl) =>
             onChange({ ...data, videoUrl: videoUrl || undefined })
           }
-          maxLength={500}
-          placeholder="https://www.youtube.com/watch?v=... or https://.../demo.mp4"
-          hint="Supports YouTube, Vimeo, or direct MP4/WebM video URLs."
+          placeholder="https://www.youtube.com/watch?v=... or upload MP4"
+          hint="Supports direct MP4/WebM uploads (up to 50 MB) or YouTube/Vimeo links."
         />
 
         {Boolean(data.videoUrl) && (
@@ -450,10 +523,6 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
           value={data.bgImagePosition ?? "cover"}
           options={[
             { value: "cover", label: "Center cover (Full bleed background)" },
-            {
-              value: "bottom",
-              label: "Bottom anchored illustration (like Myna UI characters)",
-            },
             { value: "top", label: "Top aligned" },
             { value: "center", label: "Centered" },
           ]}
@@ -465,14 +534,13 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
           }
         />
 
-        <TextField
-          label="Background video URL (YouTube, Vimeo, MP4/WebM)"
+        <VideoField
+          label="Background video (ambient cover)"
           value={data.backgroundVideoUrl ?? (data.variant === "video-bg" || data.imagePosition === "background" ? data.videoUrl ?? "" : "")}
           onChange={(backgroundVideoUrl) =>
             onChange({ ...data, backgroundVideoUrl: backgroundVideoUrl || undefined })
           }
-          maxLength={500}
-          placeholder="https://www.youtube.com/watch?v=... or https://.../ambient.mp4"
+          placeholder="https://www.youtube.com/watch?v=... or upload MP4"
           hint="Ambient full-bleed video that plays automatically in the background."
         />
 
@@ -520,95 +588,7 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
         />
       </FormGroup>
 
-      <FormGroup title="Social proof & ratings">
-        <CheckboxField
-          label="Show rating stars & user count"
-          checked={Boolean(data.rating?.stars || data.rating?.text)}
-          onChange={(checked) =>
-            onChange({
-              ...data,
-              rating: checked
-                ? { stars: 5, text: "Loved by 10,000+ teams", avatarCount: 4 }
-                : undefined,
-            })
-          }
-        />
-        {Boolean(data.rating) && (
-          <div className="flex flex-col gap-2.5 pt-1">
-            <TextField
-              label="Rating stars (1 - 5)"
-              type="number"
-              value={String(rating.stars ?? 5)}
-              onChange={(val) =>
-                updateRating({
-                  stars: Math.min(5, Math.max(1, parseInt(val, 10) || 5)),
-                })
-              }
-            />
-            <TextField
-              label="Rating summary text"
-              value={rating.text ?? ""}
-              onChange={(text) => updateRating({ text: text || undefined })}
-              maxLength={200}
-              placeholder="5.0 rating on G2 & Product Hunt"
-            />
-          </div>
-        )}
-      </FormGroup>
 
-      <FormGroup title="Floating metric cards">
-        <ItemList
-          label="Floating cards"
-          items={data.floatingCards ?? []}
-          max={2}
-          onChange={(floatingCards) => onChange({ ...data, floatingCards })}
-          create={() => ({
-            title: "+148% Growth",
-            subtitle: "Active users",
-            badge: "Live",
-            icon: "📈",
-          })}
-          itemTitle={(c) => c.title}
-          addLabel="Add floating card"
-          renderItem={(card, update) => (
-            <div className="flex flex-col gap-2">
-              <div className="grid grid-cols-4 gap-2">
-                <div className="col-span-1">
-                  <TextField
-                    label="Icon"
-                    value={card.icon ?? ""}
-                    onChange={(icon) => update({ ...card, icon })}
-                    maxLength={6}
-                    placeholder="📈"
-                  />
-                </div>
-                <div className="col-span-3">
-                  <TextField
-                    label="Title"
-                    value={card.title}
-                    onChange={(title) => update({ ...card, title })}
-                    maxLength={60}
-                    required
-                  />
-                </div>
-              </div>
-              <TextField
-                label="Subtitle"
-                value={card.subtitle ?? ""}
-                onChange={(subtitle) => update({ ...card, subtitle })}
-                maxLength={100}
-              />
-              <TextField
-                label="Badge (optional)"
-                value={card.badge ?? ""}
-                onChange={(badge) => update({ ...card, badge })}
-                maxLength={30}
-                placeholder="Live"
-              />
-            </div>
-          )}
-        />
-      </FormGroup>
 
       <FormGroup title="Trusted by logo strip">
         <CheckboxField
@@ -664,47 +644,265 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
 }
 
 function FeaturesForm({ data, onChange }: DataFormProps<FeaturesData>) {
+  const isSplit = data.variant === "split";
+
   return (
     <>
-      <FormGroup title="Content">
+      <FormGroup title="Features layout & style">
+        <SelectField
+          label="Layout variant"
+          value={data.variant ?? "grid"}
+          options={[
+            {
+              value: "grid",
+              label: "Standard responsive grid (Cards & icons)",
+            },
+            {
+              value: "split",
+              label: "Split screen showcase (Headline + mockup on one side, stacked cards on other)",
+            },
+            {
+              value: "pastel-icons",
+              label: "Pastel icon highlights (Soft circular badges with clean typography)",
+            },
+            {
+              value: "minimal",
+              label: "Minimal clean grid (Modern accent icons, borderless)",
+            },
+            {
+              value: "cards",
+              label: "Elevated modern cards (Surface cards with hover lift & subtle shadow)",
+            },
+          ]}
+          onChange={(variant) =>
+            onChange({
+              ...data,
+              variant: variant as FeaturesData["variant"],
+            })
+          }
+        />
+
+        {isSplit && (
+          <>
+            <SelectField
+              label="Split layout alignment"
+              value={data.splitPosition ?? "left"}
+              options={[
+                {
+                  value: "left",
+                  label: "Visual & headline on Left, Feature cards on Right",
+                },
+                {
+                  value: "right",
+                  label: "Feature cards on Left, Visual & headline on Right",
+                },
+              ]}
+              onChange={(pos) =>
+                onChange({
+                  ...data,
+                  splitPosition: pos as "left" | "right",
+                })
+              }
+              hint="Easily flip the visual showcase and feature card stack between left and right."
+            />
+            <ImageField
+              label="Custom mockup image (optional, default isometric 3D chart is used if empty)"
+              value={data.splitImage}
+              onChange={(splitImage) => onChange({ ...data, splitImage })}
+              optional
+            />
+            <OptionalLinkField
+              label="Primary CTA button (optional)"
+              value={data.splitCta}
+              onChange={(splitCta) => onChange({ ...data, splitCta })}
+              fallback={{ label: "Explore more", href: "/features" }}
+            />
+            <OptionalLinkField
+              label="Secondary CTA button (optional)"
+              value={data.secondaryCta}
+              onChange={(secondaryCta) => onChange({ ...data, secondaryCta })}
+              fallback={{ label: "Book a demo", href: "/demo" }}
+            />
+          </>
+        )}
+
+        <SelectField
+          label="Icon badge style"
+          value={data.iconStyle ?? (data.variant === "pastel-icons" ? "pastel-circle" : isSplit ? "square-badge" : data.variant === "minimal" ? "minimal-accent" : "pastel-circle")}
+          options={[
+            {
+              value: "pastel-circle",
+              label: "Pastel circular badges (Soft tinted round backgrounds)",
+            },
+            {
+              value: "square-badge",
+              label: "Modern rounded squircle (Subtle border and tinted surface)",
+            },
+            {
+              value: "minimal-accent",
+              label: "Minimal clean icon (Brand color with no background box)",
+            },
+            {
+              value: "colored-circle",
+              label: "Solid / gradient colored circle",
+            },
+            { value: "none", label: "Hide icons" },
+          ]}
+          onChange={(iconStyle) =>
+            onChange({
+              ...data,
+              iconStyle: iconStyle as FeaturesData["iconStyle"],
+            })
+          }
+        />
+
+        <SelectField
+          label="Card container style"
+          value={data.cardStyle ?? (data.variant === "cards" ? "surface" : data.variant === "minimal" || data.variant === "pastel-icons" ? "transparent" : "surface")}
+          options={[
+            { value: "transparent", label: "Transparent / Flat (No background box)" },
+            { value: "surface", label: "Surface card (Tinted background & soft hover)" },
+            { value: "bordered", label: "Subtle outlined border" },
+            { value: "glass", label: "Glassmorphism (Frosted glass blur & soft border)" },
+          ]}
+          onChange={(cardStyle) =>
+            onChange({
+              ...data,
+              cardStyle: cardStyle as FeaturesData["cardStyle"],
+            })
+          }
+        />
+
+        <SelectField
+          label="Content alignment"
+          value={data.align ?? (isSplit ? "left" : "center")}
+          options={[
+            { value: "center", label: "Center aligned" },
+            { value: "left", label: "Left aligned" },
+          ]}
+          onChange={(align) =>
+            onChange({
+              ...data,
+              align: align as "left" | "center",
+            })
+          }
+        />
+      </FormGroup>
+
+      <FormGroup title="Headings & copy">
         <TextField
-          label="Heading"
+          label="Badge / Eyebrow (optional)"
+          value={data.eyebrow ?? ""}
+          onChange={(eyebrow) =>
+            onChange({ ...data, eyebrow: eyebrow || undefined })
+          }
+          maxLength={100}
+          placeholder="Capabilities"
+        />
+        <TextField
+          label="Main heading"
           value={data.heading}
           onChange={(heading) => onChange({ ...data, heading })}
           maxLength={200}
           required
         />
         <TextAreaField
-          label="Intro"
-          value={data.intro}
-          onChange={(intro) => onChange({ ...data, intro })}
+          label="Intro description (optional)"
+          value={data.intro ?? ""}
+          onChange={(intro) =>
+            onChange({ ...data, intro: intro || undefined })
+          }
           maxLength={500}
         />
-        <ColumnsFields data={data} onChange={onChange} />
+
+        {!isSplit && <ColumnsFields data={data} onChange={onChange} />}
+
+        {!isSplit && (
+          <OptionalLinkField
+            label="Bottom link / CTA (optional)"
+            value={data.bottomCta}
+            onChange={(bottomCta) => onChange({ ...data, bottomCta })}
+            fallback={{ label: "Learn more", href: "/features" }}
+          />
+        )}
       </FormGroup>
-      <FormGroup title="Features">
+
+      <FormGroup title="Feature items">
         <ItemList<FeaturesData["items"][number]>
           label="Items"
           items={data.items}
           max={24}
           onChange={(items) => onChange({ ...data, items })}
           create={() => ({
-            icon: "check",
+            icon: "gear",
+            iconColor: "orange",
             title: "New feature",
-            description: "Describe this benefit.",
+            description: "Describe this benefit clearly.",
           })}
           itemTitle={(item) => item.title}
           addLabel="Add feature"
           renderItem={(item, update) => (
             <>
-              <SelectField
-                label="Icon"
-                value={item.icon ?? ""}
-                options={ICON_OPTIONS}
-                onChange={(icon) =>
-                  update({ ...item, icon: icon || undefined })
-                }
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <SelectField
+                  label="Icon"
+                  value={item.icon ?? ""}
+                  options={ICON_OPTIONS}
+                  onChange={(icon) =>
+                    update({ ...item, icon: icon || undefined })
+                  }
+                />
+                <SelectField
+                  label="Icon color badge"
+                  value={item.iconColor ?? "default"}
+                  options={FEATURE_COLOR_OPTIONS}
+                  onChange={(color) =>
+                    update({
+                      ...item,
+                      iconColor:
+                        color === "default"
+                          ? undefined
+                          : (color as FeatureItem["iconColor"]),
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 items-end">
+                <SelectField
+                  label="Card background"
+                  value={item.backgroundColor ?? ""}
+                  options={[
+                    ...FEATURE_CARD_BG_PRESETS,
+                    ...(item.backgroundColor &&
+                    !FEATURE_CARD_BG_PRESETS.some(
+                      (p) =>
+                        p.value.toLowerCase() ===
+                        item.backgroundColor?.toLowerCase(),
+                    )
+                      ? [
+                          {
+                            value: item.backgroundColor,
+                            label: `Custom (${item.backgroundColor})`,
+                          },
+                        ]
+                      : []),
+                  ]}
+                  onChange={(val) =>
+                    update({ ...item, backgroundColor: val || undefined })
+                  }
+                />
+                <div className="pb-0.5">
+                  <ColorField
+                    label="Custom card background"
+                    value={item.backgroundColor}
+                    onChange={(color) =>
+                      update({ ...item, backgroundColor: color || undefined })
+                    }
+                    fallback="#ffffff"
+                  />
+                </div>
+              </div>
               <TextField
                 label="Title"
                 value={item.title}
@@ -717,6 +915,21 @@ function FeaturesForm({ data, onChange }: DataFormProps<FeaturesData>) {
                 value={item.description}
                 onChange={(description) => update({ ...item, description })}
                 maxLength={600}
+              />
+              <TextField
+                label="Item badge / Tag (optional)"
+                value={item.badge ?? ""}
+                onChange={(badge) =>
+                  update({ ...item, badge: badge || undefined })
+                }
+                maxLength={30}
+                placeholder="New"
+              />
+              <OptionalLinkField
+                label="Item link (optional)"
+                value={item.link}
+                onChange={(link) => update({ ...item, link })}
+                fallback={{ label: "Learn more", href: "#" }}
               />
             </>
           )}
@@ -1308,14 +1521,12 @@ function MediaForm({ data, onChange }: DataFormProps<MediaData>) {
             optional
           />
         ) : (
-          <TextField
-            label="Video link"
-            type="url"
+          <VideoField
+            label="Video"
             value={data.videoUrl}
-            onChange={(videoUrl) => onChange({ ...data, videoUrl })}
-            placeholder="https://www.youtube.com/watch?v=…"
-            hint="Plays with privacy-enhanced embedding."
-            maxLength={2048}
+            onChange={(videoUrl) => onChange({ ...data, videoUrl: videoUrl || "" })}
+            placeholder="https://www.youtube.com/watch?v=… or upload MP4"
+            hint="Plays with privacy-enhanced embedding or direct MP4 streaming."
           />
         )}
         <TextField
@@ -1427,7 +1638,11 @@ type SettingsFormProps = {
   onChange: (settings: SectionSettings) => void;
 };
 
-export function SectionStyleForm({ settings, onChange }: SettingsFormProps) {
+export function SectionStyleForm({
+  settings,
+  siteFont,
+  onChange,
+}: SettingsFormProps & { siteFont: FontKey }) {
   const customColors = settings.customColors ?? {};
   const updateCustomColor = (
     patch: Partial<NonNullable<SectionSettings["customColors"]>>,
@@ -1471,6 +1686,18 @@ export function SectionStyleForm({ settings, onChange }: SettingsFormProps) {
           value={settings.align ?? "center"}
           options={ALIGN_OPTIONS}
           onChange={(align) => onChange({ ...settings, align })}
+        />
+      </FormGroup>
+
+      <FormGroup title="Section font">
+        <FontPicker
+          label="Section font"
+          value={settings.font}
+          inheritFrom={siteFont}
+          onChange={(font) => {
+            const { font: _previous, ...rest } = settings;
+            onChange(font ? { ...rest, font } : rest);
+          }}
         />
       </FormGroup>
 
@@ -1715,9 +1942,11 @@ function DataForm({
 
 export default function SectionForm({
   section,
+  siteFont,
   onChange,
 }: {
   section: Section;
+  siteFont: FontKey;
   onChange: (section: Section) => void;
 }) {
   const changeSettings = (settings: SectionSettings) =>
@@ -1725,7 +1954,7 @@ export default function SectionForm({
   return (
     <>
       <DataForm section={section} onChange={onChange} />
-      <SectionStyleForm settings={section.settings} onChange={changeSettings} />
+      <SectionStyleForm settings={section.settings} siteFont={siteFont} onChange={changeSettings} />
       <SectionResponsiveForm
         settings={section.settings}
         onChange={changeSettings}

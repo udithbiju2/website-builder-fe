@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type FormEvent } from "react";
 import { safeHref } from "../links.ts";
-import { PaymentIconsBar, SiteImage, SiteLink, SocialIcon } from "../primitives.tsx";
+import { SiteBrand } from "./SiteHeader.tsx";
+import { PaymentIconsBar, SiteLink, SocialIcon } from "../primitives.tsx";
 import type { FooterData, LinkRef } from "../types.ts";
 
 function SocialCircleLinks({ social }: { social: LinkRef[] }) {
@@ -150,9 +151,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
         <div className="wb-container">
           <CtaBanner banner={ctaBanner} />
           <div className="wb-footer-inline-bar">
-            <a href="/" className="wb-brand">
-              {footer.logo ? <SiteImage image={footer.logo} /> : footer.siteName}
-            </a>
+            <SiteBrand siteName={footer.siteName} logo={footer.logo} displayMode={footer.logoDisplay} />
             {menu.length > 0 && (
               <ul className="wb-footer-nav-row">
                 {menu.map((item, idx) => (
@@ -183,9 +182,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
         <div className="wb-container">
           <CtaBanner banner={ctaBanner} />
           <div className="wb-footer-centered-wrap">
-            <a href="/" className="wb-brand">
-              {footer.logo ? <SiteImage image={footer.logo} /> : footer.siteName}
-            </a>
+            <SiteBrand siteName={footer.siteName} logo={footer.logo} displayMode={footer.logoDisplay} />
             {footer.tagline && <span className="wb-footer-tagline">{footer.tagline}</span>}
             {menu.length > 0 && (
               <ul className="wb-footer-nav-row justify-center">
@@ -223,9 +220,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
           <CtaBanner banner={ctaBanner} />
           <div className="wb-footer-newsletter-grid">
             <div className="wb-footer-about">
-              <a href="/" className="wb-brand">
-                {footer.logo ? <SiteImage image={footer.logo} /> : footer.siteName}
-              </a>
+              <SiteBrand siteName={footer.siteName} logo={footer.logo} displayMode={footer.logoDisplay} />
               {footer.tagline && <span className="wb-footer-tagline">{footer.tagline}</span>}
               {footer.description && <p className="wb-muted">{footer.description}</p>}
               <SocialCircleLinks social={footer.social} />
@@ -270,9 +265,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
           <CtaBanner banner={ctaBanner} />
           <div className="wb-footer-split-grid">
             <div className="wb-footer-about">
-              <a href="/" className="wb-brand">
-                {footer.logo ? <SiteImage image={footer.logo} /> : footer.siteName}
-              </a>
+              <SiteBrand siteName={footer.siteName} logo={footer.logo} displayMode={footer.logoDisplay} />
               {footer.tagline && <span className="wb-footer-tagline">{footer.tagline}</span>}
               <SocialCircleLinks social={footer.social} />
               <span className="wb-muted text-xs mt-2">{footer.copyright}</span>
@@ -335,9 +328,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
         >
           {/* Brand Col */}
           <div className="wb-footer-about">
-            <a href="/" className="wb-brand">
-              {footer.logo ? <SiteImage image={footer.logo} /> : footer.siteName}
-            </a>
+            <SiteBrand siteName={footer.siteName} logo={footer.logo} displayMode={footer.logoDisplay} />
             {footer.tagline && <span className="wb-footer-tagline">{footer.tagline}</span>}
             {footer.description && <p className="wb-muted">{footer.description}</p>}
             <SocialCircleLinks social={footer.social} />

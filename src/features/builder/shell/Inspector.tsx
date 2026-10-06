@@ -11,8 +11,14 @@ import {
   SectionStyleForm,
 } from "../../../pages/websites/editor/SectionForm.tsx";
 import { PageForm, ThemeForm } from "../../../pages/websites/editor/SiteSettingsForms.tsx";
-import { SECTION_DEFINITIONS, type Section, type SectionSettings } from "../../../site-kit/index.ts";
-import { useEditor, type SiteArea } from "../editor-context.ts";
+import {
+  DEFAULT_FONT,
+  isFontKey,
+  SECTION_DEFINITIONS,
+  type Section,
+  type SectionSettings,
+} from "../../../site-kit/index.ts";
+import { useEditor } from "../editor-context.ts";
 import { itemAsSection, type BuilderItem } from "../puck/adapter.ts";
 import { duplicateSection, removeSection, replaceSection, selectSection, useBuilderPuck } from "../puck/puck-api.ts";
 import { Tabs, ToolButton } from "./ui.tsx";
@@ -26,13 +32,16 @@ const SECTION_TABS: { id: SectionTab; label: string }[] = [
   { id: "advanced", label: "Advanced" },
 ];
 
-const AREA_TABS: { id: SiteArea; label: string }[] = [
+type SiteAreaTab = "page" | "theme";
+
+const AREA_TABS: { id: SiteAreaTab; label: string }[] = [
   { id: "page", label: "Page" },
   { id: "theme", label: "Theme" },
 ];
 
 function SectionInspector({ item, index }: { item: BuilderItem; index: number }) {
-  const { website, setSavedSections, notify } = useEditor();
+  const { website, draft, setSavedSections, notify } = useEditor();
+  const siteFont = isFontKey(draft.theme.fonts.heading) ? draft.theme.fonts.heading : DEFAULT_FONT;
   const dispatch = useBuilderPuck((state) => state.dispatch);
   const [tab, setTab] = useState<SectionTab>("content");
   const [saving, setSaving] = useState(false);
@@ -71,8 +80,22 @@ function SectionInspector({ item, index }: { item: BuilderItem; index: number })
       </header>
       <Tabs tabs={SECTION_TABS} value={tab} onChange={setTab} label="Section properties" />
       <div role="tabpanel" aria-label={SECTION_TABS.find((candidate) => candidate.id === tab)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        {tab === "content" && <SectionContentForm key={section.id} section={section} onChange={change} />}
-        {tab === "style" && <SectionStyleForm settings={section.settings} onChange={changeSettings} />}
+        {tab === "content" && (
+          <div className="flex flex-col">
+            <SectionContentForm key={section.id} section={section} onChange={change} />
+            <div className="border-t border-ed-border/70 p-3 mt-4">
+              <button
+                type="button"
+                onClick={() => removeSection(dispatch, index)}
+                className="flex w-full items-center justify-center gap-1.5 rounded-ed border border-ed-danger/40 bg-ed-danger-soft/50 py-2 text-ed-xs font-semibold text-ed-danger hover:bg-ed-danger hover:text-white transition-colors"
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+                Delete {definition.label.toLowerCase()}
+              </button>
+            </div>
+          </div>
+        )}
+        {tab === "style" && <SectionStyleForm settings={section.settings} siteFont={siteFont} onChange={changeSettings} />}
         {tab === "responsive" && <SectionResponsiveForm settings={section.settings} onChange={changeSettings} />}
         {tab === "advanced" && <SectionAdvancedForm settings={section.settings} onChange={changeSettings} />}
       </div>
@@ -92,7 +115,8 @@ function SectionInspector({ item, index }: { item: BuilderItem; index: number })
 }
 
 function SiteInspector() {
-  const { draft, page, themes, editDraft, selectPage, siteArea, setSiteArea } = useEditor();
+  const { draft, page, themes, editDraft, selectPage } = useEditor();
+  const [tab, setTab] = useState<SiteAreaTab>("page");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   function removePage() {
@@ -109,9 +133,9 @@ function SiteInspector() {
         <MousePointerClick className="size-4 text-ed-faint" aria-hidden />
         <p className="text-ed-xs text-ed-muted">Select a section on the canvas to edit it.</p>
       </header>
-      <Tabs tabs={AREA_TABS} value={siteArea} onChange={setSiteArea} label="Page and site settings" />
-      <div role="tabpanel" aria-label={AREA_TABS.find((tab) => tab.id === siteArea)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        {siteArea === "page" && (
+      <Tabs tabs={AREA_TABS} value={tab} onChange={setTab} label="Page and site settings" />
+      <div role="tabpanel" aria-label={AREA_TABS.find((t) => t.id === tab)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {tab === "page" && (
           <>
             <PageForm key={page.id} page={page} pages={draft.pages} onChange={(patch) => editDraft((current) => updatePageMeta(current, page.id, patch))} />
             {page.slug !== "/" && (
@@ -128,7 +152,7 @@ function SiteInspector() {
             )}
           </>
         )}
-        {siteArea === "theme" && (
+        {tab === "theme" && (
           <ThemeForm theme={draft.theme} presets={themes} onChange={(theme) => editDraft((current) => ({ ...current, theme }))} />
         )}
       </div>

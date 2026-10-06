@@ -92,26 +92,39 @@ export const SECTION_DEFINITIONS: { [T in SectionType]: SectionDefinition<T> } =
       label: "Features",
       category: "Features",
       description:
-        "Grid of feature blocks, each with an icon, title and description.",
+        "Customizable feature grid or split showcase with modern icon badges and clean typography.",
       createData: () => ({
-        heading: "Why choose us",
-        columns: 3,
-        mobileColumns: 1,
+        variant: "pastel-icons",
+        heading: "Our Features",
+        intro:
+          "Unleash your creativity with a visual collaboration platform that enables effective ideation.",
+        columns: 4,
+        mobileColumns: 2,
+        bottomCta: { label: "Learn more", href: "/features" },
         items: [
           {
-            icon: "bolt",
-            title: "Fast",
-            description: "Describe this benefit in a sentence.",
+            icon: "gear",
+            iconColor: "orange",
+            title: "Choosing a Service",
+            description: "Choosing an accountant that matches your needs.",
           },
           {
-            icon: "shield",
-            title: "Reliable",
-            description: "Describe this benefit in a sentence.",
+            icon: "user",
+            iconColor: "green",
+            title: "Our Clients Say",
+            description: "Read the reviews from some of our satisfied clients.",
           },
           {
-            icon: "heart",
-            title: "Friendly",
-            description: "Describe this benefit in a sentence.",
+            icon: "mail",
+            iconColor: "yellow",
+            title: "Initial Consultation",
+            description: "Understanding your accountancy requirements.",
+          },
+          {
+            icon: "phone",
+            iconColor: "cyan",
+            title: "Request a Callback",
+            description: "Let's talk at a more convenient time for you.",
           },
         ],
       }),
@@ -864,7 +877,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Hero · centered",
     category: "Hero",
     description:
-      "Centered headline with badge, dual action buttons, and rating stars.",
+      "Centered headline with badge and dual action buttons.",
     create: () =>
       createSection("hero", {
         data: {
@@ -877,24 +890,20 @@ export const SECTION_PRESETS: SectionPreset[] = [
             "Everything you need to launch a modern, high-converting digital experience in minutes.",
           primaryCta: { label: "Get started free", href: "/signup" },
           secondaryCta: { label: "Book a demo", href: "/demo" },
-          rating: {
-            stars: 5,
-            text: "Loved by 10,000+ creators & teams",
-            avatarCount: 4,
-          },
         },
       }),
   },
   {
     key: "hero-split",
     type: "hero",
-    label: "Hero · text + mockup right",
+    label: "Hero · split screen",
     category: "Hero",
-    description: "Headline and CTAs on left, product browser mockup on right.",
+    description: "Side-by-side headline, CTAs, and visual mockup with left/right toggle.",
     create: () =>
       createSection("hero", {
         data: {
           variant: "split",
+          imagePosition: "right",
           eyebrow: "Product Showcase",
           badgeIcon: "⚡",
           heading: "The smarter way to build websites",
@@ -904,42 +913,22 @@ export const SECTION_PRESETS: SectionPreset[] = [
           primaryCta: { label: "Start free trial", href: "/signup" },
           tertiaryCta: { label: "Watch 2-min demo", href: "#demo" },
           imageStyle: "mockup",
-          rating: { stars: 5, text: "5.0 rating on G2 & Product Hunt" },
         },
       }),
   },
   {
-    key: "hero-split-left",
+    key: "hero-platform-showcase",
     type: "hero",
-    label: "Hero · image left + text right",
-    category: "Hero",
-    description: "Visual media on left, compelling copy and actions on right.",
-    create: () =>
-      createSection("hero", {
-        data: {
-          variant: "split-left",
-          eyebrow: "Built for speed",
-          heading: "Designed from the ground up for performance",
-          highlightText: "performance",
-          subheading:
-            "Supercharge your workflow with instant previews and lightweight modular code.",
-          primaryCta: { label: "Explore features", href: "/features" },
-          secondaryCta: { label: "Learn more", href: "/about" },
-        },
-      }),
-  },
-  {
-    key: "hero-floating-cards",
-    type: "hero",
-    label: "Hero · floating stats cards",
+    label: "Hero · platform showcase",
     category: "Hero",
     description:
-      "Split hero with animated floating feature badges and metrics.",
+      "Split screen hero with glowing platform dashboard visual and dual action buttons.",
     create: () =>
       createSection("hero", {
         data: {
-          variant: "floating-cards",
+          variant: "split",
           eyebrow: "Growth Platform",
+          badgeIcon: "🚀",
           heading: "Turn visitors into lifelong customers",
           highlightText: "lifelong customers",
           subheading:
@@ -951,20 +940,6 @@ export const SECTION_PRESETS: SectionPreset[] = [
             alt: "Platform growth metrics and analytics dashboard",
           },
           imageStyle: "glow",
-          floatingCards: [
-            {
-              title: "+148% Growth",
-              subtitle: "Monthly active users",
-              badge: "Live",
-              icon: "📈",
-            },
-            {
-              title: "4.9 / 5.0",
-              subtitle: "2,400+ Verified reviews",
-              badge: "Top Rated",
-              icon: "⭐",
-            },
-          ],
         },
       }),
   },
@@ -1083,30 +1058,6 @@ export const SECTION_PRESETS: SectionPreset[] = [
       }),
   },
   {
-    key: "hero-community-illustration",
-    type: "hero",
-    label: "Hero · bottom illustration & community",
-    category: "Hero",
-    description:
-      "Centered hero with 3D team/community characters anchored seamlessly along the bottom edge.",
-    create: () =>
-      createSection("hero", {
-        data: {
-          variant: "centered",
-          eyebrow: "Global Network",
-          badgeIcon: "✨",
-          heading: "Find Your Tribe, Build Your Network.",
-          highlightText: "Your Network",
-          subheading:
-            "Connect with like-minded students for fun, friendships, and future opportunities.",
-          primaryCta: { label: "Join for Free →", href: "/signup" },
-          secondaryCta: { label: "Explore Communities", href: "/communities" },
-          bgImagePosition: "bottom",
-          bgOverlayType: "none",
-        },
-      }),
-  },
-  {
     key: "hero-background-image",
     type: "hero",
     label: "Hero · background image overlay",
@@ -1170,6 +1121,217 @@ export const SECTION_PRESETS: SectionPreset[] = [
     description: "Centered headline on your primary colour.",
     create: () =>
       createSection("hero", { settings: { background: "primary" } }),
+  },
+  {
+    key: "features-pastel",
+    type: "features",
+    label: "Features · pastel highlights",
+    category: "Features",
+    description: "4-column minimalist features with soft pastel circular icon badges and clean bottom link.",
+    create: () =>
+      createSection("features", {
+        data: {
+          variant: "pastel-icons",
+          iconStyle: "pastel-circle",
+          cardStyle: "transparent",
+          align: "center",
+          heading: "Our Features",
+          intro:
+            "Unleash your creativity with a visual collaboration platform that enables effective ideation.",
+          columns: 4,
+          mobileColumns: 2,
+          bottomCta: { label: "Learn more", href: "/features" },
+          items: [
+            {
+              icon: "gear",
+              iconColor: "orange",
+              title: "Choosing a Service",
+              description: "Choosing an accountant that matches your needs.",
+            },
+            {
+              icon: "user",
+              iconColor: "green",
+              title: "Our Clients Say",
+              description: "Read the reviews from some of our satisfied clients.",
+            },
+            {
+              icon: "mail",
+              iconColor: "yellow",
+              title: "Initial Consultation",
+              description: "Understanding your accountancy requirements.",
+            },
+            {
+              icon: "phone",
+              iconColor: "cyan",
+              title: "Request a Callback",
+              description: "Let's talk at a more convenient time for you.",
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "features-split-showcase",
+    type: "features",
+    label: "Features · split screen showcase",
+    category: "Features",
+    description:
+      "Headline & 3D isometric dashboard visual on left with stacked elevated feature cards on right.",
+    create: () =>
+      createSection("features", {
+        data: {
+          variant: "split",
+          splitPosition: "left",
+          eyebrow: "Product Capabilities",
+          heading: "Exclusive Features.",
+          intro:
+            "Data should underlie every business decision. Yet too often cultural artifacts lead the business down the wrong routes.",
+          splitCta: { label: "Explore More", href: "/features" },
+          iconStyle: "square-badge",
+          items: [
+            {
+              icon: "check",
+              iconColor: "green",
+              title: "Easy To Use",
+              description:
+                "The Isaac SDK robotics developer toolbox designed to change that with general availability.",
+            },
+            {
+              icon: "chart",
+              iconColor: "yellow",
+              title: "Daily Report",
+              description:
+                "Comprehensive analytics and automated daily summary digests for your entire team.",
+            },
+            {
+              icon: "clock",
+              iconColor: "blue",
+              title: "Real Time",
+              description:
+                "Instant data synchronization and lightning-fast low latency updates across all platforms.",
+            },
+            {
+              icon: "shield",
+              iconColor: "pink",
+              title: "Extreme Security",
+              description:
+                "Enterprise-grade end-to-end data encryption and compliance safeguards by default.",
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "features-minimal-grid",
+    type: "features",
+    label: "Features · minimal clean grid",
+    category: "Features",
+    description:
+      "Clean 3-column minimalist layout with bold accent icons and spacious typography.",
+    create: () =>
+      createSection("features", {
+        data: {
+          variant: "minimal",
+          iconStyle: "minimal-accent",
+          cardStyle: "transparent",
+          align: "center",
+          columns: 3,
+          mobileColumns: 1,
+          heading: "Amazing Features",
+          intro:
+            "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration.",
+          items: [
+            {
+              icon: "gear",
+              iconColor: "blue",
+              title: "Powerful Dashboard",
+              description:
+                "Utise wisi enim minim veniam, quis et stationes ullamcorper suscipit ets lobortis nisle consequat nihis etim.",
+            },
+            {
+              icon: "tools",
+              iconColor: "blue",
+              title: "User Friendly",
+              description:
+                "Utise wisi enim minim veniam, quis et stationes ullamcorper suscipit ets lobortis nisle consequat nihis etim.",
+            },
+            {
+              icon: "bell",
+              iconColor: "blue",
+              title: "Smart Notifications",
+              description:
+                "Utise wisi enim minim veniam, quis et stationes ullamcorper suscipit ets lobortis nisle consequat nihis etim.",
+            },
+            {
+              icon: "wallet",
+              iconColor: "blue",
+              title: "Cost Control",
+              description:
+                "Utise wisi enim minim veniam, quis et stationes ullamcorper suscipit ets lobortis nisle consequat nihis etim.",
+            },
+            {
+              icon: "pointer",
+              iconColor: "blue",
+              title: "Unique Features",
+              description:
+                "Utise wisi enim minim veniam, quis et stationes ullamcorper suscipit ets lobortis nisle consequat nihis etim.",
+            },
+            {
+              icon: "help",
+              iconColor: "blue",
+              title: "Support 24/7",
+              description:
+                "Utise wisi enim minim veniam, quis et stationes ullamcorper suscipit ets lobortis nisle consequat nihis etim.",
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "features-cards-elevated",
+    type: "features",
+    label: "Features · elevated modern cards",
+    category: "Features",
+    description: "Modern container cards with subtle borders and smooth hover lift.",
+    create: () =>
+      createSection("features", {
+        data: {
+          variant: "cards",
+          iconStyle: "pastel-circle",
+          cardStyle: "surface",
+          align: "left",
+          heading: "Engineered for speed and security",
+          intro: "Discover the cutting-edge features powering next-generation websites.",
+          columns: 3,
+          mobileColumns: 1,
+          items: [
+            {
+              icon: "sparkles",
+              iconColor: "purple",
+              badge: "AI Powered",
+              title: "Smart Automation",
+              description:
+                "Save hundreds of hours with intelligent workflows and real-time assisted editing.",
+            },
+            {
+              icon: "rocket",
+              iconColor: "orange",
+              badge: "Blazing Fast",
+              title: "Instant Global CDN",
+              description:
+                "Lightning fast delivery edge-cached across 300+ worldwide edge nodes.",
+            },
+            {
+              icon: "lock",
+              iconColor: "green",
+              badge: "Enterprise",
+              title: "Bank-Grade Protection",
+              description:
+                "Automatic SSL certificates, DDoS mitigation, and continuous vulnerability scans.",
+            },
+          ],
+        },
+      }),
   },
   {
     key: "features-3",

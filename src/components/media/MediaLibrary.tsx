@@ -18,6 +18,7 @@ import SaveNameDialog from "../../pages/websites/editor/SaveNameDialog.tsx";
 import ConfirmDialog from "../ui/ConfirmDialog.tsx";
 import FormAlert from "../ui/FormAlert.tsx";
 import SelectInput, { type SelectOption } from "../ui/SelectInput.tsx";
+import { optimizeImageToWebP } from "../../utils/image-optimizer.ts";
 import MediaDeleteDialog from "./MediaDeleteDialog.tsx";
 import MediaDetailsDialog from "./MediaDetailsDialog.tsx";
 
@@ -133,8 +134,9 @@ export default function MediaLibrary({ clientId, requiresClient = false, website
         continue;
       }
       try {
+        const { file: fileToUpload } = await optimizeImageToWebP(file);
         await mediaApi.upload({
-          file,
+          file: fileToUpload,
           clientId,
           websiteId,
           folderId: folderFilter && folderFilter !== "none" ? folderFilter : undefined,
