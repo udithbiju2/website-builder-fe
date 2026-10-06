@@ -7,11 +7,12 @@ import {
   type ReactNode,
 } from "react";
 import { Button, Checkbox, Dropdown, Label } from "@heroui/react";
-import { Check, ChevronDown, ChevronUp, Images, Plus, Trash2, Upload } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Eye, Images, Plus, Trash2, Upload } from "lucide-react";
 import { errorMessage } from "../../../api/http.ts";
 import { ACCEPT_BY_KIND, mediaApi, uploadProblem, type MediaFile } from "../../../api/media.ts";
 import MediaPickerDialog from "../../../components/media/MediaPickerDialog.tsx";
 import { CellColorPicker } from "../../../components/ui/CellColorPicker.tsx";
+import { Lightbox } from "../../../components/ui/Lightbox.tsx";
 import type { ImageRef, LinkRef } from "../../../site-kit/index.ts";
 
 const SAFE_HREF =
@@ -375,6 +376,7 @@ export function ImageField({
   const inputRef = useRef<HTMLInputElement>(null);
   const [picking, setPicking] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const image = value ?? { url: "", alt: "" };
   const urlError =
@@ -407,16 +409,57 @@ export function ImageField({
       <legend className="px-1 text-ed-xs font-semibold text-ed-text">
         {label}
       </legend>
+
+      {/* Image Thumbnail with Click-to-Lightbox & Action Overlay */}
       {image.url && !urlError && (
-        <img
+        <div className="group/preview relative overflow-hidden rounded-ed border border-ed-border bg-ed-subtle shadow-ed-xs transition">
+          <img
+            src={image.url}
+            alt={image.alt || label}
+            className="h-24 w-full object-cover transition-transform duration-200 group-hover/preview:scale-105 cursor-pointer"
+            onClick={() => setLightboxOpen(true)}
+          />
+
+          {/* Hover overlay with Preview & Quick Remove actions */}
+          <div className="absolute inset-0 flex items-center justify-center gap-1.5 bg-black/50 opacity-0 group-hover/preview:opacity-100 transition-opacity backdrop-blur-[2px]">
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              title="View full preview"
+              className="inline-flex items-center gap-1 rounded-ed bg-white/95 hover:bg-white text-zinc-900 px-2.5 py-1 text-ed-2xs font-semibold shadow-sm transition active:scale-95"
+            >
+              <Eye className="size-3.5" />
+              <span>Preview</span>
+            </button>
+            {optional && (
+              <button
+                type="button"
+                onClick={() => update({ url: "", alt: "" })}
+                title="Remove image"
+                className="inline-flex items-center justify-center rounded-ed bg-red-600/90 hover:bg-red-600 text-white size-6 shadow-sm transition active:scale-95"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {image.url && (
+        <Lightbox
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
           src={image.url}
-          alt=""
-          className="h-20 w-full rounded-ed border border-ed-border bg-ed-subtle object-cover shadow-ed-xs"
+          alt={image.alt || label}
+          title={label}
         />
       )}
+
+      {/* Upload and Media Library Action Bar */}
       {media && (
-        <div className="flex flex-col gap-1">
-          <div className="flex gap-1.5">
+        <div className="flex flex-col gap-1.5">
+          <div className="grid grid-cols-2 gap-2">
             <input
               ref={inputRef}
               type="file"
@@ -434,19 +477,19 @@ export function ImageField({
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="flex h-7 flex-1 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs hover:bg-ed-hover disabled:cursor-wait disabled:opacity-60"
+              className="flex h-8 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs transition hover:bg-ed-hover hover:border-ed-border-strong disabled:cursor-wait disabled:opacity-60 truncate"
             >
-              <Upload className="size-3.5" aria-hidden />
-              {uploading ? "Uploading…" : "Upload"}
+              <Upload className="size-3.5 shrink-0" aria-hidden />
+              <span className="truncate">{uploading ? "Uploading…" : "Upload"}</span>
             </button>
             <button
               type="button"
               onClick={() => setPicking(true)}
               disabled={uploading}
-              className="flex h-7 flex-1 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs hover:bg-ed-hover disabled:opacity-60"
+              className="flex h-8 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs transition hover:bg-ed-hover hover:border-ed-border-strong disabled:opacity-60 truncate"
             >
-              <Images className="size-3.5" aria-hidden />
-              Choose from library
+              <Images className="size-3.5 shrink-0" aria-hidden />
+              <span className="truncate">Library</span>
             </button>
           </div>
           {uploadError && (
