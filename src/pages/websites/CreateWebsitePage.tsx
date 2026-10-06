@@ -86,7 +86,7 @@ export default function CreateWebsitePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isAdmin = user?.role === "SUPER_ADMIN";
-  const backTo = isAdmin ? "/admin/websites" : "/dashboard";
+  const backTo = isAdmin ? "/admin/websites" : "/websites";
 
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<InfoForm>({
@@ -241,7 +241,7 @@ export default function CreateWebsitePage() {
     <div className="min-h-screen bg-canvas">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface px-6 py-3">
         <Link to={backTo} className="inline-flex items-center gap-1 text-sm text-brand hover:underline">
-          <ArrowLeft className="size-4" aria-hidden /> {isAdmin ? "All websites" : "Back to dashboard"}
+          <ArrowLeft className="size-4" aria-hidden /> {isAdmin ? "All websites" : "My websites"}
         </Link>
         <h1 className="text-sm font-semibold text-ink">Create a new website</h1>
         <p className="text-sm text-ink-body">
