@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import { Files, Images, Layers, LayoutTemplate, Plus, Sparkles, type LucideProps } from "lucide-react";
+import AppTooltip from "../../../components/ui/AppTooltip.tsx";
 import { useEditor, type LeftPanelId } from "../editor-context.ts";
 import AddPanel from "./panels/AddPanel.tsx";
 import AssetsPanel from "./panels/AssetsPanel.tsx";
@@ -17,18 +18,19 @@ const PANELS: { id: LeftPanelId; label: string; icon: ComponentType<LucideProps>
 
 function RailButton({ label, active, onClick, children }: { label: string; active: boolean; onClick: () => void; children: ReactNode }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={active}
-      title={label}
-      onClick={onClick}
-      className={`relative grid size-9 place-items-center rounded-ed transition-colors ${
-        active ? "bg-ed-accent-soft text-ed-accent" : "text-ed-muted hover:bg-ed-hover hover:text-ed-text"
-      }`}
-    >
-      {children}
-    </button>
+    <AppTooltip content={label} placement="right" offset={8}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={active}
+        onClick={onClick}
+        className={`relative grid size-9 place-items-center rounded-ed transition-colors ${
+          active ? "bg-ed-accent-soft text-ed-accent" : "text-ed-muted hover:bg-ed-hover hover:text-ed-text"
+        }`}
+      >
+        {children}
+      </button>
+    </AppTooltip>
   );
 }
 

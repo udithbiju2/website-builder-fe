@@ -1,5 +1,6 @@
 import { useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { Search, X } from "lucide-react";
+import AppTooltip from "../../../components/ui/AppTooltip.tsx";
 
 type ToolButtonProps = {
   label: string;
@@ -10,10 +11,11 @@ type ToolButtonProps = {
   shortcut?: string;
   size?: "sm" | "md";
   tone?: "default" | "danger";
+  placement?: "top" | "bottom" | "left" | "right";
 };
 
-/** Icon-only button with an accessible name and a native tooltip. */
-export function ToolButton({ label, onClick, children, active, disabled, shortcut, size = "md", tone = "default" }: ToolButtonProps) {
+/** Icon-only button with an accessible name and a premium HeroUI tooltip. */
+export function ToolButton({ label, onClick, children, active, disabled, shortcut, size = "md", tone = "default", placement = "bottom" }: ToolButtonProps) {
   const dimension = size === "sm" ? "size-7" : "size-8";
   const colors =
     tone === "danger"
@@ -22,17 +24,18 @@ export function ToolButton({ label, onClick, children, active, disabled, shortcu
         ? "bg-ed-accent-soft text-ed-accent"
         : "text-ed-muted hover:bg-ed-hover hover:text-ed-text";
   return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={active}
-      title={shortcut ? `${label} (${shortcut})` : label}
-      disabled={disabled}
-      onClick={onClick}
-      className={`grid ${dimension} shrink-0 place-items-center rounded-ed transition-colors disabled:pointer-events-none disabled:opacity-35 ${colors}`}
-    >
-      {children}
-    </button>
+    <AppTooltip content={label} shortcut={shortcut} placement={placement} isDisabled={disabled}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={active}
+        disabled={disabled}
+        onClick={onClick}
+        className={`grid ${dimension} shrink-0 place-items-center rounded-ed transition-colors disabled:pointer-events-none disabled:opacity-35 ${colors}`}
+      >
+        {children}
+      </button>
+    </AppTooltip>
   );
 }
 

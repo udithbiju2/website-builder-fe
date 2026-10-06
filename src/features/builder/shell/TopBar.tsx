@@ -1,5 +1,6 @@
 import { ArrowLeft, ChevronRight, ExternalLink, Monitor, Redo2, ShieldCheck, Smartphone, Tablet, Undo2, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
+import AppTooltip from "../../../components/ui/AppTooltip.tsx";
 import type { Device } from "../../../components/websites/DevicePreview.tsx";
 import { useEditor } from "../editor-context.ts";
 import { useBuilderPuck } from "../puck/puck-api.ts";
@@ -54,14 +55,15 @@ export default function TopBar({ backTo, onPublish }: TopBarProps) {
 
   return (
     <header className="z-(--z-ed-toolbar) flex h-12 shrink-0 items-center gap-2 border-b border-ed-border bg-ed-panel px-2">
-      <Link
-        to={backTo}
-        aria-label="Back to websites"
-        title="Back to websites"
-        className="grid size-8 place-items-center rounded-ed text-ed-muted hover:bg-ed-hover hover:text-ed-text"
-      >
-        <ArrowLeft className="size-4" aria-hidden />
-      </Link>
+      <AppTooltip content="Back to websites" placement="bottom">
+        <Link
+          to={backTo}
+          aria-label="Back to websites"
+          className="grid size-8 place-items-center rounded-ed text-ed-muted hover:bg-ed-hover hover:text-ed-text"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+        </Link>
+      </AppTooltip>
       <span className="h-5 w-px bg-ed-border" aria-hidden />
 
       <nav aria-label="Breadcrumb" className="min-w-0">
@@ -92,31 +94,33 @@ export default function TopBar({ backTo, onPublish }: TopBarProps) {
         <span className="mx-1 h-5 w-px bg-ed-border" aria-hidden />
         <div role="radiogroup" aria-label="Preview device" className="flex rounded-ed bg-ed-subtle p-0.5">
           {DEVICE_OPTIONS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={device === id}
-              aria-label={label}
-              title={label}
-              onClick={() => setDevice(id)}
-              className={`grid h-7 w-8 place-items-center rounded-ed-sm transition-colors ${
-                device === id ? "bg-ed-panel text-ed-text shadow-ed-xs" : "text-ed-muted hover:text-ed-text"
-              }`}
-            >
-              <Icon className="size-4" aria-hidden />
-            </button>
+            <AppTooltip key={id} content={label} placement="bottom">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={device === id}
+                aria-label={label}
+                onClick={() => setDevice(id)}
+                className={`grid h-7 w-8 place-items-center rounded-ed-sm transition-colors ${
+                  device === id ? "bg-ed-panel text-ed-text shadow-ed-xs" : "text-ed-muted hover:text-ed-text"
+                }`}
+              >
+                <Icon className="size-4" aria-hidden />
+              </button>
+            </AppTooltip>
           ))}
         </div>
       </div>
 
-      <span
-        className="hidden items-center gap-1 text-ed-xs text-ed-muted xl:inline-flex"
-        title={role === "SUPER_ADMIN" ? "Platform admin: can edit and publish any website" : "Owner: can edit and publish this website"}
+      <AppTooltip
+        content={role === "SUPER_ADMIN" ? "Platform admin: can edit and publish any website" : "Owner: can edit and publish this website"}
+        placement="bottom"
       >
-        {role === "SUPER_ADMIN" ? <ShieldCheck className="size-3.5" aria-hidden /> : <UserRound className="size-3.5" aria-hidden />}
-        {role === "SUPER_ADMIN" ? "Admin" : "Owner"}
-      </span>
+        <span className="hidden items-center gap-1 text-ed-xs text-ed-muted xl:inline-flex cursor-default">
+          {role === "SUPER_ADMIN" ? <ShieldCheck className="size-3.5" aria-hidden /> : <UserRound className="size-3.5" aria-hidden />}
+          {role === "SUPER_ADMIN" ? "Admin" : "Owner"}
+        </span>
+      </AppTooltip>
       <button
         type="button"
         onClick={() => void openPreview()}

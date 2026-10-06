@@ -20,6 +20,7 @@ import {
   Users,
   type LucideProps,
 } from "lucide-react";
+import AppTooltip from "../../../../components/ui/AppTooltip.tsx";
 import { LIMITS } from "../../../../pages/websites/editor/editor-state.ts";
 import {
   SECTION_PRESETS,
@@ -156,32 +157,32 @@ export default function AddPanel() {
           {CATEGORIES.map(({ id, shortLabel, label, icon: Icon }) => {
             const isSelected = selectedCategoryId === id && !query.trim();
             return (
-              <button
-                key={id}
-                type="button"
-                title={label}
-                aria-label={label}
-                aria-pressed={isSelected}
-                onClick={() => {
-                  setSelectedCategoryId(id);
-                  if (query) setQuery("");
-                }}
-                className={`group flex flex-col items-center justify-center rounded-ed py-1.5 px-0.5 text-center transition-all ${
-                  isSelected
-                    ? "bg-white text-ed-accent shadow-xs dark:bg-zinc-800"
-                    : "text-ed-muted hover:bg-ed-hover hover:text-ed-text"
-                }`}
-              >
-                <Icon
-                  className={`size-4 transition-transform group-hover:scale-105 ${
-                    isSelected ? "text-ed-accent" : "text-ed-muted group-hover:text-ed-text"
+              <AppTooltip key={id} content={label} placement="right" offset={8}>
+                <button
+                  type="button"
+                  aria-label={label}
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    setSelectedCategoryId(id);
+                    if (query) setQuery("");
+                  }}
+                  className={`group flex w-full flex-col items-center justify-center rounded-ed py-1.5 px-0.5 text-center transition-all ${
+                    isSelected
+                      ? "bg-white text-ed-accent shadow-xs dark:bg-zinc-800"
+                      : "text-ed-muted hover:bg-ed-hover hover:text-ed-text"
                   }`}
-                  aria-hidden
-                />
-                <span className="mt-0.5 block w-full truncate text-[9px] font-medium leading-none">
-                  {shortLabel}
-                </span>
-              </button>
+                >
+                  <Icon
+                    className={`size-4 transition-transform group-hover:scale-105 ${
+                      isSelected ? "text-ed-accent" : "text-ed-muted group-hover:text-ed-text"
+                    }`}
+                    aria-hidden
+                  />
+                  <span className="mt-0.5 block w-full truncate text-[9px] font-medium leading-none">
+                    {shortLabel}
+                  </span>
+                </button>
+              </AppTooltip>
             );
           })}
         </nav>
