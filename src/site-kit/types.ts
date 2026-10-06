@@ -188,7 +188,31 @@ export type SectionSettings = {
   customColors?: SectionCustomColors;
 };
 
-export type IconName = "check" | "star" | "bolt" | "shield" | "heart" | "chat";
+export type IconName =
+  | "check"
+  | "star"
+  | "bolt"
+  | "shield"
+  | "heart"
+  | "chat"
+  | "gear"
+  | "user"
+  | "mail"
+  | "phone"
+  | "chart"
+  | "clock"
+  | "tools"
+  | "bell"
+  | "wallet"
+  | "pointer"
+  | "help"
+  | "sparkles"
+  | "rocket"
+  | "layers"
+  | "box"
+  | "lock"
+  | "cloud"
+  | "code";
 
 export const HERO_VARIANTS = [
   "centered",
@@ -261,12 +285,50 @@ export type HeroData = {
 
 export type GridColumns = 1 | 2 | 3 | 4;
 
+export type FeatureColor =
+  | "orange"
+  | "green"
+  | "blue"
+  | "yellow"
+  | "purple"
+  | "pink"
+  | "cyan"
+  | "indigo"
+  | "red"
+  | "default";
+
+export type FeatureItem = {
+  icon?: IconName | string;
+  iconColor?: FeatureColor;
+  badge?: string;
+  title: string;
+  description: string;
+  link?: LinkRef;
+  image?: ImageRef;
+};
+
 export type FeaturesData = {
   heading: string;
+  eyebrow?: string;
   intro?: string;
+  variant?: "grid" | "split" | "minimal" | "cards" | "pastel-icons";
+  iconStyle?:
+    | "pastel-circle"
+    | "square-badge"
+    | "minimal-accent"
+    | "colored-circle"
+    | "none";
+  cardStyle?: "transparent" | "surface" | "bordered" | "glass";
+  align?: "left" | "center";
   columns: GridColumns;
   mobileColumns: GridColumns;
-  items: { icon?: IconName; title: string; description: string }[];
+  items: FeatureItem[];
+  // Split showcase options
+  splitPosition?: "left" | "right";
+  splitImage?: ImageRef;
+  splitCta?: LinkRef;
+  secondaryCta?: LinkRef;
+  bottomCta?: LinkRef;
 };
 
 export type ServicesData = {

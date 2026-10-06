@@ -2,6 +2,7 @@ import type {
   ContactData,
   CtaData,
   FaqData,
+  FeatureItem,
   FeaturesData,
   GalleryData,
   GridColumns,
@@ -48,12 +49,43 @@ const COLUMN_OPTIONS: { value: GridColumns; label: string }[] = [
 
 const ICON_OPTIONS: { value: IconName | ""; label: string }[] = [
   { value: "", label: "No icon" },
-  { value: "check", label: "Check" },
-  { value: "star", label: "Star" },
-  { value: "bolt", label: "Lightning" },
-  { value: "shield", label: "Shield" },
-  { value: "heart", label: "Heart" },
-  { value: "chat", label: "Chat" },
+  { value: "gear", label: "Settings / Gear ⚙️" },
+  { value: "user", label: "User / Profile 👤" },
+  { value: "mail", label: "Mail / Contact ✉️" },
+  { value: "phone", label: "Phone / Callback 📞" },
+  { value: "chart", label: "Chart / Analytics 📊" },
+  { value: "clock", label: "Clock / Real-time ⏱️" },
+  { value: "tools", label: "Tools / Wrench 🛠️" },
+  { value: "bell", label: "Bell / Notification 🔔" },
+  { value: "wallet", label: "Wallet / Cost 💳" },
+  { value: "pointer", label: "Pointer / Interactive 👆" },
+  { value: "help", label: "Help / Support ❓" },
+  { value: "sparkles", label: "Sparkles / AI ✨" },
+  { value: "rocket", label: "Rocket / Speed 🚀" },
+  { value: "layers", label: "Layers / Stack 🥞" },
+  { value: "box", label: "Box / Package 📦" },
+  { value: "lock", label: "Lock / Security 🔒" },
+  { value: "cloud", label: "Cloud / Sync ☁️" },
+  { value: "code", label: "Code / API 💻" },
+  { value: "check", label: "Checkmark ✓" },
+  { value: "star", label: "Star ★" },
+  { value: "bolt", label: "Lightning ⚡" },
+  { value: "shield", label: "Shield 🛡️" },
+  { value: "heart", label: "Heart ❤️" },
+  { value: "chat", label: "Chat 💬" },
+];
+
+const FEATURE_COLOR_OPTIONS = [
+  { value: "default", label: "Auto (Palette cycled)" },
+  { value: "orange", label: "Orange" },
+  { value: "green", label: "Green" },
+  { value: "blue", label: "Blue" },
+  { value: "yellow", label: "Yellow" },
+  { value: "cyan", label: "Cyan" },
+  { value: "purple", label: "Purple" },
+  { value: "pink", label: "Pink" },
+  { value: "indigo", label: "Indigo" },
+  { value: "red", label: "Red" },
 ];
 
 const BACKGROUND_OPTIONS: { value: SectionBackground; label: string }[] = [
@@ -595,47 +627,229 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
 }
 
 function FeaturesForm({ data, onChange }: DataFormProps<FeaturesData>) {
+  const isSplit = data.variant === "split";
+
   return (
     <>
-      <FormGroup title="Content">
+      <FormGroup title="Features layout & style">
+        <SelectField
+          label="Layout variant"
+          value={data.variant ?? "grid"}
+          options={[
+            {
+              value: "grid",
+              label: "Standard responsive grid (Cards & icons)",
+            },
+            {
+              value: "split",
+              label: "Split screen showcase (Headline + mockup on one side, stacked cards on other)",
+            },
+            {
+              value: "pastel-icons",
+              label: "Pastel icon highlights (Soft circular badges with clean typography)",
+            },
+            {
+              value: "minimal",
+              label: "Minimal clean grid (Modern accent icons, borderless)",
+            },
+            {
+              value: "cards",
+              label: "Elevated modern cards (Surface cards with hover lift & subtle shadow)",
+            },
+          ]}
+          onChange={(variant) =>
+            onChange({
+              ...data,
+              variant: variant as FeaturesData["variant"],
+            })
+          }
+        />
+
+        {isSplit && (
+          <>
+            <SelectField
+              label="Split layout alignment"
+              value={data.splitPosition ?? "left"}
+              options={[
+                {
+                  value: "left",
+                  label: "Visual & headline on Left, Feature cards on Right",
+                },
+                {
+                  value: "right",
+                  label: "Feature cards on Left, Visual & headline on Right",
+                },
+              ]}
+              onChange={(pos) =>
+                onChange({
+                  ...data,
+                  splitPosition: pos as "left" | "right",
+                })
+              }
+              hint="Easily flip the visual showcase and feature card stack between left and right."
+            />
+            <ImageField
+              label="Custom mockup image (optional, default isometric 3D chart is used if empty)"
+              value={data.splitImage}
+              onChange={(splitImage) => onChange({ ...data, splitImage })}
+              optional
+            />
+            <OptionalLinkField
+              label="Primary CTA button (optional)"
+              value={data.splitCta}
+              onChange={(splitCta) => onChange({ ...data, splitCta })}
+              fallback={{ label: "Explore more", href: "/features" }}
+            />
+            <OptionalLinkField
+              label="Secondary CTA button (optional)"
+              value={data.secondaryCta}
+              onChange={(secondaryCta) => onChange({ ...data, secondaryCta })}
+              fallback={{ label: "Book a demo", href: "/demo" }}
+            />
+          </>
+        )}
+
+        <SelectField
+          label="Icon badge style"
+          value={data.iconStyle ?? (data.variant === "pastel-icons" ? "pastel-circle" : isSplit ? "square-badge" : data.variant === "minimal" ? "minimal-accent" : "pastel-circle")}
+          options={[
+            {
+              value: "pastel-circle",
+              label: "Pastel circular badges (Soft tinted round backgrounds)",
+            },
+            {
+              value: "square-badge",
+              label: "Modern rounded squircle (Subtle border and tinted surface)",
+            },
+            {
+              value: "minimal-accent",
+              label: "Minimal clean icon (Brand color with no background box)",
+            },
+            {
+              value: "colored-circle",
+              label: "Solid / gradient colored circle",
+            },
+            { value: "none", label: "Hide icons" },
+          ]}
+          onChange={(iconStyle) =>
+            onChange({
+              ...data,
+              iconStyle: iconStyle as FeaturesData["iconStyle"],
+            })
+          }
+        />
+
+        <SelectField
+          label="Card container style"
+          value={data.cardStyle ?? (data.variant === "cards" ? "surface" : data.variant === "minimal" || data.variant === "pastel-icons" ? "transparent" : "surface")}
+          options={[
+            { value: "transparent", label: "Transparent / Flat (No background box)" },
+            { value: "surface", label: "Surface card (Tinted background & soft hover)" },
+            { value: "bordered", label: "Subtle outlined border" },
+            { value: "glass", label: "Glassmorphism (Frosted glass blur & soft border)" },
+          ]}
+          onChange={(cardStyle) =>
+            onChange({
+              ...data,
+              cardStyle: cardStyle as FeaturesData["cardStyle"],
+            })
+          }
+        />
+
+        <SelectField
+          label="Content alignment"
+          value={data.align ?? (isSplit ? "left" : "center")}
+          options={[
+            { value: "center", label: "Center aligned" },
+            { value: "left", label: "Left aligned" },
+          ]}
+          onChange={(align) =>
+            onChange({
+              ...data,
+              align: align as "left" | "center",
+            })
+          }
+        />
+      </FormGroup>
+
+      <FormGroup title="Headings & copy">
         <TextField
-          label="Heading"
+          label="Badge / Eyebrow (optional)"
+          value={data.eyebrow ?? ""}
+          onChange={(eyebrow) =>
+            onChange({ ...data, eyebrow: eyebrow || undefined })
+          }
+          maxLength={100}
+          placeholder="Capabilities"
+        />
+        <TextField
+          label="Main heading"
           value={data.heading}
           onChange={(heading) => onChange({ ...data, heading })}
           maxLength={200}
           required
         />
         <TextAreaField
-          label="Intro"
-          value={data.intro}
-          onChange={(intro) => onChange({ ...data, intro })}
+          label="Intro description (optional)"
+          value={data.intro ?? ""}
+          onChange={(intro) =>
+            onChange({ ...data, intro: intro || undefined })
+          }
           maxLength={500}
         />
-        <ColumnsFields data={data} onChange={onChange} />
+
+        {!isSplit && <ColumnsFields data={data} onChange={onChange} />}
+
+        {!isSplit && (
+          <OptionalLinkField
+            label="Bottom link / CTA (optional)"
+            value={data.bottomCta}
+            onChange={(bottomCta) => onChange({ ...data, bottomCta })}
+            fallback={{ label: "Learn more", href: "/features" }}
+          />
+        )}
       </FormGroup>
-      <FormGroup title="Features">
+
+      <FormGroup title="Feature items">
         <ItemList<FeaturesData["items"][number]>
           label="Items"
           items={data.items}
           max={24}
           onChange={(items) => onChange({ ...data, items })}
           create={() => ({
-            icon: "check",
+            icon: "gear",
+            iconColor: "orange",
             title: "New feature",
-            description: "Describe this benefit.",
+            description: "Describe this benefit clearly.",
           })}
           itemTitle={(item) => item.title}
           addLabel="Add feature"
           renderItem={(item, update) => (
             <>
-              <SelectField
-                label="Icon"
-                value={item.icon ?? ""}
-                options={ICON_OPTIONS}
-                onChange={(icon) =>
-                  update({ ...item, icon: icon || undefined })
-                }
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <SelectField
+                  label="Icon"
+                  value={item.icon ?? ""}
+                  options={ICON_OPTIONS}
+                  onChange={(icon) =>
+                    update({ ...item, icon: icon || undefined })
+                  }
+                />
+                <SelectField
+                  label="Icon color badge"
+                  value={item.iconColor ?? "default"}
+                  options={FEATURE_COLOR_OPTIONS}
+                  onChange={(color) =>
+                    update({
+                      ...item,
+                      iconColor:
+                        color === "default"
+                          ? undefined
+                          : (color as FeatureItem["iconColor"]),
+                    })
+                  }
+                />
+              </div>
               <TextField
                 label="Title"
                 value={item.title}
@@ -648,6 +862,21 @@ function FeaturesForm({ data, onChange }: DataFormProps<FeaturesData>) {
                 value={item.description}
                 onChange={(description) => update({ ...item, description })}
                 maxLength={600}
+              />
+              <TextField
+                label="Item badge / Tag (optional)"
+                value={item.badge ?? ""}
+                onChange={(badge) =>
+                  update({ ...item, badge: badge || undefined })
+                }
+                maxLength={30}
+                placeholder="New"
+              />
+              <OptionalLinkField
+                label="Item link (optional)"
+                value={item.link}
+                onChange={(link) => update({ ...item, link })}
+                fallback={{ label: "Learn more", href: "#" }}
               />
             </>
           )}
