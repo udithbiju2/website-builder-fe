@@ -120,8 +120,7 @@ export function HeaderForm({
           options={[
             { value: "classical", label: "Classical (Logo left, nav center, dual buttons)" },
             { value: "minimalist", label: "Minimalist (Nav left, centered logo, CTA right)" },
-            { value: "comprehensive", label: "Comprehensive (Mega nav, search, dual CTAs)" },
-            { value: "ecommerce", label: "E-commerce (Dual tier, search, cart, currency)" },
+            { value: "comprehensive", label: "Comprehensive (Mega nav, CTA buttons)" },
             { value: "floating", label: "Floating pill (Blurred floating island)" },
             { value: "transparent", label: "Transparent overlay (Hero overlay)" },
             { value: "logo-left", label: "Standard (Logo left, nav right)" },
@@ -162,7 +161,20 @@ export function HeaderForm({
         />
       </FormGroup>
 
-      <FormGroup title="Logo">
+      <FormGroup title="Logo & Brand display">
+        <SelectField
+          label="Logo & brand layout"
+          value={header.logoDisplay ?? "auto"}
+          options={[
+            { value: "auto", label: "Smart / Auto (Logo if uploaded, else Brand text)" },
+            { value: "logo_left", label: "Logo + Name (Logo on left, Name on right)" },
+            { value: "logo_right", label: "Logo + Name (Name on left, Logo on right)" },
+            { value: "logo_top", label: "Logo + Name (Logo on top, Name below)" },
+            { value: "logo_only", label: "Logo image only" },
+            { value: "text_only", label: "Brand text only" },
+          ]}
+          onChange={(logoDisplay) => onChange({ ...header, logoDisplay: logoDisplay as HeaderData["logoDisplay"] })}
+        />
         <ImageField label="Logo image" value={header.logo} onChange={(logo) => onChange({ ...header, logo })} optional />
       </FormGroup>
 
@@ -198,39 +210,6 @@ export function HeaderForm({
           value={header.secondaryCta}
           onChange={(secondaryCta) => onChange({ ...header, secondaryCta })}
           fallback={{ label: "Log in", href: "/login" }}
-        />
-      </FormGroup>
-
-      <FormGroup title="E-commerce & search tools">
-        <CheckboxField
-          label="Show search bar / icon"
-          checked={Boolean(header.showSearch)}
-          onChange={(showSearch) => onChange({ ...header, showSearch })}
-        />
-        <CheckboxField
-          label="Show user account icon"
-          checked={Boolean(header.showAccount)}
-          onChange={(showAccount) => onChange({ ...header, showAccount })}
-        />
-        <CheckboxField
-          label="Show shopping cart button"
-          checked={Boolean(header.showCart)}
-          onChange={(showCart) => onChange({ ...header, showCart })}
-        />
-        {header.showCart && (
-          <TextField
-            label="Cart items badge count"
-            type="number"
-            value={String(header.cartCount ?? 1)}
-            onChange={(val) => onChange({ ...header, cartCount: Math.max(0, parseInt(val, 10) || 0) })}
-          />
-        )}
-        <TextField
-          label="Currency display (optional)"
-          value={header.currency ?? ""}
-          onChange={(currency) => onChange({ ...header, currency: currency || undefined })}
-          maxLength={10}
-          placeholder="USD $"
         />
       </FormGroup>
     </>
@@ -322,7 +301,20 @@ export function FooterForm({
         />
       </FormGroup>
 
-      <FormGroup title="Brand logo">
+      <FormGroup title="Brand logo & layout">
+        <SelectField
+          label="Logo & brand layout"
+          value={footer.logoDisplay ?? "auto"}
+          options={[
+            { value: "auto", label: "Smart / Auto (Logo if uploaded, else Brand text)" },
+            { value: "logo_left", label: "Logo + Name (Logo on left, Name on right)" },
+            { value: "logo_right", label: "Logo + Name (Name on left, Logo on right)" },
+            { value: "logo_top", label: "Logo + Name (Logo on top, Name below)" },
+            { value: "logo_only", label: "Logo image only" },
+            { value: "text_only", label: "Brand text only" },
+          ]}
+          onChange={(logoDisplay) => onChange({ ...footer, logoDisplay: logoDisplay as FooterData["logoDisplay"] })}
+        />
         <ImageField
           label="Footer logo image"
           value={footer.logo}

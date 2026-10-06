@@ -1,14 +1,67 @@
 import {
-  CartIcon,
   ChevronDownIcon,
   MenuIcon,
-  SearchIcon,
   SiteButton,
   SiteImage,
   SiteLink,
-  UserIcon,
 } from "../primitives.tsx";
-import type { HeaderData, HeaderMenuItem } from "../types.ts";
+import type { BrandDisplayMode, HeaderData, HeaderMenuItem, ImageRef } from "../types.ts";
+
+export function SiteBrand({
+  siteName,
+  logo,
+  displayMode = "auto",
+  className = "",
+}: {
+  siteName: string;
+  logo?: ImageRef;
+  displayMode?: BrandDisplayMode;
+  className?: string;
+}) {
+  const hasLogo = Boolean(logo?.url);
+  const mode = displayMode ?? "auto";
+
+  let content: React.ReactNode = null;
+
+  if (mode === "text_only" || (!hasLogo && mode !== "logo_only")) {
+    content = <span className="wb-brand-text">{siteName}</span>;
+  } else if (mode === "logo_only") {
+    content = hasLogo ? <SiteImage image={logo!} /> : <span className="wb-brand-text">{siteName}</span>;
+  } else if (mode === "logo_right") {
+    // Brand Name on Left, Logo on Right
+    content = (
+      <span className="wb-brand-combo wb-brand-logo-right">
+        {siteName && <span className="wb-brand-text">{siteName}</span>}
+        {hasLogo && <SiteImage image={logo!} />}
+      </span>
+    );
+  } else if (mode === "logo_top") {
+    // Logo on Top, Brand Name below
+    content = (
+      <span className="wb-brand-combo wb-brand-logo-top">
+        {hasLogo && <SiteImage image={logo!} />}
+        {siteName && <span className="wb-brand-text">{siteName}</span>}
+      </span>
+    );
+  } else if (mode === "logo_left") {
+    // Logo on Left, Brand Name on Right
+    content = (
+      <span className="wb-brand-combo wb-brand-logo-left">
+        {hasLogo && <SiteImage image={logo!} />}
+        {siteName && <span className="wb-brand-text">{siteName}</span>}
+      </span>
+    );
+  } else {
+    // "auto" mode: if logo image exists, show logo image; otherwise show site name
+    content = hasLogo ? <SiteImage image={logo!} /> : <span className="wb-brand-text">{siteName}</span>;
+  }
+
+  return (
+    <a href="/" className={`wb-brand ${className}`.trim()}>
+      {content}
+    </a>
+  );
+}
 
 function NavItem({ item }: { item: HeaderMenuItem }) {
   if (item.children && item.children.length > 0) {
@@ -52,61 +105,34 @@ function ActionButtons({ header }: { header: HeaderData }) {
   );
 }
 
-function UtilityControls({ header }: { header: HeaderData }) {
-  const hasUtilities = header.showSearch || header.showAccount || header.showCart || header.currency;
-  if (!hasUtilities) return null;
-
-  return (
-    <div className="wb-header-actions">
-      {header.currency && (
-        <span className="text-xs font-semibold px-2 py-1 rounded-full border border-[var(--wb-border)]">
-          {header.currency}
-        </span>
-      )}
-      {header.showSearch && (
-        <button type="button" className="wb-header-icon-btn" aria-label="Search">
-          <SearchIcon />
-        </button>
-      )}
-      {header.showAccount && (
-        <a href="/login" className="wb-header-icon-btn" aria-label="Account">
-          <UserIcon />
-        </a>
-      )}
-      {header.showCart && (
-        <a href="/cart" className="wb-header-icon-btn" aria-label="Cart">
-          <CartIcon />
-          {(header.cartCount ?? 0) > 0 && <span className="wb-cart-badge">{header.cartCount}</span>}
-        </a>
-      )}
-    </div>
-  );
-}
-
 export default function SiteHeader({ header }: { header: HeaderData }) {
   if (header.hidden) return null;
 
-  const isSticky = header.sticky || header.position === "sticky";
   const isFixed = header.position === "fixed";
-  const isFloating = header.design === "floating" || header.position === "floating";
-  const isTransparent = header.design === "transparent" || header.overlay;
+  const isSticky = header.position === "sticky" || (header.sticky === true && header.position !== "static");
+  const isFloating = header.position === "floating" || header.design === "floating";
+  const isTransparent = !isSticky && !isFixed && (header.design === "transparent" || header.overlay);
 
-  const positionClass = isFloating
-    ? "wb-floating"
-    : isTransparent
-      ? "wb-transparent"
-      : isFixed
-        ? "wb-fixed"
-        : isSticky
-          ? "wb-sticky"
+  const positionClass = isFixed
+    ? "wb-fixed"
+    : isSticky
+      ? isFloating
+        ? "wb-floating"
+        : "wb-sticky"
+      : isFloating
+        ? "wb-floating"
+        : isTransparent
+          ? "wb-transparent"
           : "";
 
   const classes = ["wb-header", `wb-header-${header.design}`, positionClass].filter(Boolean).join(" ");
 
   const brand = (
-    <a href="/" className="wb-brand">
-      {header.logo ? <SiteImage image={header.logo} /> : header.siteName}
-    </a>
+    <SiteBrand
+      siteName={header.siteName}
+      logo={header.logo}
+      displayMode={header.logoDisplay}
+    />
   );
 
   const announcement = header.announcement && (
@@ -138,14 +164,8 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
             )}
           </div>
         ))}
-        {(header.secondaryCta || header.cta || header.showSearch || header.showCart) && (
+        {(header.secondaryCta || header.cta) && (
           <div className="wb-mobile-actions">
-            {header.showSearch && (
-              <div className="wb-search-pill mb-2">
-                <SearchIcon />
-                <span>Search products or pages...</span>
-              </div>
-            )}
             {header.secondaryCta && <SiteButton link={header.secondaryCta} tone="secondary" />}
             {header.cta && <SiteButton link={header.cta} tone="primary" />}
           </div>
@@ -170,7 +190,6 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
               </nav>
             )}
             <div className="flex items-center gap-3">
-              <UtilityControls header={header} />
               <ActionButtons header={header} />
               {mobileNav}
             </div>
@@ -180,47 +199,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     );
   }
 
-  // 2. E-commerce Dual-Tier Design
-  if (header.design === "ecommerce") {
-    return (
-      <>
-        {announcement}
-        <header className={classes}>
-          <div className="wb-container">
-            <div className="wb-ecommerce-top">
-              {brand}
-              {header.showSearch !== false && (
-                <div className="hidden sm:inline-flex wb-search-pill">
-                  <SearchIcon />
-                  <span>Search store...</span>
-                </div>
-              )}
-              <div className="flex items-center gap-3">
-                <UtilityControls header={header} />
-                <ActionButtons header={header} />
-                {mobileNav}
-              </div>
-            </div>
-            {header.menu.length > 0 && (
-              <nav className="wb-ecommerce-bottom hidden sm:flex" aria-label="Categories">
-                {header.menu.map((item, idx) => (
-                  <a
-                    key={`${item.label}-${item.href}`}
-                    href={item.href}
-                    className={`wb-ecommerce-tab ${idx === 0 ? "active" : ""}`}
-                  >
-                    {item.label}
-                  </a>
-                ))}
-              </nav>
-            )}
-          </div>
-        </header>
-      </>
-    );
-  }
-
-  // 3. Minimalist Design (Nav left, Centered logo, Actions right)
+  // 2. Minimalist Design (Nav left, Centered logo, Actions right)
   if (header.design === "minimalist") {
     return (
       <>
@@ -234,7 +213,6 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
             </div>
             <div className="wb-brand-center">{brand}</div>
             <div className="wb-actions-right hidden sm:flex">
-              <UtilityControls header={header} />
               <ActionButtons header={header} />
             </div>
             {mobileNav}
@@ -244,7 +222,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     );
   }
 
-  // 4. Classical Design (Logo left, Nav center, Actions right)
+  // 3. Classical Design (Logo left, Nav center, Actions right)
   if (header.design === "classical") {
     return (
       <>
@@ -260,7 +238,6 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
               </nav>
             )}
             <div className="flex items-center gap-3 ml-auto">
-              <UtilityControls header={header} />
               <ActionButtons header={header} />
               {mobileNav}
             </div>
@@ -270,7 +247,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     );
   }
 
-  // 5. Comprehensive Design (Logo left, Mega nav, Search + Action buttons)
+  // 4. Comprehensive Design (Logo left, Expanded nav, Action buttons)
   if (header.design === "comprehensive") {
     return (
       <>
@@ -286,7 +263,6 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
               </nav>
             )}
             <div className="flex items-center gap-3 ml-auto">
-              <UtilityControls header={header} />
               <ActionButtons header={header} />
               {mobileNav}
             </div>
@@ -296,7 +272,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     );
   }
 
-  // 6. Standard (logo-left, centered, transparent)
+  // 5. Standard (logo-left, centered, transparent)
   return (
     <>
       {announcement}
@@ -311,7 +287,6 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
             </nav>
           )}
           <div className="flex items-center gap-3 ml-auto">
-            <UtilityControls header={header} />
             <ActionButtons header={header} />
             {mobileNav}
           </div>

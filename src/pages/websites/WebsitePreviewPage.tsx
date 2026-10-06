@@ -64,9 +64,9 @@ export default function WebsitePreviewPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-900 text-zinc-100 antialiased">
+    <div className="h-screen flex flex-col bg-zinc-900 text-zinc-100 antialiased overflow-hidden">
       {/* Top Preview Control Bar */}
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-white/10 bg-zinc-950/90 px-4 backdrop-blur-md">
+      <header className="shrink-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-white/10 bg-zinc-950/90 px-4 backdrop-blur-md">
         {/* Left Side: Back & Site Identity */}
         <div className="flex items-center gap-3 min-w-0">
           <Link
@@ -138,7 +138,7 @@ export default function WebsitePreviewPage() {
 
       {/* Floating Notification for new draft */}
       {showCreatedBanner && website && (
-        <div className="relative z-30 flex items-center justify-between border-b border-emerald-500/20 bg-emerald-950/70 px-4 py-2 text-xs text-emerald-200 backdrop-blur-md">
+        <div className="relative z-30 flex items-center justify-between border-b border-emerald-500/20 bg-emerald-950/70 px-4 py-2 text-xs text-emerald-200 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-emerald-300">“{website.name}” draft ready!</span>
             <span>Created with {website.pageCount} pages. Explore your preview below.</span>
@@ -169,7 +169,7 @@ export default function WebsitePreviewPage() {
 
       {/* Realistic Website Preview Frame */}
       {site && page && (
-        <main className="flex-1 w-full overflow-y-auto">
+        <main className="flex-1 w-full overflow-y-auto overflow-x-hidden relative">
           <PreviewFrame device={device} onLinkClick={openLink}>
             <SitePage site={site} page={page} />
           </PreviewFrame>

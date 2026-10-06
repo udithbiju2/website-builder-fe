@@ -188,6 +188,8 @@ export const websitesApi = {
   create: (input: CreateWebsiteInput) =>
     request<WebsiteResponse>(BASE, { method: "POST", body: input }).then((data) => data.website),
 
+  delete: (id: string) => request<void>(`${BASE}/${id}`, { method: "DELETE" }),
+
   saveDraft: (id: string, input: SaveDraftInput) =>
     request<WebsiteResponse>(`${BASE}/${id}/draft`, { method: "PUT", body: input }).then((data) => data.website),
 
