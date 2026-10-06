@@ -19,7 +19,7 @@ import {
   type SectionSettings,
 } from "../../../site-kit/index.ts";
 import { useEditor, type SiteArea } from "../editor-context.ts";
-import { itemAsSection, type BuilderItem } from "../puck/adapter.ts";
+import { getSectionType, itemAsSection, type BuilderItem } from "../puck/adapter.ts";
 import { duplicateSection, removeSection, replaceSection, selectSection, useBuilderPuck } from "../puck/puck-api.ts";
 import { Tabs, ToolButton } from "./ui.tsx";
 
@@ -121,10 +121,10 @@ function SiteInspector() {
   const content = useBuilderPuck((state) => state.appState.data.content);
 
   // Check if this page has a Header or Footer section in Puck content
-  const pageHeaderIndex = content.findIndex((item) => item.type === "header");
+  const pageHeaderIndex = content.findIndex((item) => getSectionType(item.type) === "header");
   const pageHeaderItem = pageHeaderIndex !== -1 ? content[pageHeaderIndex] : null;
 
-  const pageFooterIndex = content.findIndex((item) => item.type === "footer");
+  const pageFooterIndex = content.findIndex((item) => getSectionType(item.type) === "footer");
   const pageFooterItem = pageFooterIndex !== -1 ? content[pageFooterIndex] : null;
 
   function handleHeaderChange(header: typeof draft.header) {
@@ -183,29 +183,6 @@ function SiteInspector() {
       <div role="tabpanel" aria-label={AREA_TABS.find((tab) => tab.id === siteArea)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {siteArea === "header" && (
           <div className="flex flex-col">
-            {pageHeaderItem && (
-              <div className="m-3 flex items-center justify-between rounded-ed border border-ed-accent/30 bg-ed-accent-soft/40 p-2.5">
-                <span className="text-ed-xs font-medium text-ed-accent">
-                  Header section on page
-                </span>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => selectSection(dispatch, pageHeaderIndex)}
-                    className="flex items-center gap-1 rounded-ed bg-white dark:bg-zinc-800 px-2 py-1 text-ed-2xs font-medium text-ed-text shadow-2xs hover:text-ed-accent"
-                  >
-                    Select on canvas
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleRemoveHeader}
-                    className="flex items-center gap-1 rounded-ed bg-ed-danger-soft px-2 py-1 text-ed-2xs font-medium text-ed-danger hover:bg-ed-danger hover:text-white"
-                  >
-                    <Trash2 className="size-3" aria-hidden /> Delete
-                  </button>
-                </div>
-              </div>
-            )}
             <HeaderForm
               header={pageHeaderItem ? (pageHeaderItem.props.data as typeof draft.header) : draft.header}
               pages={draft.pages}
@@ -245,29 +222,6 @@ function SiteInspector() {
         )}
         {siteArea === "footer" && (
           <div className="flex flex-col">
-            {pageFooterItem && (
-              <div className="m-3 flex items-center justify-between rounded-ed border border-ed-accent/30 bg-ed-accent-soft/40 p-2.5">
-                <span className="text-ed-xs font-medium text-ed-accent">
-                  Footer section on page
-                </span>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => selectSection(dispatch, pageFooterIndex)}
-                    className="flex items-center gap-1 rounded-ed bg-white dark:bg-zinc-800 px-2 py-1 text-ed-2xs font-medium text-ed-text shadow-2xs hover:text-ed-accent"
-                  >
-                    Select on canvas
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleRemoveFooter}
-                    className="flex items-center gap-1 rounded-ed bg-ed-danger-soft px-2 py-1 text-ed-2xs font-medium text-ed-danger hover:bg-ed-danger hover:text-white"
-                  >
-                    <Trash2 className="size-3" aria-hidden /> Delete
-                  </button>
-                </div>
-              </div>
-            )}
             <FooterForm
               footer={pageFooterItem ? (pageFooterItem.props.data as typeof draft.footer) : draft.footer}
               pages={draft.pages}

@@ -1,4 +1,5 @@
 import { useMemo, useState, type CSSProperties, type ComponentType } from "react";
+import { Drawer } from "@puckeditor/core";
 import {
   Briefcase,
   CreditCard,
@@ -201,39 +202,57 @@ export default function AddPanel() {
               Try a different search term like “pricing” or “hero”.
             </EmptyState>
           ) : (
-            <div className="flex flex-col gap-2.5">
-              {filteredPresets.map((preset) => (
-                <button
-                  key={preset.key}
-                  type="button"
-                  onClick={() => add(preset)}
-                  disabled={full}
-                  aria-label={`Add ${preset.label}`}
-                  className="group relative flex flex-col overflow-hidden rounded-lg border border-ed-border/90 bg-ed-panel p-2 text-left transition-all hover:border-ed-accent/60 hover:shadow-xs focus:border-ed-accent focus:outline-none focus:ring-2 focus:ring-ed-accent/15 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {/* Live Rendered Section Preview matching actual page design 1:1 */}
-                  <div className="mb-2 w-full transition-transform duration-150 group-hover:scale-[1.01]">
-                    <SectionLivePreview preset={preset} theme={draft.theme} />
-                  </div>
+            <Drawer>
+              <div className="flex flex-col gap-2.5">
+                {filteredPresets.map((preset) => (
+                  <Drawer.Item
+                    key={preset.key}
+                    name={preset.key}
+                    label={preset.label}
+                    isDragDisabled={full}
+                  >
+                    {() => (
+                      <div
+                        onClick={() => add(preset)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            add(preset);
+                          }
+                        }}
+                        aria-label={`Add ${preset.label}`}
+                        className="group relative flex flex-col overflow-hidden rounded-lg border border-ed-border/90 bg-ed-panel p-2 text-left transition-all hover:border-ed-accent/60 hover:shadow-xs focus:border-ed-accent focus:outline-none focus:ring-2 focus:ring-ed-accent/15 cursor-grab active:cursor-grabbing select-none"
+                      >
+                        {/* Live Rendered Section Preview matching actual page design 1:1 */}
+                        <div className="mb-2 w-full transition-transform duration-150 group-hover:scale-[1.01] pointer-events-none">
+                          <SectionLivePreview preset={preset} theme={draft.theme} />
+                        </div>
 
-                  {/* Section Title, Description & Action Button */}
-                  <div className="flex items-start justify-between gap-2 px-0.5">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-ed-xs font-semibold text-ed-text group-hover:text-ed-accent transition-colors">
-                        {preset.label}
-                      </p>
-                      <p className="line-clamp-1 text-[11px] leading-tight text-ed-muted">
-                        {preset.description}
-                      </p>
-                    </div>
+                        {/* Section Title, Description & Action Button */}
+                        <div className="flex items-start justify-between gap-2 px-0.5">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-ed-xs font-semibold text-ed-text group-hover:text-ed-accent transition-colors">
+                              {preset.label}
+                            </p>
+                            <p className="line-clamp-1 text-[11px] leading-tight text-ed-muted">
+                              {preset.description}
+                            </p>
+                          </div>
 
-                    <div className="flex size-5 shrink-0 items-center justify-center rounded-ed bg-ed-subtle text-ed-muted border border-ed-border shadow-2xs transition-colors group-hover:bg-ed-accent group-hover:border-ed-accent group-hover:text-white">
-                      <Plus className="size-3" aria-hidden />
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+                          <div
+                            className="flex size-5 shrink-0 items-center justify-center rounded-ed bg-ed-subtle text-ed-muted border border-ed-border shadow-2xs transition-colors group-hover:bg-ed-accent group-hover:border-ed-accent group-hover:text-white"
+                          >
+                            <Plus className="size-3" aria-hidden />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Drawer.Item>
+                ))}
+              </div>
+            </Drawer>
           )}
         </div>
       </div>

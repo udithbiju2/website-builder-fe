@@ -1,10 +1,15 @@
 import { z } from "zod";
-import { FONT_KEYS, SECTION_TYPES, type SectionType } from "../../../site-kit/index.ts";
+import { FONT_KEYS, SECTION_PRESETS, SECTION_TYPES, type SectionType } from "../../../site-kit/index.ts";
 
 /** Stored editor document format. The server rejects any other version. */
 export const EDITOR_SCHEMA_VERSION = 1;
 
 const sectionTypeSchema = z.enum(SECTION_TYPES as [SectionType, ...SectionType[]]);
+
+const puckItemTypeSchema = z.enum([
+  ...SECTION_TYPES,
+  ...SECTION_PRESETS.map((p) => p.key),
+] as [string, ...string[]]);
 
 export const sectionCustomColorsSchema = z
   .object({
@@ -41,7 +46,7 @@ export const sectionEnvelopeSchema = z.object({
 
 /** One Puck content item as produced by the builder config. */
 export const puckItemSchema = z.object({
-  type: sectionTypeSchema,
+  type: puckItemTypeSchema,
   props: z.object({
     id: z.string().min(1).max(64),
     hidden: z.boolean(),

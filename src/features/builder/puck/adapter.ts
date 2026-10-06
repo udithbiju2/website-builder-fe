@@ -1,9 +1,17 @@
 import type { Data } from "@puckeditor/core";
-import type { Section, SectionDataMap, SectionOf, SectionSettings, SectionType } from "../../../site-kit/index.ts";
+import { SECTION_PRESETS, type Section, type SectionDataMap, type SectionOf, type SectionSettings, type SectionType } from "../../../site-kit/index.ts";
 import { puckContentSchema } from "../schema/editor-document.ts";
 
 /** Puck's id for the page's top-level drop zone. */
 export const ROOT_ZONE = "root:default-zone";
+
+const PRESET_KEY_TO_TYPE: Record<string, SectionType> = Object.fromEntries(
+  SECTION_PRESETS.map((p) => [p.key, p.type]),
+);
+
+export function getSectionType(rawType: string): SectionType {
+  return PRESET_KEY_TO_TYPE[rawType] ?? (rawType as SectionType);
+}
 
 export type SectionProps<T extends SectionType = SectionType> = {
   data: SectionDataMap[T];
@@ -40,7 +48,7 @@ export function itemToSection<T extends SectionType>(type: T, props: SectionProp
 
 export function itemAsSection(item: BuilderItem): Section {
   const { id, hidden, settings, data } = item.props;
-  return { id, type: item.type, hidden, settings, data } as Section;
+  return { id, type: getSectionType(item.type), hidden, settings, data } as Section;
 }
 
 export function sectionsToPuckData(sections: Section[]): BuilderData {
@@ -60,7 +68,7 @@ export function puckDataToSections(data: Pick<Data, "content">): Section[] {
     (item) =>
       ({
         id: item.props.id,
-        type: item.type,
+        type: getSectionType(item.type),
         hidden: item.props.hidden,
         settings: item.props.settings,
         data: item.props.data,

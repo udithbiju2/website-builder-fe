@@ -3,9 +3,11 @@ import type { MouseEvent, ReactNode } from "react";
 import {
   DEFAULT_SECTION_SETTINGS,
   SECTION_DEFINITIONS,
+  SECTION_PRESETS,
   SectionView,
   SiteFrame,
   SiteStyles,
+  type Section,
   type SectionDataMap,
   type SectionType,
 } from "../../../site-kit/index.ts";
@@ -60,7 +62,7 @@ function RootRender({ children }: { children: ReactNode }) {
   );
 }
 
-const components: { [T in SectionType]: ComponentConfig<SectionProps<T>> } = {
+const baseComponents: { [T in SectionType]: ComponentConfig<SectionProps<T>> } = {
   header: sectionComponent("header"),
   footer: sectionComponent("footer"),
   hero: sectionComponent("hero"),
@@ -80,8 +82,40 @@ const components: { [T in SectionType]: ComponentConfig<SectionProps<T>> } = {
   team: sectionComponent("team"),
 };
 
+const presetComponents = Object.fromEntries(
+  SECTION_PRESETS.map((preset) => {
+    const sample = preset.create();
+    return [
+      preset.key,
+      {
+        label: preset.label,
+        defaultProps: {
+          data: sample.data,
+          settings: sample.settings,
+          hidden: sample.hidden,
+        },
+        render: ({ id, data, settings, hidden, puck }: any) => {
+          const section = {
+            id,
+            type: preset.type,
+            hidden,
+            settings,
+            data,
+          };
+          const view = <SectionView section={section as Section} />;
+          if (!hidden) return <div className="wb-editor-section-wrap w-full">{view}</div>;
+          return puck.isEditing ? <div className="wb-editor-hidden wb-editor-section-wrap w-full">{view}</div> : <></>;
+        },
+      },
+    ];
+  }),
+);
+
 /** Fields are intentionally empty: the builder's own inspector edits section props. */
 export const builderConfig: Config<BuilderComponents, BuilderRootProps> = {
-  components,
+  components: {
+    ...baseComponents,
+    ...presetComponents,
+  } as unknown as { [T in SectionType]: ComponentConfig<SectionProps<T>> },
   root: { render: RootRender },
 };
