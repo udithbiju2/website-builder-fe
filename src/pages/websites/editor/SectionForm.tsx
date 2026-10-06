@@ -37,6 +37,7 @@ import {
   SelectField,
   TextAreaField,
   TextField,
+  VideoField,
 } from "./fields.tsx";
 import { FontPicker } from "./FontPicker.tsx";
 
@@ -472,15 +473,14 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
           }
         />
 
-        <TextField
-          label="Playable video URL (optional)"
-          value={data.videoUrl ?? ""}
+        <VideoField
+          label="Playable video demo (optional)"
+          value={data.videoUrl}
           onChange={(videoUrl) =>
             onChange({ ...data, videoUrl: videoUrl || undefined })
           }
-          maxLength={500}
-          placeholder="https://www.youtube.com/watch?v=... or https://.../demo.mp4"
-          hint="Supports YouTube, Vimeo, or direct MP4/WebM video URLs."
+          placeholder="https://www.youtube.com/watch?v=... or upload MP4"
+          hint="Supports direct MP4/WebM uploads (up to 50 MB) or YouTube/Vimeo links."
         />
 
         {Boolean(data.videoUrl) && (
@@ -534,14 +534,13 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
           }
         />
 
-        <TextField
-          label="Background video URL (YouTube, Vimeo, MP4/WebM)"
+        <VideoField
+          label="Background video (ambient cover)"
           value={data.backgroundVideoUrl ?? (data.variant === "video-bg" || data.imagePosition === "background" ? data.videoUrl ?? "" : "")}
           onChange={(backgroundVideoUrl) =>
             onChange({ ...data, backgroundVideoUrl: backgroundVideoUrl || undefined })
           }
-          maxLength={500}
-          placeholder="https://www.youtube.com/watch?v=... or https://.../ambient.mp4"
+          placeholder="https://www.youtube.com/watch?v=... or upload MP4"
           hint="Ambient full-bleed video that plays automatically in the background."
         />
 
@@ -1522,14 +1521,12 @@ function MediaForm({ data, onChange }: DataFormProps<MediaData>) {
             optional
           />
         ) : (
-          <TextField
-            label="Video link"
-            type="url"
+          <VideoField
+            label="Video"
             value={data.videoUrl}
-            onChange={(videoUrl) => onChange({ ...data, videoUrl })}
-            placeholder="https://www.youtube.com/watch?v=…"
-            hint="Plays with privacy-enhanced embedding."
-            maxLength={2048}
+            onChange={(videoUrl) => onChange({ ...data, videoUrl: videoUrl || "" })}
+            placeholder="https://www.youtube.com/watch?v=… or upload MP4"
+            hint="Plays with privacy-enhanced embedding or direct MP4 streaming."
           />
         )}
         <TextField

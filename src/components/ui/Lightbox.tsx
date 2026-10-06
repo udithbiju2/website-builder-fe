@@ -1,4 +1,10 @@
-import { useEffect, useState, useCallback, useRef, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  type KeyboardEvent,
+} from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -55,9 +61,14 @@ export function Lightbox({
   const [internalIndex, setInternalIndex] = useState(controlledIndex);
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(initialMode === "fullscreen");
+  const [isFullscreen, setIsFullscreen] = useState(
+    initialMode === "fullscreen",
+  );
   const [copied, setCopied] = useState(false);
-  const [naturalDimensions, setNaturalDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [naturalDimensions, setNaturalDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Normalize items array
@@ -145,7 +156,7 @@ export function Lightbox({
       aria-label="Image Preview Modal"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 select-none outline-none"
+      className="fixed inset-0 z-99999 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 select-none outline-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -171,7 +182,7 @@ export function Lightbox({
               <span className="text-xs sm:text-sm font-semibold text-white truncate max-w-xs sm:max-w-md">
                 {currentItem.title || currentItem.alt || "Image Preview"}
               </span>
-              <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+              <div className="flex items-center gap-2 text-ed-2xs text-zinc-400">
                 {naturalDimensions && (
                   <span>
                     {naturalDimensions.width} × {naturalDimensions.height} px
@@ -199,7 +210,7 @@ export function Lightbox({
               >
                 <ZoomOut className="size-3.5" />
               </button>
-              <span className="px-1.5 text-[11px] font-medium text-zinc-300 min-w-[38px] text-center">
+              <span className="px-1.5 text-ed-2xs font-medium text-zinc-300 min-w-9.5 text-center">
                 {Math.round(scale * 100)}%
               </span>
               <button
@@ -228,7 +239,11 @@ export function Lightbox({
               title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
               className="p-1.5 text-zinc-300 hover:text-white rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition"
             >
-              {isFullscreen ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+              {isFullscreen ? (
+                <Minimize2 className="size-3.5" />
+              ) : (
+                <Maximize2 className="size-3.5" />
+              )}
             </button>
 
             <a
@@ -254,7 +269,7 @@ export function Lightbox({
 
         {/* Modal Image Viewport Stage */}
         <div
-          className="relative flex-1 min-h-[300px] sm:min-h-[460px] w-full flex items-center justify-center p-4 sm:p-8 bg-[#090a0c] bg-[radial-gradient(#1f2229_1px,transparent_1px)] [background-size:16px_16px] overflow-hidden"
+          className="relative flex-1 min-h-75 sm:min-h-115 w-full flex items-center justify-center p-4 sm:p-8 bg-[#090a0c] bg-[radial-gradient(#1f2229_1px,transparent_1px)] bg-size-[16px_16px] overflow-hidden"
           onClick={(e) => {
             if (e.target === e.currentTarget && !isFullscreen) onClose();
           }}
@@ -285,7 +300,10 @@ export function Lightbox({
               draggable={false}
               onLoad={(e) => {
                 const img = e.currentTarget;
-                setNaturalDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+                setNaturalDimensions({
+                  width: img.naturalWidth,
+                  height: img.naturalHeight,
+                });
               }}
             />
           </div>
@@ -310,7 +328,11 @@ export function Lightbox({
             onClick={copyUrl}
             className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-zinc-300 hover:text-white hover:bg-white/10 transition"
           >
-            {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
+            {copied ? (
+              <Check className="size-3.5 text-emerald-400" />
+            ) : (
+              <Copy className="size-3.5" />
+            )}
             <span>{copied ? "Copied link" : "Copy URL"}</span>
           </button>
 

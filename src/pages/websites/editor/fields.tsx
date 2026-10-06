@@ -7,12 +7,13 @@ import {
   type ReactNode,
 } from "react";
 import { Button, Checkbox, Dropdown, Label } from "@heroui/react";
-import { Check, ChevronDown, ChevronUp, Eye, Images, Plus, Trash2, Upload } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Eye, Film, Images, Plus, Trash2, Upload } from "lucide-react";
 import { errorMessage } from "../../../api/http.ts";
-import { ACCEPT_BY_KIND, mediaApi, uploadProblem, type MediaFile } from "../../../api/media.ts";
+import { ACCEPT_BY_KIND, formatBytes, mediaApi, uploadProblem, type MediaFile } from "../../../api/media.ts";
 import MediaPickerDialog from "../../../components/media/MediaPickerDialog.tsx";
 import { CellColorPicker } from "../../../components/ui/CellColorPicker.tsx";
 import { Lightbox } from "../../../components/ui/Lightbox.tsx";
+import { optimizeImageToWebP } from "../../../utils/image-optimizer.ts";
 import type { ImageRef, LinkRef } from "../../../site-kit/index.ts";
 
 const SAFE_HREF =
@@ -377,6 +378,11 @@ export function ImageField({
   const [picking, setPicking] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    percent: number;
+    statusText: string;
+    savedPercent?: number;
+  } | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const image = value ?? { url: "", alt: "" };
   const urlError =
@@ -389,16 +395,53 @@ export function ImageField({
   };
   const applyFile = (file: MediaFile) => update({ url: file.url, alt: file.altText || image.alt });
 
-  async function upload(file: File) {
+  async function upload(rawFile: File) {
     if (!media) return;
-    const problem = uploadProblem(file, "IMAGE");
+    const problem = uploadProblem(rawFile, "IMAGE");
     setUploadError(problem);
     if (problem) return;
     setUploading(true);
+    setUploadProgress({ percent: 10, statusText: "Optimizing to WebP…" });
+
     try {
-      applyFile(await mediaApi.upload({ file, clientId: media.clientId, websiteId: media.websiteId }));
+      // 1. Convert & optimize to ultra-crisp WebP with 0-50% stage progress
+      const { file: optimizedFile, savedPercent } = await optimizeImageToWebP(rawFile, {
+        quality: 0.88,
+        onProgress: (pct, msg) => {
+          setUploadProgress({
+            percent: Math.min(50, Math.round(pct * 0.5)),
+            statusText: msg,
+          });
+        },
+      });
+
+      // 2. Upload to backend & Linode Object Storage with 50-100% stage
+      setUploadProgress({
+        percent: 70,
+        statusText: "Uploading to Linode…",
+        savedPercent,
+      });
+
+      const uploaded = await mediaApi.upload({
+        file: optimizedFile,
+        clientId: media.clientId,
+        websiteId: media.websiteId,
+      });
+
+      applyFile(uploaded);
+
+      setUploadProgress({
+        percent: 100,
+        statusText: savedPercent > 0 ? `Saved as WebP (${savedPercent}% lighter)` : "Saved to Linode!",
+        savedPercent,
+      });
+
+      setTimeout(() => {
+        setUploadProgress(null);
+      }, 3500);
     } catch (err) {
       setUploadError(errorMessage(err));
+      setUploadProgress(null);
     } finally {
       setUploading(false);
     }
@@ -480,7 +523,7 @@ export function ImageField({
               className="flex h-8 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs transition hover:bg-ed-hover hover:border-ed-border-strong disabled:cursor-wait disabled:opacity-60 truncate"
             >
               <Upload className="size-3.5 shrink-0" aria-hidden />
-              <span className="truncate">{uploading ? "Uploading…" : "Upload"}</span>
+              <span className="truncate">{uploading ? "Optimizing…" : "Upload"}</span>
             </button>
             <button
               type="button"
@@ -492,6 +535,23 @@ export function ImageField({
               <span className="truncate">Library</span>
             </button>
           </div>
+
+          {/* Real-time 0-100% WebP Optimization & Linode Upload Progress Bar */}
+          {uploadProgress && (
+            <div className="flex flex-col gap-1 rounded-ed border border-emerald-500/25 bg-emerald-950/20 p-2 text-ed-2xs shadow-ed-xs animate-in fade-in duration-150">
+              <div className="flex items-center justify-between font-medium text-emerald-400">
+                <span className="truncate text-[11px]">{uploadProgress.statusText}</span>
+                <span className="font-semibold">{uploadProgress.percent}%</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {uploadError && (
             <p role="alert" className="text-ed-2xs font-medium text-ed-danger">
               {uploadError}
@@ -537,6 +597,218 @@ export function ImageField({
         >
           Remove image
         </button>
+      )}
+    </fieldset>
+  );
+}
+
+type VideoFieldProps = {
+  label: string;
+  value: string | undefined;
+  onChange: (value: string | undefined) => void;
+  hint?: string;
+  placeholder?: string;
+  optional?: boolean;
+};
+
+export function VideoField({
+  label,
+  value = "",
+  onChange,
+  hint,
+  placeholder = "https://www.youtube.com/watch?v=... or https://.../video.mp4",
+  optional = true,
+}: VideoFieldProps) {
+  const media = useContext(MediaTargetContext);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [picking, setPicking] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    percent: number;
+    statusText: string;
+  } | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const videoUrl = value?.trim() || "";
+  const isDirectVideo =
+    videoUrl.endsWith(".mp4") ||
+    videoUrl.endsWith(".webm") ||
+    videoUrl.includes("/media/") ||
+    videoUrl.includes("blob:") ||
+    videoUrl.includes("linodeobjects.com");
+  const isYouTubeOrVimeo =
+    videoUrl.includes("youtube.com") ||
+    videoUrl.includes("youtu.be") ||
+    videoUrl.includes("vimeo.com");
+
+  async function upload(rawFile: File) {
+    if (!media) return;
+    const problem = uploadProblem(rawFile, "VIDEO");
+    setUploadError(problem);
+    if (problem) return;
+
+    setUploading(true);
+    setUploadProgress({ percent: 20, statusText: "Preparing video upload…" });
+
+    try {
+      setUploadProgress({ percent: 60, statusText: "Uploading to Linode Storage…" });
+
+      const uploaded = await mediaApi.upload({
+        file: rawFile,
+        clientId: media.clientId,
+        websiteId: media.websiteId,
+      });
+
+      onChange(uploaded.url);
+
+      setUploadProgress({
+        percent: 100,
+        statusText: `Saved ${rawFile.name} (${formatBytes(rawFile.size)})`,
+      });
+
+      setTimeout(() => {
+        setUploadProgress(null);
+      }, 3500);
+    } catch (err) {
+      setUploadError(errorMessage(err));
+      setUploadProgress(null);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <fieldset className="flex flex-col gap-2 rounded-ed border border-ed-border bg-ed-subtle/30 p-2.5 shadow-ed-xs">
+      <legend className="px-1 text-ed-xs font-semibold text-ed-text">
+        {label}
+      </legend>
+
+      {/* Video Preview Player / Embed Info */}
+      {videoUrl && (
+        <div className="group/preview relative overflow-hidden rounded-ed border border-ed-border bg-black/90 shadow-ed-xs">
+          {isDirectVideo ? (
+            <video
+              src={videoUrl}
+              controls
+              preload="metadata"
+              playsInline
+              className="max-h-36 w-full rounded-ed object-contain bg-black"
+            />
+          ) : isYouTubeOrVimeo ? (
+            <div className="flex items-center gap-2.5 bg-zinc-950 p-2.5 text-ed-xs text-zinc-300">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-ed bg-red-600/20 text-red-500 border border-red-500/30">
+                <Film className="size-4" />
+              </div>
+              <div className="min-w-0 flex-1 text-left">
+                <p className="font-semibold text-white truncate text-ed-xs">Embedded Web Video</p>
+                <p className="truncate text-ed-2xs text-zinc-400">{videoUrl}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2.5 bg-zinc-950 p-2.5 text-ed-xs text-zinc-300">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-ed bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                <Film className="size-4" />
+              </div>
+              <span className="truncate text-ed-2xs text-zinc-300 flex-1">{videoUrl}</span>
+            </div>
+          )}
+
+          {/* Quick Remove Button */}
+          {optional && (
+            <button
+              type="button"
+              onClick={() => onChange(undefined)}
+              title="Remove video"
+              className="absolute top-1.5 right-1.5 inline-flex items-center justify-center rounded-ed bg-red-600/90 hover:bg-red-600 text-white size-6 shadow-md transition active:scale-95 z-10"
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Upload and Media Library Action Bar */}
+      {media && (
+        <div className="flex flex-col gap-1.5">
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              ref={inputRef}
+              type="file"
+              accept={ACCEPT_BY_KIND.VIDEO}
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) void upload(file);
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="flex h-8 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs transition hover:bg-ed-hover hover:border-ed-border-strong disabled:cursor-wait disabled:opacity-60 truncate"
+            >
+              <Upload className="size-3.5 shrink-0" aria-hidden />
+              <span className="truncate">{uploading ? "Uploading…" : "Upload Video"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPicking(true)}
+              disabled={uploading}
+              className="flex h-8 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs transition hover:bg-ed-hover hover:border-ed-border-strong disabled:opacity-60 truncate"
+            >
+              <Film className="size-3.5 shrink-0" aria-hidden />
+              <span className="truncate">Library</span>
+            </button>
+          </div>
+
+          {/* Real-time 0-100% Linode Upload Progress Bar */}
+          {uploadProgress && (
+            <div className="flex flex-col gap-1 rounded-ed border border-indigo-500/25 bg-indigo-950/20 p-2 text-ed-2xs shadow-ed-xs animate-in fade-in duration-150">
+              <div className="flex items-center justify-between font-medium text-indigo-400">
+                <span className="truncate text-[11px]">{uploadProgress.statusText}</span>
+                <span className="font-semibold">{uploadProgress.percent}%</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full rounded-full bg-indigo-500 transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {uploadError && (
+            <p role="alert" className="text-ed-2xs font-medium text-ed-danger">
+              {uploadError}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Video URL Text Input */}
+      <TextField
+        label="Video link or URL"
+        value={value}
+        onChange={(url) => onChange(url || undefined)}
+        placeholder={placeholder}
+        hint={hint ?? "Upload MP4/WebM (max 50 MB) or paste YouTube / Vimeo link."}
+      />
+
+      {/* Media Picker Dialog for Video */}
+      {picking && media && (
+        <MediaPickerDialog
+          clientId={media.clientId}
+          websiteId={media.websiteId}
+          kind="VIDEO"
+          onPick={(file) => {
+            onChange(file.url);
+            setPicking(false);
+          }}
+          onClose={() => setPicking(false)}
+        />
       )}
     </fieldset>
   );
