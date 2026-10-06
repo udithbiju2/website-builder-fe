@@ -687,21 +687,6 @@ export const SITE_CSS = `
   object-position: bottom center !important;
 }
 
-/* Community 3D Avatar Illustration SVG */
-.wb-community-illustration-wrap {
-  width: 100%;
-  max-width: 1040px;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-.wb-community-svg {
-  width: 100%;
-  height: auto;
-  max-height: 360px;
-  display: block;
-}
 
 /* Video Background Hero Polish */
 .wb-hero-video-bg {
@@ -993,12 +978,12 @@ export const SITE_CSS = `
 /* Tablet */
 @container wb-site (max-width: 900px) {
   .wb-split-grid { grid-template-columns: 1fr; gap: 40px; }
-  .wb-split-left .wb-split-media { order: 0; }
+  .wb-split-left .wb-split-media, .wb-hero-split-left .wb-hero-media { order: 0; }
   .wb-stat dd { font-size: 36px; }
   .wb-site h1 { font-size: 38px; }
   .wb-site h2 { font-size: 28px; }
   .wb-grid { grid-template-columns: repeat(var(--wb-cols-tablet, 2), minmax(0, 1fr)); }
-  .wb-hero-split .wb-hero-grid, .wb-contact-grid { grid-template-columns: 1fr; gap: 40px; }
+  .wb-hero-split .wb-hero-grid, .wb-hero-split-left .wb-hero-grid, .wb-contact-grid { grid-template-columns: 1fr; gap: 40px; }
   .wb-footer-grid { grid-template-columns: repeat(2, 1fr); }
   
   /* Header Tablet Responsive */

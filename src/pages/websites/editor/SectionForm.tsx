@@ -135,11 +135,6 @@ function ColumnsFields<
 }
 
 function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
-  const rating = data.rating ?? {};
-  const updateRating = (patch: Partial<NonNullable<HeroData["rating"]>>) => {
-    onChange({ ...data, rating: { ...rating, ...patch } });
-  };
-
   const trustedBy = data.trustedBy ?? {};
   const updateTrustedBy = (
     patch: Partial<NonNullable<HeroData["trustedBy"]>>,
@@ -152,21 +147,13 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
       <FormGroup title="Hero style & layout">
         <SelectField
           label="Hero design style"
-          value={data.variant}
+          value={data.variant === "split-left" ? "split" : data.variant}
           options={[
             {
               value: "centered",
               label: "Centered (Heading, dual CTAs, visual showcase)",
             },
-            { value: "split", label: "Split screen (Text left, image right)" },
-            {
-              value: "split-left",
-              label: "Split screen (Image left, text right)",
-            },
-            {
-              value: "floating-cards",
-              label: "Floating stats cards (Metric badges & growth pill)",
-            },
+            { value: "split", label: "Split screen (Side-by-side headline & media mockup)" },
             {
               value: "gradient",
               label: "Vibrant gradient (Mesh glow & trusted logos)",
@@ -200,6 +187,37 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
             onChange({ ...data, variant: variant as HeroData["variant"] })
           }
         />
+        {(data.variant === "split" ||
+          data.variant === "split-left" ||
+          data.imagePosition === "left" ||
+          data.imagePosition === "right") && (
+          <SelectField
+            label="Media position (Left / Right)"
+            value={
+              data.variant === "split-left" || data.imagePosition === "left"
+                ? "left"
+                : "right"
+            }
+            options={[
+              {
+                value: "right",
+                label: "Right side (Headline on left, mockup on right)",
+              },
+              {
+                value: "left",
+                label: "Left side (Mockup on left, headline on right)",
+              },
+            ]}
+            onChange={(side) =>
+              onChange({
+                ...data,
+                variant: side === "left" ? "split-left" : "split",
+                imagePosition: side as "left" | "right",
+              })
+            }
+            hint="Switch mockup and visual placement between the left and right side."
+          />
+        )}
         <SelectField
           label="Section height"
           value={data.minHeight ?? "auto"}
@@ -343,6 +361,14 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
           }
           options={[
             {
+              value: "right",
+              label: "Split right (Headline left, media on right)",
+            },
+            {
+              value: "left",
+              label: "Split left (Media on left, headline right)",
+            },
+            {
               value: "bottom",
               label: "Foreground showcase card / player (Below CTA buttons)",
             },
@@ -350,22 +376,19 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
               value: "background",
               label: "Full background cover (Edge-to-edge behind text)",
             },
-            {
-              value: "right",
-              label: "Split right (Side-by-side on desktop)",
-            },
-            {
-              value: "left",
-              label: "Split left (Side-by-side on desktop)",
-            },
           ]}
-          onChange={(imagePosition) =>
+          onChange={(imagePosition) => {
+            const pos = imagePosition as HeroData["imagePosition"];
+            let variant = data.variant;
+            if (pos === "left") variant = "split-left";
+            else if (pos === "right" && data.variant === "split-left") variant = "split";
             onChange({
               ...data,
-              imagePosition: imagePosition as HeroData["imagePosition"],
-            })
-          }
-          hint="Choose whether your media acts as a foreground showcase player/card or fills the full section background."
+              imagePosition: pos,
+              variant,
+            });
+          }}
+          hint="Choose whether your media is positioned side-by-side (left/right), below headline/CTAs, or fills the background."
         />
 
         <ImageField
@@ -450,10 +473,6 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
           value={data.bgImagePosition ?? "cover"}
           options={[
             { value: "cover", label: "Center cover (Full bleed background)" },
-            {
-              value: "bottom",
-              label: "Bottom anchored illustration (like Myna UI characters)",
-            },
             { value: "top", label: "Top aligned" },
             { value: "center", label: "Centered" },
           ]}
@@ -520,95 +539,7 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
         />
       </FormGroup>
 
-      <FormGroup title="Social proof & ratings">
-        <CheckboxField
-          label="Show rating stars & user count"
-          checked={Boolean(data.rating?.stars || data.rating?.text)}
-          onChange={(checked) =>
-            onChange({
-              ...data,
-              rating: checked
-                ? { stars: 5, text: "Loved by 10,000+ teams", avatarCount: 4 }
-                : undefined,
-            })
-          }
-        />
-        {Boolean(data.rating) && (
-          <div className="flex flex-col gap-2.5 pt-1">
-            <TextField
-              label="Rating stars (1 - 5)"
-              type="number"
-              value={String(rating.stars ?? 5)}
-              onChange={(val) =>
-                updateRating({
-                  stars: Math.min(5, Math.max(1, parseInt(val, 10) || 5)),
-                })
-              }
-            />
-            <TextField
-              label="Rating summary text"
-              value={rating.text ?? ""}
-              onChange={(text) => updateRating({ text: text || undefined })}
-              maxLength={200}
-              placeholder="5.0 rating on G2 & Product Hunt"
-            />
-          </div>
-        )}
-      </FormGroup>
 
-      <FormGroup title="Floating metric cards">
-        <ItemList
-          label="Floating cards"
-          items={data.floatingCards ?? []}
-          max={2}
-          onChange={(floatingCards) => onChange({ ...data, floatingCards })}
-          create={() => ({
-            title: "+148% Growth",
-            subtitle: "Active users",
-            badge: "Live",
-            icon: "📈",
-          })}
-          itemTitle={(c) => c.title}
-          addLabel="Add floating card"
-          renderItem={(card, update) => (
-            <div className="flex flex-col gap-2">
-              <div className="grid grid-cols-4 gap-2">
-                <div className="col-span-1">
-                  <TextField
-                    label="Icon"
-                    value={card.icon ?? ""}
-                    onChange={(icon) => update({ ...card, icon })}
-                    maxLength={6}
-                    placeholder="📈"
-                  />
-                </div>
-                <div className="col-span-3">
-                  <TextField
-                    label="Title"
-                    value={card.title}
-                    onChange={(title) => update({ ...card, title })}
-                    maxLength={60}
-                    required
-                  />
-                </div>
-              </div>
-              <TextField
-                label="Subtitle"
-                value={card.subtitle ?? ""}
-                onChange={(subtitle) => update({ ...card, subtitle })}
-                maxLength={100}
-              />
-              <TextField
-                label="Badge (optional)"
-                value={card.badge ?? ""}
-                onChange={(badge) => update({ ...card, badge })}
-                maxLength={30}
-                placeholder="Live"
-              />
-            </div>
-          )}
-        />
-      </FormGroup>
 
       <FormGroup title="Trusted by logo strip">
         <CheckboxField

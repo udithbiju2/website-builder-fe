@@ -864,7 +864,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Hero · centered",
     category: "Hero",
     description:
-      "Centered headline with badge, dual action buttons, and rating stars.",
+      "Centered headline with badge and dual action buttons.",
     create: () =>
       createSection("hero", {
         data: {
@@ -877,24 +877,20 @@ export const SECTION_PRESETS: SectionPreset[] = [
             "Everything you need to launch a modern, high-converting digital experience in minutes.",
           primaryCta: { label: "Get started free", href: "/signup" },
           secondaryCta: { label: "Book a demo", href: "/demo" },
-          rating: {
-            stars: 5,
-            text: "Loved by 10,000+ creators & teams",
-            avatarCount: 4,
-          },
         },
       }),
   },
   {
     key: "hero-split",
     type: "hero",
-    label: "Hero · text + mockup right",
+    label: "Hero · split screen",
     category: "Hero",
-    description: "Headline and CTAs on left, product browser mockup on right.",
+    description: "Side-by-side headline, CTAs, and visual mockup with left/right toggle.",
     create: () =>
       createSection("hero", {
         data: {
           variant: "split",
+          imagePosition: "right",
           eyebrow: "Product Showcase",
           badgeIcon: "⚡",
           heading: "The smarter way to build websites",
@@ -904,42 +900,22 @@ export const SECTION_PRESETS: SectionPreset[] = [
           primaryCta: { label: "Start free trial", href: "/signup" },
           tertiaryCta: { label: "Watch 2-min demo", href: "#demo" },
           imageStyle: "mockup",
-          rating: { stars: 5, text: "5.0 rating on G2 & Product Hunt" },
         },
       }),
   },
   {
-    key: "hero-split-left",
+    key: "hero-platform-showcase",
     type: "hero",
-    label: "Hero · image left + text right",
-    category: "Hero",
-    description: "Visual media on left, compelling copy and actions on right.",
-    create: () =>
-      createSection("hero", {
-        data: {
-          variant: "split-left",
-          eyebrow: "Built for speed",
-          heading: "Designed from the ground up for performance",
-          highlightText: "performance",
-          subheading:
-            "Supercharge your workflow with instant previews and lightweight modular code.",
-          primaryCta: { label: "Explore features", href: "/features" },
-          secondaryCta: { label: "Learn more", href: "/about" },
-        },
-      }),
-  },
-  {
-    key: "hero-floating-cards",
-    type: "hero",
-    label: "Hero · floating stats cards",
+    label: "Hero · platform showcase",
     category: "Hero",
     description:
-      "Split hero with animated floating feature badges and metrics.",
+      "Split screen hero with glowing platform dashboard visual and dual action buttons.",
     create: () =>
       createSection("hero", {
         data: {
-          variant: "floating-cards",
+          variant: "split",
           eyebrow: "Growth Platform",
+          badgeIcon: "🚀",
           heading: "Turn visitors into lifelong customers",
           highlightText: "lifelong customers",
           subheading:
@@ -951,20 +927,6 @@ export const SECTION_PRESETS: SectionPreset[] = [
             alt: "Platform growth metrics and analytics dashboard",
           },
           imageStyle: "glow",
-          floatingCards: [
-            {
-              title: "+148% Growth",
-              subtitle: "Monthly active users",
-              badge: "Live",
-              icon: "📈",
-            },
-            {
-              title: "4.9 / 5.0",
-              subtitle: "2,400+ Verified reviews",
-              badge: "Top Rated",
-              icon: "⭐",
-            },
-          ],
         },
       }),
   },
@@ -1079,30 +1041,6 @@ export const SECTION_PRESETS: SectionPreset[] = [
             "Deliver lighting fast, personalized shopping experiences that scale infinitely.",
           primaryCta: { label: "Discover more", href: "/features" },
           imageStyle: "glow",
-        },
-      }),
-  },
-  {
-    key: "hero-community-illustration",
-    type: "hero",
-    label: "Hero · bottom illustration & community",
-    category: "Hero",
-    description:
-      "Centered hero with 3D team/community characters anchored seamlessly along the bottom edge.",
-    create: () =>
-      createSection("hero", {
-        data: {
-          variant: "centered",
-          eyebrow: "Global Network",
-          badgeIcon: "✨",
-          heading: "Find Your Tribe, Build Your Network.",
-          highlightText: "Your Network",
-          subheading:
-            "Connect with like-minded students for fun, friendships, and future opportunities.",
-          primaryCta: { label: "Join for Free →", href: "/signup" },
-          secondaryCta: { label: "Explore Communities", href: "/communities" },
-          bgImagePosition: "bottom",
-          bgOverlayType: "none",
         },
       }),
   },

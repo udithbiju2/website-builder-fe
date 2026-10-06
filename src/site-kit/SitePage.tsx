@@ -119,8 +119,13 @@ export default function SitePage({ site, page, editor }: SitePageProps) {
     (section): section is SectionOf<"footer"> => section.type === "footer" && (Boolean(editor) || !section.hidden),
   );
 
-  const effectiveHeader = pageHeaderSection ? <SiteHeader header={pageHeaderSection.data} /> : site.header ? <SiteHeader header={site.header} /> : null;
-  const effectiveFooter = pageFooterSection ? <SiteFooter footer={pageFooterSection.data} /> : site.footer ? <SiteFooter footer={site.footer} /> : null;
+  const effectiveHeader = pageHeaderSection
+    ? <SiteHeader header={pageHeaderSection.data} />
+    : (site.header && !site.header.hidden && (!page.sections || page.sections.length === 0))
+      ? <SiteHeader header={site.header} />
+      : null;
+
+  const effectiveFooter = pageFooterSection ? <SiteFooter footer={pageFooterSection.data} /> : null;
 
   // Filter out header and footer sections from main content body so they never render twice or overlap
   const bodySections = page.sections.filter(
