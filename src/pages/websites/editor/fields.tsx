@@ -2,11 +2,15 @@ import {
   createContext,
   useContext,
   useId,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { Button, Checkbox, Dropdown, Label } from "@heroui/react";
-import { Check, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Images, Plus, Trash2, Upload } from "lucide-react";
+import { errorMessage } from "../../../api/http.ts";
+import { ACCEPT_BY_KIND, mediaApi, uploadProblem, type MediaFile } from "../../../api/media.ts";
+import MediaPickerDialog from "../../../components/media/MediaPickerDialog.tsx";
 import { CellColorPicker } from "../../../components/ui/CellColorPicker.tsx";
 import type { ImageRef, LinkRef } from "../../../site-kit/index.ts";
 
@@ -20,6 +24,10 @@ const inputClass =
 export const LinkTargetsContext = createContext<
   { label: string; href: string }[]
 >([]);
+
+/** Where image uploads go. Without it, image fields only accept pasted links. */
+export type MediaTarget = { clientId: string; websiteId: string };
+export const MediaTargetContext = createContext<MediaTarget | null>(null);
 
 type FieldShellProps = {
   id: string;
@@ -363,6 +371,11 @@ export function ImageField({
   onChange,
   optional = false,
 }: ImageFieldProps) {
+  const media = useContext(MediaTargetContext);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [picking, setPicking] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const image = value ?? { url: "", alt: "" };
   const urlError =
     image.url && !SAFE_IMAGE_URL.test(image.url.trim())
@@ -372,6 +385,23 @@ export function ImageField({
     const next = { ...image, ...patch };
     onChange(optional && !next.url && !next.alt ? undefined : next);
   };
+  const applyFile = (file: MediaFile) => update({ url: file.url, alt: file.altText || image.alt });
+
+  async function upload(file: File) {
+    if (!media) return;
+    const problem = uploadProblem(file, "IMAGE");
+    setUploadError(problem);
+    if (problem) return;
+    setUploading(true);
+    try {
+      applyFile(await mediaApi.upload({ file, clientId: media.clientId, websiteId: media.websiteId }));
+    } catch (err) {
+      setUploadError(errorMessage(err));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <fieldset className="flex flex-col gap-2 rounded-ed border border-ed-border bg-ed-subtle/30 p-2.5 shadow-ed-xs">
       <legend className="px-1 text-ed-xs font-semibold text-ed-text">
@@ -384,13 +414,67 @@ export function ImageField({
           className="h-20 w-full rounded-ed border border-ed-border bg-ed-subtle object-cover shadow-ed-xs"
         />
       )}
+      {media && (
+        <div className="flex flex-col gap-1">
+          <div className="flex gap-1.5">
+            <input
+              ref={inputRef}
+              type="file"
+              accept={ACCEPT_BY_KIND.IMAGE}
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) void upload(file);
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="flex h-7 flex-1 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs hover:bg-ed-hover disabled:cursor-wait disabled:opacity-60"
+            >
+              <Upload className="size-3.5" aria-hidden />
+              {uploading ? "Uploading…" : "Upload"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPicking(true)}
+              disabled={uploading}
+              className="flex h-7 flex-1 items-center justify-center gap-1.5 rounded-ed border border-ed-border bg-ed-panel px-2 text-ed-xs font-medium text-ed-text shadow-ed-xs hover:bg-ed-hover disabled:opacity-60"
+            >
+              <Images className="size-3.5" aria-hidden />
+              Choose from library
+            </button>
+          </div>
+          {uploadError && (
+            <p role="alert" className="text-ed-2xs font-medium text-ed-danger">
+              {uploadError}
+            </p>
+          )}
+        </div>
+      )}
+      {picking && media && (
+        <MediaPickerDialog
+          clientId={media.clientId}
+          websiteId={media.websiteId}
+          kind="IMAGE"
+          onPick={(file) => {
+            applyFile(file);
+            setPicking(false);
+          }}
+          onClose={() => setPicking(false)}
+        />
+      )}
       <TextField
         label="Image link"
         type="url"
         value={image.url}
         onChange={(url) => update({ url })}
         placeholder="https://…"
-        hint="Paste a link to an image. Uploading comes with the media library."
+        hint={media ? "Upload, choose from your library, or paste a link." : "Paste a link to an image."}
         error={urlError}
         required={!optional}
         maxLength={2048}

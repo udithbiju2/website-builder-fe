@@ -55,7 +55,9 @@ export default function AssetsPanel() {
             ))}
           </ul>
         )}
-        <p className="mt-3 rounded-ed bg-ed-subtle px-2 py-1.5 text-ed-2xs text-ed-muted">Uploading files arrives with the media library.</p>
+        <p className="mt-3 rounded-ed bg-ed-subtle px-2 py-1.5 text-ed-2xs text-ed-muted">
+          To upload, use Upload or Choose from library in any image field.
+        </p>
       </div>
     </>
   );

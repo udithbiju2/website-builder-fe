@@ -1,0 +1,24 @@
+import { MousePointerClick, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+
+export default function BuilderChoices() {
+  return (
+    <div className="mx-auto mt-7 grid max-w-2xl gap-4 sm:grid-cols-2">
+      <Link
+        to="/websites/new"
+        className="rounded-lg border border-line p-5 text-left transition-colors hover:border-brand hover:bg-brand-soft/40"
+      >
+        <MousePointerClick className="size-5 text-brand" aria-hidden />
+        <p className="mt-3 font-medium text-ink">Manual builder</p>
+        <p className="mt-1 text-sm text-ink-body">Pick a template and edit every section yourself.</p>
+        <p className="mt-3 text-sm font-medium text-brand">Start building →</p>
+      </Link>
+      <div aria-disabled="true" className="rounded-lg border border-line p-5 text-left opacity-70">
+        <Sparkles className="size-5 text-brand" aria-hidden />
+        <p className="mt-3 font-medium text-ink">AI builder</p>
+        <p className="mt-1 text-sm text-ink-body">Describe your business and get a ready-to-edit first draft.</p>
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-muted">Coming soon</p>
+      </div>
+    </div>
+  );
+}

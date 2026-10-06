@@ -65,7 +65,7 @@ export default function WebsiteEditorPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const backTo = user?.role === "SUPER_ADMIN" ? "/admin/websites" : "/dashboard";
+  const backTo = user?.role === "SUPER_ADMIN" ? "/admin/websites" : "/websites";
 
   const [website, setWebsite] = useState<WebsiteDetail | null>(null);
   const [draft, setDraft] = useState<EditorDraft | null>(null);
