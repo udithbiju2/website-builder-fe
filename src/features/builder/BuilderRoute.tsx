@@ -19,7 +19,7 @@ export default function BuilderRoute() {
   const location = useLocation();
   const { user } = useAuth();
   const role = user?.role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "CLIENT";
-  const backTo = role === "SUPER_ADMIN" ? "/admin/websites" : "/dashboard";
+  const backTo = role === "SUPER_ADMIN" ? "/admin/websites" : "/websites";
   const justCreated = (location.state as CreatedState | null)?.created === true;
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<LoadState>({ status: "loading" });

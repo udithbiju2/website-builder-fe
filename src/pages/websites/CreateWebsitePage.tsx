@@ -7,7 +7,7 @@ import { ApiError, errorMessage } from "../../api/http.ts";
 import { websitesApi, type CreateWebsiteInput, type ThemeOption, type WebsiteTemplate } from "../../api/websites.ts";
 import { useAuth } from "../../auth/auth-context.ts";
 import { validateEmail } from "../../auth/validation.ts";
-import ConfirmDialog from "../../components/ui/ConfirmDialog.tsx";
+import CommonModal from "../../components/ui/CommonModal.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
 import SelectInput, { type SelectOption } from "../../components/ui/SelectInput.tsx";
 import TextAreaInput from "../../components/ui/TextAreaInput.tsx";
@@ -86,7 +86,7 @@ export default function CreateWebsitePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isAdmin = user?.role === "SUPER_ADMIN";
-  const backTo = isAdmin ? "/admin/websites" : "/dashboard";
+  const backTo = isAdmin ? "/admin/websites" : "/websites";
 
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<InfoForm>({
@@ -113,6 +113,8 @@ export default function CreateWebsitePage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<WebsiteTemplate | null>(null);
+  const [isDeletingTemplate, setIsDeletingTemplate] = useState(false);
+  const [deleteTemplateError, setDeleteTemplateError] = useState<string | null>(null);
 
   // A Super Admin sees the selected client's own templates next to the platform ones.
   const templateOwner = isAdmin ? clientId || undefined : undefined;
@@ -164,14 +166,31 @@ export default function CreateWebsitePage() {
   );
   const visibleTemplates = platformTemplates.filter((template) => category === "All" || template.category === category);
 
-  async function deleteTemplate(template: WebsiteTemplate) {
+  function openTemplateDelete(template: WebsiteTemplate) {
+    setDeleteTemplateError(null);
+    setTemplateToDelete(template);
+  }
+
+  function closeTemplateDelete() {
+    if (isDeletingTemplate) return;
     setTemplateToDelete(null);
+    setDeleteTemplateError(null);
+  }
+
+  async function handleTemplateDeleteConfirm() {
+    if (!templateToDelete) return;
+    const template = templateToDelete;
+    setIsDeletingTemplate(true);
+    setDeleteTemplateError(null);
     try {
       await websitesApi.deleteTemplate(template.id);
       setTemplates((current) => current?.filter((candidate) => candidate.id !== template.id) ?? null);
       if (templateKey === template.key) setTemplateKey("");
+      setTemplateToDelete(null);
     } catch (err) {
-      setSubmitError(errorMessage(err));
+      setDeleteTemplateError(errorMessage(err));
+    } finally {
+      setIsDeletingTemplate(false);
     }
   }
 
@@ -241,7 +260,7 @@ export default function CreateWebsitePage() {
     <div className="min-h-screen bg-canvas">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface px-6 py-3">
         <Link to={backTo} className="inline-flex items-center gap-1 text-sm text-brand hover:underline">
-          <ArrowLeft className="size-4" aria-hidden /> {isAdmin ? "All websites" : "Back to dashboard"}
+          <ArrowLeft className="size-4" aria-hidden /> {isAdmin ? "All websites" : "My websites"}
         </Link>
         <h1 className="text-sm font-semibold text-ink">Create a new website</h1>
         <p className="text-sm text-ink-body">
@@ -518,7 +537,7 @@ export default function CreateWebsitePage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setTemplateToDelete(template)}
+                          onClick={() => openTemplateDelete(template)}
                           aria-label={`Delete template ${template.name}`}
                           title="Delete template"
                           className="relative z-10 grid size-8 shrink-0 place-items-center rounded text-ink-muted hover:bg-danger/10 hover:text-danger"
@@ -617,16 +636,37 @@ export default function CreateWebsitePage() {
         )}
       </div>
 
-      <ConfirmDialog
-        isOpen={templateToDelete !== null}
-        title={`Delete “${templateToDelete?.name ?? ""}”?`}
-        confirmLabel="Delete template"
-        tone="danger"
-        onConfirm={() => templateToDelete && void deleteTemplate(templateToDelete)}
-        onCancel={() => setTemplateToDelete(null)}
+      <CommonModal
+        isOpen={Boolean(templateToDelete)}
+        onClose={closeTemplateDelete}
+        headerDetails={{
+          icon: <Trash2 className="size-4.5" />,
+          title: "Delete template",
+          description: templateToDelete?.name,
+        }}
+        iconTone="danger"
+        size="sm"
+        primaryAction={{
+          label: "Delete template",
+          onPress: handleTemplateDeleteConfirm,
+          isPending: isDeletingTemplate,
+          tone: "danger",
+        }}
+        secondaryAction={{
+          label: "Cancel",
+          onPress: closeTemplateDelete,
+          isDisabled: isDeletingTemplate,
+        }}
       >
-        The template is removed from My templates. Websites already created from it are not changed.
-      </ConfirmDialog>
+        <div className="space-y-2.5">
+          <p>
+            Are you sure you want to delete{" "}
+            <strong className="font-semibold text-ink">“{templateToDelete?.name}”</strong>? It will be removed from My
+            templates. Websites already created from it are not changed.
+          </p>
+          {deleteTemplateError && <FormAlert status="danger">{deleteTemplateError}</FormAlert>}
+        </div>
+      </CommonModal>
     </div>
   );
 }

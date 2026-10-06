@@ -16,7 +16,7 @@ export default function WebsitePreviewPage() {
   const [showCreatedBanner, setShowCreatedBanner] = useState(
     () => (location.state as CreatedState | null)?.created === true,
   );
-  const backTo = user?.role === "SUPER_ADMIN" ? "/admin/websites" : "/dashboard";
+  const backTo = user?.role === "SUPER_ADMIN" ? "/admin/websites" : "/websites";
 
   const [website, setWebsite] = useState<WebsiteDetail | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
