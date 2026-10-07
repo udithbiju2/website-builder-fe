@@ -2,10 +2,10 @@ import {
   Globe,
   Image,
   LayoutTemplate,
-  Mail,
   PanelsTopLeft,
   Rows3,
   Server,
+  Settings,
   Users,
 } from "lucide-react";
 import AppShell, { type ShellNavItem } from "./AppShell.tsx";
@@ -18,7 +18,7 @@ const ADMIN_NAV: ShellNavItem[] = [
   { label: "Reusable sections", icon: Rows3, to: "/admin/sections" },
   { label: "Domains", icon: Server },
   { label: "Media", icon: Image, to: "/admin/media" },
-  { label: "Email settings", icon: Mail, to: "/admin/settings/email" },
+  { label: "Settings", icon: Settings, to: "/admin/settings", activePrefixes: ["/admin/settings"] },
 ];
 
 export default function AdminLayout() {
