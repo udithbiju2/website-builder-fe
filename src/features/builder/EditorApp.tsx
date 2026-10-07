@@ -44,7 +44,7 @@ const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringif
 
 /** Lives inside <Puck> so it can reach editor state; draws the canvas and site chrome. */
 function EditorShell({ backTo, onPublish }: { backTo: string; onPublish: () => void }) {
-  const { draft, siteArea, setSiteArea, setLeftPanel, device } = useEditor();
+  const { draft, siteArea, setSiteArea, setLeftPanel, device, aiOpen } = useEditor();
   const dispatch = useBuilderPuck((state) => state.dispatch);
   const hasSelection = useBuilderPuck((state) => state.appState.ui.itemSelector !== null);
   const isEmpty = useBuilderPuck((state) => state.appState.data.content.length === 0);
@@ -89,8 +89,7 @@ function EditorShell({ backTo, onPublish }: { backTo: string; onPublish: () => v
           <CanvasViewport device={device} onDeselect={handleDeselect}>
             <Puck.Preview />
           </CanvasViewport>
-          <Inspector />
-          <AiDrawer />
+          {aiOpen ? <AiDrawer /> : <Inspector />}
         </div>
       </div>
     </BuilderSiteContext.Provider>

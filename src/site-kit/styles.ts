@@ -104,25 +104,26 @@ export const SITE_CSS = `
 .wb-header.wb-header-transparent { position: absolute; top: 0; left: 0; right: 0; background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.15); z-index: 40; width: 100%; }
 .wb-header.wb-header-floating { background: transparent; border-bottom: none; padding: 8px 16px; }
 .wb-header-floating-pill { max-width: 1100px; margin: 0 auto; background: color-mix(in srgb, var(--wb-bg) 90%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--wb-border); border-radius: 9999px; box-shadow: 0 10px 28px -6px rgb(0 0 0 / 0.12); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 56px; }
-.wb-header-inner { display: flex; align-items: center; gap: 28px; min-height: 72px; }
-.wb-brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--wb-font-heading); font-weight: 700; font-size: 20px; text-decoration: none; shrink-0; }
+.wb-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 28px; min-height: 72px; width: 100%; }
+.wb-brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--wb-font-heading); font-weight: 700; font-size: 20px; text-decoration: none; flex-shrink: 0; white-space: nowrap; }
 .wb-brand img { max-height: 38px; width: auto; object-fit: contain; }
-.wb-brand-text { font-family: var(--wb-font-heading); font-weight: 700; font-size: 20px; line-height: 1.2; letter-spacing: -0.01em; color: inherit; }
+.wb-brand-text { font-family: var(--wb-font-heading); font-weight: 700; font-size: 20px; line-height: 1.2; letter-spacing: -0.01em; color: inherit; white-space: nowrap; }
 .wb-brand-combo { display: inline-flex; align-items: center; gap: 10px; }
 .wb-brand-logo-left { flex-direction: row; }
 .wb-brand-logo-right { flex-direction: row; }
 .wb-brand-logo-top { flex-direction: column; align-items: center; gap: 4px; text-align: center; }
 .wb-brand-logo-top .wb-brand-text { font-size: 13px; font-weight: 600; line-height: 1.15; }
-.wb-nav { display: flex; align-items: center; gap: 24px; font-size: 14px; font-weight: 500; }
+.wb-nav { display: flex; align-items: center; gap: 24px; font-size: 14px; font-weight: 500; white-space: nowrap; flex-wrap: wrap; }
+.wb-nav a, .wb-nav span, .wb-dropdown-trigger { white-space: nowrap; }
 .wb-nav a { text-decoration: none; transition: color 120ms ease; }
 .wb-nav a:hover { color: var(--wb-primary); }
-.wb-header-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-.wb-header-cta { display: inline-flex; align-items: center; gap: 8px; }
+.wb-header-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
+.wb-header-cta { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .wb-header-classical .wb-nav { margin: 0 auto; }
-.wb-header-minimalist .wb-header-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
-.wb-header-minimalist .wb-nav-left { display: flex; align-items: center; gap: 24px; }
-.wb-header-minimalist .wb-brand-center { display: flex; justify-content: center; }
-.wb-header-minimalist .wb-actions-right { display: flex; align-items: center; gap: 12px; justify-content: flex-end; }
+.wb-header-minimalist .wb-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.wb-header-minimalist .wb-nav-left { display: flex; align-items: center; gap: 24px; white-space: nowrap; }
+.wb-header-minimalist .wb-brand-center { display: flex; justify-content: center; flex-shrink: 0; }
+.wb-header-minimalist .wb-actions-right { display: flex; align-items: center; gap: 12px; justify-content: flex-end; flex-shrink: 0; }
 .wb-header-comprehensive .wb-nav { margin-left: 8px; }
 .wb-header-ecommerce { border-bottom: 1px solid var(--wb-border); }
 .wb-header-ecommerce .wb-ecommerce-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 64px; }

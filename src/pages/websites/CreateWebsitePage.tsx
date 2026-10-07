@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Button, Spinner } from "@heroui/react";
-import { ArrowLeft, Check, LayoutTemplate, MousePointerClick, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, LayoutTemplate, MousePointerClick, Trash2 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { adminClientsApi, type Client } from "../../api/admin-clients.ts";
 import { ApiError, errorMessage } from "../../api/http.ts";
 import { websitesApi, type CreateWebsiteInput, type ThemeOption, type WebsiteTemplate } from "../../api/websites.ts";
 import { useAuth } from "../../auth/auth-context.ts";
 import { validateEmail } from "../../auth/validation.ts";
+import { AiSparklesIcon } from "../../components/icons/AiSparklesIcon.tsx";
 import CommonModal from "../../components/ui/CommonModal.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
 import SelectInput, { type SelectOption } from "../../components/ui/SelectInput.tsx";
@@ -319,7 +320,7 @@ export default function CreateWebsitePage() {
                 </span>
               </button>
               <div aria-disabled="true" className="rounded-lg border border-line p-5 opacity-70">
-                <Sparkles className="size-5 text-brand" aria-hidden />
+                <AiSparklesIcon className="size-6" variant="glossy" glow aria-hidden />
                 <span className="mt-3 block font-medium text-ink">AI Website Builder</span>
                 <span className="mt-1 block text-sm text-ink-body">
                   Describe your website in a prompt. AI creates an editable draft you can change any time.

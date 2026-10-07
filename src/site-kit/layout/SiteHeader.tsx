@@ -86,7 +86,7 @@ function NavItem({ item }: { item: HeaderMenuItem }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5">
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0">
       <SiteLink link={item} />
       {item.badge && <span className="wb-badge">{item.badge}</span>}
     </span>

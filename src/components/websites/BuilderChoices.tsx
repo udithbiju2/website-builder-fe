@@ -1,5 +1,6 @@
-import { MousePointerClick, Sparkles } from "lucide-react";
+import { MousePointerClick } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AiSparklesIcon } from "../icons/AiSparklesIcon.tsx";
 
 export default function BuilderChoices() {
   return (
@@ -14,7 +15,7 @@ export default function BuilderChoices() {
         <p className="mt-3 text-sm font-medium text-brand">Start building →</p>
       </Link>
       <div aria-disabled="true" className="rounded-lg border border-line p-5 text-left opacity-70">
-        <Sparkles className="size-5 text-brand" aria-hidden />
+        <AiSparklesIcon className="size-6" variant="glossy" glow aria-hidden />
         <p className="mt-3 font-medium text-ink">AI builder</p>
         <p className="mt-1 text-sm text-ink-body">Describe your business and get a ready-to-edit first draft.</p>
         <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-muted">Coming soon</p>

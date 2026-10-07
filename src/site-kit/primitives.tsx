@@ -109,7 +109,14 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
     </>
   ),
   sparkles: (
-    <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
+    <>
+      {/* Large 4-point star */}
+      <path d="M 8.2 7.0 Q 8.2 14.2 15.4 14.2 Q 8.2 14.2 8.2 21.4 Q 8.2 14.2 1.0 14.2 Q 8.2 14.2 8.2 7.0 Z" />
+      {/* Medium 4-point star */}
+      <path d="M 15.2 3.2 Q 15.2 6.8 18.8 6.8 Q 15.2 6.8 15.2 10.4 Q 15.2 6.8 11.6 6.8 Q 15.2 6.8 15.2 3.2 Z" opacity="0.9" />
+      {/* Small 4-point star */}
+      <path d="M 19.8 9.6 Q 19.8 11.8 22.0 11.8 Q 19.8 11.8 19.8 14.0 Q 19.8 11.8 17.6 11.8 Q 19.8 11.8 19.8 9.6 Z" opacity="0.8" />
+    </>
   ),
   rocket: (
     <>

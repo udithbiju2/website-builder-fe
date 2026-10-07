@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
-import { Files, Images, Layers, LayoutTemplate, Plus, Sparkles, type LucideProps } from "lucide-react";
+import { Files, Images, Layers, LayoutTemplate, Plus, type LucideProps } from "lucide-react";
 import AppTooltip from "../../../components/ui/AppTooltip.tsx";
+import { AiSparklesIcon } from "../../../components/icons/AiSparklesIcon.tsx";
 import { useEditor, type LeftPanelId } from "../editor-context.ts";
 import AddPanel from "./panels/AddPanel.tsx";
 import AssetsPanel from "./panels/AssetsPanel.tsx";
@@ -49,7 +50,7 @@ export default function LeftRail() {
         ))}
         <span className="my-1 h-px w-6 shrink-0 bg-ed-border" aria-hidden />
         <RailButton label="AI assistant" active={aiOpen} onClick={() => setAiOpen(!aiOpen)}>
-          <Sparkles className="size-4.5" strokeWidth={1.75} aria-hidden />
+          <AiSparklesIcon className="size-5" variant={aiOpen ? "glossy" : "current"} glow={aiOpen} aria-hidden />
         </RailButton>
       </nav>
       {active && Panel && (

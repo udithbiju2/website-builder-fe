@@ -5,12 +5,12 @@ import {
   Eye,
   History,
   Loader2,
+  MessageSquarePlus,
   RotateCcw,
-  Sparkles,
   Undo2,
-  Wand2,
   X,
 } from "lucide-react";
+import { AiSparklesIcon } from "../../../components/icons/AiSparklesIcon.tsx";
 import {
   DEFAULT_SECTION_SETTINGS,
   SECTION_DEFINITIONS,
@@ -23,123 +23,8 @@ import type { AiSuggestion } from "../schema/editor-document.ts";
 import { useEditor } from "../editor-context.ts";
 import { itemAsSection, sectionToItem } from "../puck/adapter.ts";
 import { selectSection, useBuilderPuck } from "../puck/puck-api.ts";
-import { itemTitle } from "./panels/LayersPanel.tsx";
 import { ToolButton } from "./ui.tsx";
 
-const DEFAULT_PAGE_PROMPTS = [
-  "Modern AI SaaS landing page with high-converting sections",
-  "Premium design agency portfolio with client proof",
-  "Boutique cafe & artisan bakery landing page",
-  "Enterprise B2B cloud infrastructure platform",
-];
-
-const SECTION_TYPE_PROMPTS: Record<string, string[]> = {
-  hero: [
-    "Make the headline punchier and conversion-focused",
-    "Add a high-tech modern badge and clearer value prop",
-    "Translate this section copy to Malayalam",
-  ],
-  pricing: [
-    "Create 3 balanced tiers (Starter, Pro, Enterprise)",
-    "Add popular badge and high-value feature bullets",
-    "Make it a competitive monthly SaaS pricing table",
-  ],
-  features: [
-    "Highlight speed, enterprise security, and AI automation",
-    "Write 4 customer-centric benefit cards with crisp titles",
-    "Make descriptions concise, actionable, and modern",
-  ],
-  services: [
-    "List end-to-end consulting and custom development services",
-    "Focus on deliverables, speed, and ROI",
-  ],
-  marquee: [
-    "Add 6 impressive modern tech badges and feature highlights",
-    "Showcase Fortune 500 client names and trust tags",
-  ],
-  carousel: [
-    "Create 3 vivid product showcase slides with headlines",
-    "Craft customer success stories with metrics",
-  ],
-  team: [
-    "Generate realistic executive leadership profiles with bios",
-    "Add design & engineering lead profiles",
-  ],
-  testimonials: [
-    "Create realistic praise from verified VP of Product & CTO",
-    "Highlight 300% efficiency gains and seamless UX",
-  ],
-  faq: [
-    "Add 5 most asked questions regarding pricing and onboarding",
-    "Write clear, reassuring answers addressing security & privacy",
-  ],
-  cta: [
-    "Write an irresistible urgency-driven headline & button",
-    "Offer 14-day free trial with no credit card required",
-  ],
-  stats: [
-    "Showcase 99.99% uptime, 10M+ users, and 4.9/5 rating",
-    "Highlight high-growth performance metrics",
-  ],
-};
-
-function DiffColumn({
-  title,
-  sections,
-  isAfter = false,
-}: {
-  title: string;
-  sections: AiSuggestion["before"];
-  isAfter?: boolean;
-}) {
-  return (
-    <div
-      className={`min-w-0 flex-1 rounded-xl border p-3 ${
-        isAfter
-          ? "border-purple-500/30 bg-purple-500/5 dark:border-purple-500/20 dark:bg-purple-950/20"
-          : "border-ed-border bg-ed-subtle"
-      }`}
-    >
-      <div className="mb-2 flex items-center justify-between">
-        <span
-          className={`text-[11px] font-semibold uppercase tracking-wider ${
-            isAfter ? "text-purple-600 dark:text-purple-400" : "text-ed-faint"
-          }`}
-        >
-          {title}
-        </span>
-        <span className="text-[10px] text-ed-muted">
-          {sections.length} {sections.length === 1 ? "section" : "sections"}
-        </span>
-      </div>
-      <ul className="flex flex-col gap-1.5">
-        {sections.map((section, idx) => {
-          const def = SECTION_DEFINITIONS[section.type as SectionType];
-          const sectionTitle =
-            (section.data as Record<string, unknown>)?.title ||
-            (section.data as Record<string, unknown>)?.headline ||
-            def?.label ||
-            section.type;
-
-          return (
-            <li
-              key={section.id || idx}
-              className="flex items-center gap-1.5 rounded-lg border border-ed-border/60 bg-ed-panel px-2.5 py-1.5 text-ed-xs shadow-2xs"
-            >
-              <span className="size-1.5 rounded-full bg-ed-accent shrink-0" />
-              <span className="font-medium text-ed-text truncate">
-                {def?.label || section.type}
-              </span>
-              <span className="text-ed-muted truncate text-[11px] ml-auto">
-                {String(sectionTitle).slice(0, 18)}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
 
 const COLOR_MAP: Record<string, string> = {
   red: "#dc2626",
@@ -242,15 +127,47 @@ function normalizeSection(raw: Section): Section {
     if (!mergedData.submitLabel) {
       mergedData.submitLabel = "Send message";
     }
+  } else if (type === "pricing") {
+    const validPricingVariants = ["cards-grid", "minimal-monochrome", "spotlight-tier", "horizontal-rows"];
+    if (typeof mergedData.variant !== "string" || !validPricingVariants.includes(mergedData.variant)) {
+      mergedData.variant = "cards-grid";
+    }
+    if (!mergedData.heading) mergedData.heading = "Transparent Pricing";
+    const rawPlans = Array.isArray(rawData.plans) ? rawData.plans : Array.isArray(rawData.tiers) ? rawData.tiers : Array.isArray(mergedData.plans) ? (mergedData.plans as unknown[]) : [];
+    if (rawPlans.length > 0) {
+      mergedData.plans = rawPlans.map((p: any, idx: number) => ({
+        name: typeof p?.name === "string" ? p.name : `Plan ${idx + 1}`,
+        price: typeof p?.price === "string" ? p.price : "$29",
+        period: typeof p?.period === "string" ? p.period : typeof p?.interval === "string" ? p.interval : "/mo",
+        originalPrice: typeof p?.originalPrice === "string" ? p.originalPrice : undefined,
+        badge: typeof p?.badge === "string" ? p.badge : undefined,
+        description: typeof p?.description === "string" ? p.description : "",
+        features: Array.isArray(p?.features) ? p.features.map(String) : ["All core features"],
+        excludedFeatures: Array.isArray(p?.excludedFeatures) ? p.excludedFeatures.map(String) : undefined,
+        cta: p?.cta && typeof p.cta === "object" ? p.cta : p?.button && typeof p.button === "object" ? p.button : { label: "Get started", href: "/contact" },
+        featured: Boolean(p?.featured ?? p?.highlighted ?? idx === 1),
+        highlightNote: typeof p?.highlightNote === "string" ? p.highlightNote : undefined,
+      }));
+    }
   } else if (type === "features") {
     const validFeaturesVariants = ["grid", "split", "pastel-icons", "minimal", "cards"];
     if (typeof mergedData.variant !== "string" || !validFeaturesVariants.includes(mergedData.variant)) {
       mergedData.variant = "pastel-icons";
     }
   } else if (type === "services") {
-    const validServicesVariants = ["cards-grid", "compact-list", "split-showcase", "minimal-numbered"];
+    const validServicesVariants = ["cards-grid", "bento-grid", "split-showcase", "interactive-list", "horizontal-cards", "minimal-numbered"];
     if (typeof mergedData.variant !== "string" || !validServicesVariants.includes(mergedData.variant)) {
       mergedData.variant = "cards-grid";
+    }
+  } else if (type === "faq") {
+    const validFaqVariants = ["accordion-classic", "two-column-grid", "split-sidebar", "minimal-numbered", "categorized-cards"];
+    if (typeof mergedData.variant !== "string" || !validFaqVariants.includes(mergedData.variant)) {
+      mergedData.variant = "accordion-classic";
+    }
+  } else if (type === "team") {
+    const validTeamVariants = ["grid-cards", "spotlight-featured", "minimal-editorial", "glass-overlay"];
+    if (typeof mergedData.variant !== "string" || !validTeamVariants.includes(mergedData.variant)) {
+      mergedData.variant = "grid-cards";
     }
   } else if (type === "hero") {
     const validHeroVariants = ["centered", "split", "split-left", "background-image", "video-bg", "gradient", "curved-bottom", "soft-card", "minimal-typography", "floating-cards", "asymmetric"];
@@ -324,6 +241,32 @@ function normalizeSection(raw: Section): Section {
   } as Section;
 }
 
+type PromptHistoryItem = {
+  id: string;
+  title: string;
+  prompt: string;
+  timeAgo: string;
+  timestamp: number;
+};
+
+function formatRelativeTime(ts: number): string {
+  const diffMs = Date.now() - ts;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
+}
+
+type ChatTurn = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+};
+
 export default function AiDrawer() {
   const { aiOpen, setAiOpen, website, notify } = useEditor();
   const dispatch = useBuilderPuck((state) => state.dispatch);
@@ -340,6 +283,20 @@ export default function AiDrawer() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<AiSuggestion | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatTurn[]>([]);
+  const [chatReply, setChatReply] = useState<string | null>(null);
+  const [promptHistory, setPromptHistory] = useState<PromptHistoryItem[]>(() => {
+    try {
+      const stored = localStorage.getItem(`ai_prompt_history_${website?.id}`);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
   const [originalCanvasContent, setOriginalCanvasContent] = useState<typeof allItems | null>(null);
   const [previewCanvasContent, setPreviewCanvasContent] = useState<typeof allItems | null>(null);
   const [previewMode, setPreviewMode] = useState<"ai" | "original">("ai");
@@ -380,28 +337,40 @@ export default function AiDrawer() {
 
   const isSectionScope = Boolean(currentSection);
   const activeType = currentSection?.type as SectionType | undefined;
-  const scopeLabel = currentSection && activeType
-    ? `${SECTION_DEFINITIONS[activeType]?.label || activeType}: ${itemTitle(selectedItem!)}`
-    : "Whole Page (Smart Mode)";
-
-  const promptSuggestions =
-    activeType && SECTION_TYPE_PROMPTS[activeType]
-      ? SECTION_TYPE_PROMPTS[activeType]
-      : DEFAULT_PAGE_PROMPTS;
 
   const VIBE_PRESETS = isSectionScope
     ? [
-        { label: "🚀 Modern SaaS", prompt: "Transform into modern high-converting SaaS style with punchy copy and high-contrast CTA" },
-        { label: "🔮 Cyberpunk Glow", prompt: "Give this section a futuristic cyberpunk dark mode with vibrant neon glow and glassmorphism styling" },
-        { label: "🌿 Clean Luxury Editorial", prompt: "Redesign with elegant luxury minimalist layout, elegant typography, and calm spacing" },
-        { label: "🖼️ Full Cover Stock Image", prompt: "Add a full cover high-resolution background image with dark overlay and crisp white text" },
+        { label: "Modern SaaS", prompt: "Transform into modern high-converting SaaS style with punchy copy and high-contrast CTA" },
+        { label: "Cyber Glow", prompt: "Give this section a futuristic cyberpunk dark mode with vibrant neon glow and glassmorphism styling" },
+        { label: "Clean Luxury", prompt: "Redesign with elegant luxury minimalist layout, elegant typography, and calm spacing" },
+        { label: "Stock Image", prompt: "Add a full cover high-resolution background image with dark overlay and crisp white text" },
       ]
     : [
-        { label: "🚀 Modern AI SaaS", prompt: "Generate a complete modern AI SaaS landing page with dark mode, high-converting hero, features, and pricing" },
-        { label: "💎 Luxury Agency", prompt: "Generate a high-end design agency landing page with proof, showcase carousel, and client testimonials" },
-        { label: "☕ Artisan Boutique", prompt: "Generate a warm boutique artisan bakery landing page with rich menus and contact cards" },
-        { label: "🏢 Enterprise Platform", prompt: "Generate a high-trust enterprise B2B platform page with stats, security badges, and tiered plans" },
+        { label: "Modern AI SaaS", prompt: "Generate a complete modern AI SaaS landing page with dark mode, high-converting hero, features, and pricing" },
+        { label: "Luxury Agency", prompt: "Generate a high-end design agency landing page with proof, showcase carousel, and client testimonials" },
+        { label: "Artisan Boutique", prompt: "Generate a warm boutique artisan bakery landing page with rich menus and contact cards" },
+        { label: "Enterprise Platform", prompt: "Generate a high-trust enterprise B2B platform page with stats, security badges, and tiered plans" },
       ];
+
+  const handleNewChat = () => {
+    if (originalCanvasContent) {
+      handleReject();
+    }
+    setChatHistory([]);
+    setChatReply(null);
+    setPrompt("");
+    setSuggestion(null);
+    notify("Started a fresh AI conversation session.", "success");
+  };
+
+  const handleClearHistory = () => {
+    setPromptHistory([]);
+    try {
+      localStorage.removeItem(`ai_prompt_history_${website?.id}`);
+    } catch {
+      // ignore
+    }
+  };
 
   const handleGenerate = async (customPrompt?: string) => {
     const textToRun = (typeof customPrompt === "string" ? customPrompt : prompt).trim();
@@ -414,13 +383,60 @@ export default function AiDrawer() {
     setLoading(true);
 
     try {
+      const historyPayload = chatHistory.slice(-10).map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
       const result = await websitesApi.generateAiSuggestion(website.id, {
         prompt: textToRun,
         scope: isSectionScope ? "section" : "page",
         sectionId: currentSection?.id,
         currentSection: currentSection ?? undefined,
         currentSections,
+        history: historyPayload,
       });
+
+      // Append turns to chat history (cap at last 10 messages)
+      const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      setChatHistory((prev) => [
+        ...prev.slice(-8),
+        { id: crypto.randomUUID(), role: "user", content: textToRun, timestamp: nowTime },
+        { id: crypto.randomUUID(), role: "assistant", content: result.summary, timestamp: nowTime },
+      ]);
+
+      // Save to prompt history
+      const newHistoryItem: PromptHistoryItem = {
+        id: crypto.randomUUID(),
+        title: textToRun.length > 40 ? `${textToRun.slice(0, 40)}…` : textToRun,
+        prompt: textToRun,
+        timeAgo: "Just now",
+        timestamp: Date.now(),
+      };
+      setPromptHistory((prev) => {
+        const filtered = prev.filter((p) => p.prompt !== textToRun);
+        const updated = [newHistoryItem, ...filtered].slice(0, 15);
+        try {
+          localStorage.setItem(`ai_prompt_history_${website?.id}`, JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
+        return updated;
+      });
+
+      const isChatScope =
+        (result.target as Record<string, unknown>).scope === "chat" ||
+        (result.before.length === 0 && result.after.length === 0);
+
+      if (isChatScope) {
+        setChatReply((result as { chatReply?: string }).chatReply || result.summary);
+        setSuggestion(null);
+        setOriginalCanvasContent(null);
+        setPreviewCanvasContent(null);
+        return;
+      }
+
+      setChatReply(null);
 
       // Save original baseline before previewing
       const baseline = originalCanvasContent ?? structuredClone(allItems);
@@ -456,8 +472,20 @@ export default function AiDrawer() {
           }
         }
       } else {
-        const validSections = result.after.map((s: unknown) => normalizeSection(s as Section));
-        nextItems = validSections.map(sectionToItem);
+        const validSections: Section[] = result.after.map((s: unknown) => normalizeSection(s as Section));
+        const hasHeader = validSections.some((s) => s.type === "header");
+        const hasFooter = validSections.some((s) => s.type === "footer");
+        const baselineHeader = baseline.find((it) => itemAsSection(it).type === "header");
+        const baselineFooter = baseline.find((it) => itemAsSection(it).type === "footer");
+
+        let assembled = validSections.map(sectionToItem);
+        if (!hasHeader && baselineHeader) {
+          assembled = [baselineHeader, ...assembled];
+        }
+        if (!hasFooter && baselineFooter) {
+          assembled = [...assembled, baselineFooter];
+        }
+        nextItems = assembled;
       }
 
       setPreviewCanvasContent(nextItems);
@@ -556,69 +584,161 @@ export default function AiDrawer() {
     setHistorySnapshot(null);
   };
 
+  const isNewChat = !suggestion && !chatReply && chatHistory.length === 0;
+
   return (
     <aside
-      aria-label="AI assistant"
+      aria-label="AI Copilot"
       onKeyDown={(event) => event.key === "Escape" && setAiOpen(false)}
-      className="absolute inset-y-0 right-0 z-(--z-ed-drawer) flex w-96 flex-col border-l border-ed-border bg-ed-panel shadow-2xl backdrop-blur-md"
+      className="z-(--z-ed-panel) flex h-full min-h-0 w-96 shrink-0 flex-col border-l border-ed-border bg-ed-panel overflow-hidden transition-all duration-150 shadow-sm select-none"
     >
       {/* Header */}
-      <header className="flex items-center gap-2.5 border-b border-ed-border px-3.5 py-3 bg-ed-subtle/50">
-        <span className="grid size-8 place-items-center rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white shadow-sm">
-          <Sparkles className="size-4 animate-pulse" aria-hidden />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <h2 className="text-ed-sm font-semibold text-ed-text">
-              AI Copilot
-            </h2>
-            <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold text-purple-600 dark:text-purple-400">
-              2026 Engine
-            </span>
-          </div>
-          <p className="truncate text-ed-xs text-ed-muted">
-            Target: <strong className="font-medium text-ed-text">{scopeLabel}</strong>
-          </p>
+      <header className="flex items-center justify-between border-b border-ed-border px-3.5 py-2.5 bg-ed-subtle/40 shrink-0">
+        <div className="flex items-center gap-2">
+          <AiSparklesIcon className="size-4" variant="glossy" glow />
+          <h2 className="text-ed-xs font-bold text-ed-text tracking-tight">
+            AI Copilot
+          </h2>
         </div>
-        <ToolButton
-          label="Close AI assistant"
-          size="sm"
-          onClick={() => {
-            if (originalCanvasContent) {
-              handleReject();
-            }
-            setAiOpen(false);
-          }}
-        >
-          <X className="size-4" aria-hidden />
-        </ToolButton>
+
+        <div className="flex items-center gap-0.5">
+          <ToolButton
+            label="New chat thread (Reset context)"
+            size="sm"
+            onClick={handleNewChat}
+          >
+            <MessageSquarePlus className="size-3.5" aria-hidden />
+          </ToolButton>
+          <ToolButton
+            label="Close AI assistant"
+            size="sm"
+            onClick={() => {
+              if (originalCanvasContent) {
+                handleReject();
+              }
+              setAiOpen(false);
+            }}
+          >
+            <X className="size-3.5" aria-hidden />
+          </ToolButton>
+        </div>
       </header>
 
-      {/* Main Drawer Body */}
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-3.5">
-        {/* Scope Context Banner */}
-        <div className="rounded-xl border border-ed-border bg-ed-subtle/60 p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-ed-xs font-semibold text-ed-text">
-              <Wand2 className="size-3.5 text-purple-600 dark:text-purple-400" />
-              {isSectionScope ? "Single Section Edit Mode" : "Full Page Mode"}
+      {/* Main Drawer Scroll Area */}
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-3.5">
+        {/* Sleek Glowing Dot Mode Indicator */}
+        <div className="flex items-center justify-between px-1 text-ed-xs">
+          <div className="flex items-center gap-2">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-brand" />
+            </span>
+            <span className="font-semibold text-ed-text text-[11.5px]">
+              {isSectionScope
+                ? `Single Section: ${activeType ? SECTION_DEFINITIONS[activeType]?.label || activeType : "Selected"}`
+                : "Whole Page (Smart Mode)"}
+            </span>
+          </div>
+
+          {isSectionScope && (
+            <button
+              type="button"
+              onClick={() => selectSection(dispatch, null)}
+              className="text-[11px] font-medium text-brand hover:underline cursor-pointer"
+            >
+              Deselect (Page Mode)
+            </button>
+          )}
+        </div>
+
+        {/* 1-Click Style & Vibe Compact Chips (ONLY on fresh / new chat) */}
+        {isNewChat && (
+          <div className="grid grid-cols-2 gap-1.5 animate-in fade-in duration-200">
+            {VIBE_PRESETS.map((vibe) => (
+              <button
+                key={vibe.label}
+                type="button"
+                disabled={loading}
+                onClick={() => handleGenerate(vibe.prompt)}
+                className="flex items-center gap-1.5 rounded-xl border border-ed-border/70 bg-ed-subtle/50 px-2.5 py-1.5 text-left text-[11px] text-ed-text hover:border-brand/40 hover:bg-blue-500/5 hover:text-brand transition-all group cursor-pointer"
+              >
+                <span className="truncate font-medium">{vibe.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Centered Antigravity Prompt Box (Shown on fresh / new chat) */}
+        {isNewChat && (
+          <div className="flex flex-col rounded-2xl border border-ed-border bg-ed-panel p-3 shadow-xs focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 transition-all animate-in fade-in duration-200">
+            <textarea
+              id={promptId}
+              ref={promptRef}
+              value={prompt}
+              maxLength={2000}
+              rows={3}
+              disabled={loading}
+              onChange={(event) => setPrompt(event.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleGenerate();
+                }
+              }}
+              placeholder={
+                isSectionScope
+                  ? `Ask anything, describe changes to this ${activeType || "section"}, or type / for actions...`
+                  : "Ask anything, describe your website goal, or type / for actions..."
+              }
+              className="w-full resize-none bg-transparent text-ed-xs text-ed-text placeholder:text-ed-muted/60 focus:outline-none leading-relaxed"
+            />
+
+            <div className="mt-2 flex items-center justify-between border-t border-ed-border/40 pt-2 text-ed-xs">
+              <span className="text-ed-muted text-[10.5px] truncate font-medium">
+                {isSectionScope ? activeType : "Full Page"}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-ed-faint font-mono">{prompt.length}/2000</span>
+                <button
+                  type="button"
+                  disabled={!prompt.trim() || loading}
+                  onClick={() => handleGenerate()}
+                  className="grid size-7 place-items-center rounded-full bg-brand text-white shadow-xs hover:bg-brand-hover active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                >
+                  {loading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <ArrowRight className="size-3.5" />
+                  )}
+                </button>
+              </div>
             </div>
-            {isSectionScope && (
+          </div>
+        )}
+
+        {/* AI Copilot Direct Response / Guidance Card */}
+        {chatReply && !suggestion && (
+          <div className="flex flex-col gap-2 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-3.5 shadow-xs animate-in fade-in duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <AiSparklesIcon className="size-3.5" variant="glossy" />
+                <span className="text-[11.5px] font-bold text-ed-text">AI Copilot</span>
+              </div>
               <button
                 type="button"
-                onClick={() => selectSection(dispatch, null)}
-                className="text-[11px] font-medium text-purple-600 hover:underline dark:text-purple-400 cursor-pointer"
+                onClick={() => setChatReply(null)}
+                className="text-ed-muted hover:text-ed-text p-0.5 rounded transition-colors cursor-pointer"
+                title="Dismiss message"
               >
-                Deselect (Page Mode)
+                <X className="size-3.5" />
               </button>
-            )}
+            </div>
+            <div className="text-ed-xs text-ed-text leading-relaxed whitespace-pre-line">
+              {chatReply}
+            </div>
           </div>
-          <p className="mt-1 text-[11px] leading-relaxed text-ed-muted">
-            {isSectionScope
-              ? `AI will edit the selected ${activeType ? SECTION_DEFINITIONS[activeType]?.label || activeType : "component"}. (Tip: To add a new section instead, simply type "add hero", "add pricing", etc.)`
-              : "Generate or improve page sections tailored to your prompt."}
-          </p>
-        </div>
+        )}
 
         {/* 1-Click Rollback History Banner */}
         {historySnapshot && !suggestion && (
@@ -638,182 +758,73 @@ export default function AiDrawer() {
           </div>
         )}
 
-        {/* Quick Style & Vibe Switcher (Framer/Wix Studio Vibe) */}
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-ed-faint">
-              1-Click Style & Vibe
-            </span>
-            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Instant</span>
-          </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {VIBE_PRESETS.map((vibe) => (
-              <button
-                key={vibe.label}
-                type="button"
-                disabled={loading}
-                onClick={() => handleGenerate(vibe.prompt)}
-                className="flex items-center gap-1.5 rounded-xl border border-ed-border/70 bg-ed-panel px-2.5 py-2 text-left text-ed-xs text-ed-text hover:border-purple-500/50 hover:bg-purple-500/5 hover:text-purple-600 dark:hover:text-purple-400 transition-all group shadow-2xs cursor-pointer"
-              >
-                <span className="truncate font-medium">{vibe.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Prompt Input Box */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor={promptId}
-              className="text-ed-xs font-medium text-ed-text"
-            >
-              Instruction Prompt
-            </label>
-            <span className="text-[11px] text-ed-faint">
-              {prompt.length}/2000
-            </span>
-          </div>
-
-          <textarea
-            id={promptId}
-            ref={promptRef}
-            value={prompt}
-            maxLength={2000}
-            rows={3}
-            disabled={loading}
-            onChange={(event) => setPrompt(event.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                handleGenerate();
-              }
-            }}
-            placeholder={
-              isSectionScope
-                ? `e.g. "Make the copy punchier and add 2 enterprise features"`
-                : `e.g. "Design a high-converting landing page for a modern fintech app"`
-            }
-            className="resize-none rounded-xl border border-ed-border bg-ed-subtle px-3 py-2.5 text-ed-sm text-ed-text placeholder:text-ed-faint focus:border-purple-500 focus:bg-ed-panel focus:outline-none transition-all shadow-inner"
-          />
-
-          <button
-            type="button"
-            onClick={() => handleGenerate()}
-            disabled={!prompt.trim() || loading}
-            className="flex h-9 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-medium text-white shadow-sm hover:from-purple-500 hover:to-indigo-500 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none transition-all text-ed-xs cursor-pointer"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                <span>Crafting with AI…</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="size-3.5" />
-                <span>Generate Suggestion</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Quick Suggestion Chips */}
-        <div>
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ed-faint">
-            Quick Prompts
-          </p>
-          <div className="flex flex-col gap-1.5">
-            {promptSuggestions.map((text) => (
-              <button
-                key={text}
-                type="button"
-                disabled={loading}
-                onClick={() => {
-                  setPrompt(text);
-                  promptRef.current?.focus();
-                }}
-                className="group flex items-center justify-between rounded-xl border border-ed-border/70 bg-ed-panel px-3 py-2 text-left text-ed-xs text-ed-text hover:border-purple-500/40 hover:bg-purple-500/5 transition-all cursor-pointer"
-              >
-                <span className="truncate">{text}</span>
-                <ArrowRight className="size-3 text-ed-faint opacity-0 group-hover:opacity-100 group-hover:text-purple-600 transition-all shrink-0 ml-2" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Suggestion Live Preview & Decision Controller */}
+        {/* Suggestion Live Preview & Decision Controller (Premium Minimalist UI) */}
         {suggestion && (
           <section
             aria-label="Suggested change"
-            className="flex flex-col gap-3.5 rounded-2xl border-2 border-purple-500/40 bg-gradient-to-b from-purple-500/10 via-purple-500/5 to-transparent p-3.5 shadow-lg dark:border-purple-500/30 dark:from-purple-950/40 animate-in fade-in slide-in-from-bottom-2 duration-200"
+            className="flex flex-col gap-3 rounded-2xl border border-brand/30 bg-ed-panel p-3.5 shadow-md animate-in fade-in slide-in-from-bottom-2 duration-200"
           >
-            {/* Live Indicator Header */}
-            <div className="flex items-center justify-between border-b border-purple-500/20 pb-2">
+            {/* Live Indicator Header & Toggle */}
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="relative flex size-2.5">
+                <span className="relative flex size-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+                  <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
                 </span>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
-                  Live Preview on Canvas
+                <span className="text-[11.5px] font-bold tracking-tight text-ed-text">
+                  Live Canvas Preview
                 </span>
               </div>
-              <span className="rounded-md bg-purple-500/15 px-2 py-0.5 text-[10px] font-semibold text-purple-600 dark:text-purple-300">
-                {previewMode === "ai" ? "Viewing AI" : "Viewing Original"}
-              </span>
-            </div>
 
-            {/* Summary */}
-            <div className="flex items-start gap-2 pt-0.5">
-              <span className="grid size-5 place-items-center rounded-full bg-purple-600 text-white shrink-0 mt-0.5 shadow-xs">
-                <Sparkles className="size-3" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-ed-xs font-semibold text-ed-text">
-                  AI Proposal Generated
-                </h3>
-                <p className="mt-0.5 text-ed-xs text-ed-muted leading-relaxed">
-                  {suggestion.summary}
-                </p>
+              {/* Minimal Segmented Toggle */}
+              <div className="flex items-center rounded-lg bg-ed-subtle p-0.5 border border-ed-border/70 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => handleTogglePreview("ai")}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md font-medium transition-all cursor-pointer ${
+                    previewMode === "ai"
+                      ? "bg-brand text-white shadow-xs"
+                      : "text-ed-muted hover:text-ed-text"
+                  }`}
+                >
+                  <Eye className="size-3" />
+                  AI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTogglePreview("original")}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md font-medium transition-all cursor-pointer ${
+                    previewMode === "original"
+                      ? "bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-900 shadow-xs"
+                      : "text-ed-muted hover:text-ed-text"
+                  }`}
+                >
+                  <Undo2 className="size-3" />
+                  Original
+                </button>
               </div>
             </div>
 
-            {/* Live Preview Toggle Controller */}
-            <div className="flex items-center gap-1 rounded-xl bg-ed-subtle p-1 border border-ed-border">
-              <button
-                type="button"
-                onClick={() => handleTogglePreview("ai")}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-ed-xs font-semibold transition-all cursor-pointer ${
-                  previewMode === "ai"
-                    ? "bg-purple-600 text-white shadow-xs"
-                    : "text-ed-muted hover:text-ed-text hover:bg-ed-panel"
-                }`}
-              >
-                <Eye className="size-3.5" />
-                <span>AI Preview</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTogglePreview("original")}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-ed-xs font-semibold transition-all cursor-pointer ${
-                  previewMode === "original"
-                    ? "bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-900 shadow-xs"
-                    : "text-ed-muted hover:text-ed-text hover:bg-ed-panel"
-                }`}
-              >
-                <Undo2 className="size-3.5" />
-                <span>Previous / Original</span>
-              </button>
-            </div>
-
-            {/* Visual Diff Columns */}
-            <div className="flex gap-2">
-              <DiffColumn title="Current" sections={suggestion.before} />
-              <DiffColumn title="AI Output" sections={suggestion.after} isAfter />
+            {/* Summary & Affected Section Tags */}
+            <div className="rounded-xl bg-ed-subtle/50 p-2.5 border border-ed-border/40">
+              <p className="text-ed-xs text-ed-text leading-relaxed font-normal">
+                {suggestion.summary}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {suggestion.after.map((sec, idx) => (
+                  <span
+                    key={sec.id || idx}
+                    className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-[10.5px] font-medium text-brand"
+                  >
+                    <span className="size-1.5 rounded-full bg-brand" />
+                    {SECTION_DEFINITIONS[sec.type as SectionType]?.label || sec.type}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Primary Actions: Accept / Reject / Retry */}
-            <div className="flex flex-col gap-2 pt-1">
+            <div className="flex flex-col gap-2 pt-0.5">
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -827,29 +838,132 @@ export default function AiDrawer() {
                 <button
                   type="button"
                   onClick={handleReject}
-                  className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 text-ed-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white transition-all cursor-pointer shadow-xs"
+                  className="flex h-9 px-3.5 items-center justify-center gap-1.5 rounded-xl border border-ed-border bg-ed-subtle text-ed-xs font-medium text-ed-text hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-500 active:scale-[0.98] transition-all cursor-pointer"
                 >
-                  <X className="size-4" />
+                  <X className="size-3.5" />
                   Reject
                 </button>
               </div>
 
-              <div className="flex items-center justify-between pt-1 text-[11px] text-ed-muted border-t border-ed-border/50">
+              <div className="flex items-center justify-between pt-1 text-[11px] text-ed-muted">
                 <button
                   type="button"
                   onClick={() => handleGenerate()}
                   disabled={loading}
-                  className="flex items-center gap-1 hover:text-purple-600 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 hover:text-brand transition-colors cursor-pointer"
                 >
                   <RotateCcw className="size-3" />
                   Regenerate
                 </button>
-                <span className="text-[10.5px]">Click Accept to make permanent</span>
+                <span className="text-[10px] text-ed-muted/80">Click Accept to keep on canvas</span>
               </div>
             </div>
           </section>
         )}
+
+        {/* Antigravity Context & Prompt History */}
+        {promptHistory.length > 0 && (
+          <div className="flex flex-col gap-1 pt-1">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10.5px] font-bold uppercase tracking-wider text-ed-faint">
+                Recent History
+              </span>
+              <button
+                type="button"
+                onClick={handleClearHistory}
+                className="text-[10.5px] text-ed-muted hover:text-brand transition-colors cursor-pointer"
+              >
+                Clear all
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              {promptHistory.slice(0, 6).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setPrompt(item.prompt);
+                    promptRef.current?.focus();
+                  }}
+                  className="group flex items-center justify-between rounded-xl px-2.5 py-1.5 text-left hover:bg-ed-subtle/80 transition-all cursor-pointer"
+                >
+                  <span className="truncate text-ed-xs text-ed-text/90 group-hover:text-brand font-normal group-hover:font-medium">
+                    {item.title}
+                  </span>
+                  <span className="shrink-0 text-[11px] text-ed-muted/70 font-mono ml-2">
+                    {formatRelativeTime(item.timestamp)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Disclaimer for Fresh Chat */}
+        {isNewChat && (
+          <div className="mt-auto pt-4 pb-1 text-center">
+            <p className="text-[10px] text-ed-muted/60">
+              AI may make mistakes. Preview changes before accepting.
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Bottom Docked Input Area (Shown when conversation/proposal is active) */}
+      {!isNewChat && (
+        <div className="p-3 border-t border-ed-border shrink-0 bg-ed-panel flex flex-col gap-2 animate-in slide-in-from-bottom-2 duration-200">
+          <div className="flex flex-col rounded-2xl border border-ed-border bg-ed-subtle/30 p-2.5 shadow-xs focus-within:border-brand focus-within:bg-ed-panel focus-within:ring-2 focus-within:ring-brand/20 transition-all">
+            <textarea
+              id={promptId}
+              ref={promptRef}
+              value={prompt}
+              maxLength={2000}
+              rows={2}
+              disabled={loading}
+              onChange={(event) => setPrompt(event.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleGenerate();
+                }
+              }}
+              placeholder={
+                isSectionScope
+                  ? `Describe changes to ${activeType || "section"}...`
+                  : "Ask anything, describe your website goal..."
+              }
+              className="w-full resize-none bg-transparent text-ed-xs text-ed-text placeholder:text-ed-muted/60 focus:outline-none leading-relaxed max-h-32"
+            />
+
+            <div className="mt-1.5 flex items-center justify-between border-t border-ed-border/40 pt-1.5 text-ed-xs">
+              <span className="text-ed-muted text-[10.5px] truncate font-medium">
+                {isSectionScope ? activeType : "Whole Page"}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-ed-faint font-mono">{prompt.length}/2000</span>
+                <button
+                  type="button"
+                  disabled={!prompt.trim() || loading}
+                  onClick={() => handleGenerate()}
+                  className="grid size-6.5 place-items-center rounded-full bg-brand text-white shadow-xs hover:bg-brand-hover active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                >
+                  {loading ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <ArrowRight className="size-3" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[10px] text-center text-ed-muted/60">
+            AI may make mistakes. Preview changes before accepting.
+          </p>
+        </div>
+      )}
     </aside>
   );
 }

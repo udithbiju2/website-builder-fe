@@ -212,6 +212,7 @@ export const websitesApi = {
       sectionId?: string;
       currentSection?: Section;
       currentSections?: Section[];
+      history?: Array<{ role: "user" | "assistant"; content: string }>;
     },
   ) =>
     request<{ suggestion: any }>(`${BASE}/${id}/ai/generate`, {
