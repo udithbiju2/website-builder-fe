@@ -339,12 +339,74 @@ export type FeaturesData = {
   bottomCta?: LinkRef;
 };
 
+export const SERVICES_VARIANTS = [
+  "cards-grid",
+  "bento-grid",
+  "split-showcase",
+  "interactive-list",
+  "horizontal-cards",
+  "minimal-numbered",
+] as const;
+
+export type ServicesVariant = (typeof SERVICES_VARIANTS)[number];
+
+export type ServiceItem = {
+  title: string;
+  description: string;
+  badge?: string;
+  badgeColor?: FeatureColor;
+  icon?: IconName | string;
+  iconColor?: FeatureColor;
+  image?: ImageRef;
+  price?: string;
+  duration?: string;
+  features?: string[];
+  link?: LinkRef;
+  secondaryLink?: LinkRef;
+  backgroundColor?: string;
+  featured?: boolean;
+};
+
 export type ServicesData = {
   heading: string;
+  eyebrow?: string;
   intro?: string;
+  variant?: ServicesVariant;
+  cardStyle?:
+    | "surface"
+    | "bordered"
+    | "flat"
+    | "glass"
+    | "glow"
+    | "elevated"
+    | "gradient";
+  iconStyle?:
+    | "pastel-circle"
+    | "square-badge"
+    | "minimal-accent"
+    | "colored-circle"
+    | "glow-icon"
+    | "none";
+  imageAspect?: "16:9" | "4:3" | "1:1" | "21:9" | "auto";
+  align?: "left" | "center";
   columns: GridColumns;
   mobileColumns: GridColumns;
-  items: { title: string; description: string; image?: ImageRef; link?: LinkRef }[];
+  items: ServiceItem[];
+  // Split showcase options
+  splitPosition?: "left" | "right";
+  splitImage?: ImageRef;
+  splitTagline?: string;
+  splitCta?: LinkRef;
+  secondaryCta?: LinkRef;
+  // Section bottom CTAs & toggles
+  bottomCta?: LinkRef;
+  bottomSecondaryCta?: LinkRef;
+  showBadges?: boolean;
+  showIcons?: boolean;
+  showImages?: boolean;
+  showPrices?: boolean;
+  showBullets?: boolean;
+  showNumbers?: boolean;
 };
 
 export type TestimonialsData = {
@@ -352,26 +414,128 @@ export type TestimonialsData = {
   items: { quote: string; name: string; role?: string }[];
 };
 
+export const FAQ_VARIANTS = [
+  "accordion-classic",
+  "two-column-grid",
+  "split-sidebar",
+  "minimal-numbered",
+  "categorized-cards",
+] as const;
+export type FaqVariant = (typeof FAQ_VARIANTS)[number];
+
+export const FAQ_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+] as const;
+export type FaqCardStyle = (typeof FAQ_CARD_STYLES)[number];
+
+export type FaqItem = {
+  question: string;
+  answer: string;
+  category?: string;
+  badge?: string;
+  isOpenDefault?: boolean;
+};
+
+export type FaqSupportCta = {
+  title?: string;
+  description?: string;
+  link?: LinkRef;
+};
+
 export type FaqData = {
+  variant?: FaqVariant;
+  eyebrow?: string;
   heading: string;
   intro?: string;
-  items: { question: string; answer: string }[];
+  cardStyle?: FaqCardStyle;
+  align?: SectionAlign;
+  supportCta?: FaqSupportCta;
+  items: FaqItem[];
+};
+
+export const CTA_VARIANTS = [
+  "centered-card",
+  "split-visual",
+  "floating-card",
+  "minimal-editorial",
+] as const;
+export type CtaVariant = (typeof CTA_VARIANTS)[number];
+
+export const CTA_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type CtaCardStyle = (typeof CTA_CARD_STYLES)[number];
+
+export type CtaMetric = {
+  value: string;
+  label: string;
+  subtext?: string;
 };
 
 export type CtaData = {
+  variant?: CtaVariant;
+  eyebrow?: string;
   heading: string;
   text?: string;
   button: LinkRef;
+  secondaryButton?: LinkRef;
+  trustBadges?: string[];
+  highlightMetric?: CtaMetric;
+  cardStyle?: CtaCardStyle;
+  align?: SectionAlign;
+};
+
+export const CONTACT_VARIANTS = [
+  "split-form",
+  "cards-hub",
+  "minimal-editorial",
+  "floating-glass",
+] as const;
+export type ContactVariant = (typeof CONTACT_VARIANTS)[number];
+
+export const CONTACT_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type ContactCardStyle = (typeof CONTACT_CARD_STYLES)[number];
+
+export type ContactChannel = {
+  label: string;
+  value: string;
+  description?: string;
+  icon?: "mail" | "phone" | "chat" | "user";
 };
 
 export type ContactData = {
+  variant?: ContactVariant;
+  eyebrow?: string;
   heading: string;
   text?: string;
   email?: string;
   phone?: string;
   address?: string;
+  officeHours?: string;
+  responseTime?: string;
   showForm: boolean;
   submitLabel: string;
+  formHeading?: string;
+  serviceOptions?: string[];
+  channels?: ContactChannel[];
+  cardStyle?: ContactCardStyle;
+  align?: SectionAlign;
 };
 
 export type TextData = {
@@ -410,19 +574,50 @@ export type StatsData = {
   items: { value: string; label: string }[];
 };
 
+export const PRICING_VARIANTS = [
+  "cards-grid",
+  "minimal-monochrome",
+  "spotlight-tier",
+  "horizontal-rows",
+] as const;
+export type PricingVariant = (typeof PRICING_VARIANTS)[number];
+
+export const PRICING_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type PricingCardStyle = (typeof PRICING_CARD_STYLES)[number];
+
 export type PricingPlan = {
   name: string;
   price: string;
   period?: string;
+  originalPrice?: string;
+  badge?: string;
   description?: string;
   features: string[];
+  excludedFeatures?: string[];
   cta?: LinkRef;
   featured: boolean;
+  highlightNote?: string;
 };
 
 export type PricingData = {
+  variant?: PricingVariant;
+  eyebrow?: string;
   heading: string;
   intro?: string;
+  billingCycleLabel?: string;
+  discountBadge?: string;
+  footerNote?: string;
+  cardStyle?: PricingCardStyle;
+  columns?: GridColumns;
+  mobileColumns?: GridColumns;
+  align?: SectionAlign;
   plans: PricingPlan[];
 };
 
@@ -439,20 +634,135 @@ export type MediaData = {
   width: "contained" | "wide";
 };
 
+export const TEAM_VARIANTS = [
+  "grid-cards",
+  "spotlight-featured",
+  "minimal-editorial",
+  "glass-overlay",
+] as const;
+export type TeamVariant = (typeof TEAM_VARIANTS)[number];
+
+export const TEAM_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type TeamCardStyle = (typeof TEAM_CARD_STYLES)[number];
+
+export type TeamSocialPlatform = "linkedin" | "twitter" | "github" | "email" | "link";
+
+export type TeamSocialLink = {
+  platform: TeamSocialPlatform;
+  url: string;
+};
+
 export type TeamMember = {
   name: string;
   role?: string;
+  department?: string;
   bio?: string;
+  location?: string;
   photo?: ImageRef;
+  tags?: string[];
   link?: LinkRef;
+  socialLinks?: TeamSocialLink[];
 };
 
 export type TeamData = {
+  variant?: TeamVariant;
+  eyebrow?: string;
+  badge?: string;
   heading: string;
   intro?: string;
+  cardStyle?: TeamCardStyle;
+  align?: SectionAlign;
   columns: GridColumns;
   mobileColumns: GridColumns;
   members: TeamMember[];
+};
+
+export const CAROUSEL_VARIANTS = [
+  "cards",
+  "hero-slider",
+  "showcase",
+  "minimal-editorial",
+  "image-gallery",
+  "image-strip",
+  "image-coverflow",
+] as const;
+export type CarouselVariant = (typeof CAROUSEL_VARIANTS)[number];
+
+export const CAROUSEL_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type CarouselCardStyle = (typeof CAROUSEL_CARD_STYLES)[number];
+
+export type CarouselSlide = {
+  title: string;
+  subtitle?: string;
+  description?: string;
+  caption?: string;
+  badge?: string;
+  image?: ImageRef;
+  button?: LinkRef;
+  secondaryButton?: LinkRef;
+};
+
+export type CarouselData = {
+  variant?: CarouselVariant;
+  eyebrow?: string;
+  heading?: string;
+  intro?: string;
+  badge?: string;
+  slides: CarouselSlide[];
+  autoPlay?: boolean;
+  interval?: number;
+  showArrows?: boolean;
+  showDots?: boolean;
+  showThumbnails?: boolean;
+  imageAspect?: "16:9" | "4:3" | "1:1" | "21:9" | "3:4";
+  columns?: GridColumns;
+  pauseOnHover?: boolean;
+  cardStyle?: CarouselCardStyle;
+  align?: SectionAlign;
+};
+
+export const MARQUEE_VARIANTS = [
+  "ticker-text",
+  "cards-stream",
+  "pill-badges",
+  "dual-directional",
+] as const;
+export type MarqueeVariant = (typeof MARQUEE_VARIANTS)[number];
+
+export type MarqueeItem = {
+  text: string;
+  badge?: string;
+  icon?: IconName;
+  link?: string;
+  subtext?: string;
+};
+
+export type MarqueeData = {
+  variant?: MarqueeVariant;
+  eyebrow?: string;
+  heading?: string;
+  intro?: string;
+  items: MarqueeItem[];
+  secondaryItems?: MarqueeItem[];
+  speed?: "slow" | "normal" | "fast";
+  direction?: "left" | "right";
+  pauseOnHover?: boolean;
+  gradientFades?: boolean;
+  fontSize?: "small" | "medium" | "large" | "huge";
 };
 
 export type SectionDataMap = {
@@ -473,6 +783,8 @@ export type SectionDataMap = {
   pricing: PricingData;
   media: MediaData;
   team: TeamData;
+  carousel: CarouselData;
+  marquee: MarqueeData;
 };
 
 export type SectionType = keyof SectionDataMap;

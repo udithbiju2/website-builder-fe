@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { deviceWidth, type Device } from "../../../components/websites/DevicePreview.tsx";
+import AiBuilderCanvasOverlay from "./AiBuilderCanvasOverlay.tsx";
 
 const GUTTER = 24;
 
@@ -7,7 +8,15 @@ const GUTTER = 24;
  * Renders the canvas at the device's real width and scales it down to fit, so the
  * site's container-query breakpoints match what visitors see on that device.
  */
-export default function CanvasViewport({ device, children }: { device: Device; children: ReactNode }) {
+export default function CanvasViewport({
+  device,
+  children,
+  onDeselect,
+}: {
+  device: Device;
+  children: ReactNode;
+  onDeselect?: () => void;
+}) {
   const outerRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ width: number; height: number } | null>(null);
   const width = deviceWidth(device);
@@ -37,6 +46,11 @@ export default function CanvasViewport({ device, children }: { device: Device; c
   return (
     <div
       ref={outerRef}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onDeselect?.();
+        }
+      }}
       className="relative z-(--z-ed-canvas) min-w-0 flex-1 h-full overflow-hidden bg-ed-app bg-[radial-gradient(var(--color-ed-border)_1px,transparent_1px)] bg-size-[16px_16px]"
     >
       {box && (
@@ -45,6 +59,7 @@ export default function CanvasViewport({ device, children }: { device: Device; c
           style={frameStyle}
         >
           {children}
+          <AiBuilderCanvasOverlay />
         </div>
       )}
       {scale < 1 && (

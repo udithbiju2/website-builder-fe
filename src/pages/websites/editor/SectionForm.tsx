@@ -1,7 +1,19 @@
 import type {
+  CarouselCardStyle,
+  CarouselData,
+  CarouselSlide,
+  CarouselVariant,
+  ContactCardStyle,
+  ContactChannel,
   ContactData,
+  ContactVariant,
+  CtaCardStyle,
   CtaData,
+  CtaVariant,
+  FaqCardStyle,
   FaqData,
+  FaqItem,
+  FaqVariant,
   FeatureItem,
   FeaturesData,
   FontKey,
@@ -10,19 +22,29 @@ import type {
   HeroData,
   IconName,
   LogosData,
+  MarqueeData,
+  MarqueeItem,
+  MarqueeVariant,
   MediaData,
+  PricingCardStyle,
   PricingData,
   PricingPlan,
+  PricingVariant,
   Section,
   SectionAlign,
   SectionBackground,
   SectionSettings,
   SectionSpacing,
+  ServiceItem,
   ServicesData,
+  ServicesVariant,
   SplitData,
   StatsData,
+  TeamCardStyle,
   TeamData,
   TeamMember,
+  TeamSocialLink,
+  TeamVariant,
   TestimonialsData,
   TextData,
 } from "../../../site-kit/index.ts";
@@ -939,10 +961,113 @@ function FeaturesForm({ data, onChange }: DataFormProps<FeaturesData>) {
   );
 }
 
+const SERVICES_VARIANT_OPTIONS: { value: ServicesVariant; label: string }[] = [
+  { value: "cards-grid", label: "Cards grid (Modern standard)" },
+  { value: "bento-grid", label: "Bento box grid (Featured spotlight)" },
+  { value: "split-showcase", label: "Split showcase (Sticky hero + cards)" },
+  { value: "interactive-list", label: "Interactive list (Agency studio hover)" },
+  { value: "horizontal-cards", label: "Horizontal cards (Detailed enterprise)" },
+  { value: "minimal-numbered", label: "Minimal numbered (Editorial / Consulting)" },
+];
+
+const SERVICE_CARD_STYLE_OPTIONS = [
+  { value: "surface", label: "Surface (Tinted bg)" },
+  { value: "bordered", label: "Bordered (Crisp border)" },
+  { value: "flat", label: "Flat (Transparent)" },
+  { value: "glass", label: "Glassmorphism (Frosted)" },
+  { value: "glow", label: "Glow (Accent ambient hover)" },
+  { value: "elevated", label: "Elevated (Layered shadow)" },
+  { value: "gradient", label: "Gradient (Subtle accent glow)" },
+];
+
+const SERVICE_ICON_STYLE_OPTIONS = [
+  { value: "pastel-circle", label: "Soft pastel circle" },
+  { value: "square-badge", label: "Square badge" },
+  { value: "minimal-accent", label: "Minimal accent" },
+  { value: "colored-circle", label: "Vibrant gradient circle" },
+  { value: "glow-icon", label: "Ambient glow" },
+  { value: "none", label: "Hidden / None" },
+];
+
+const SERVICE_IMAGE_ASPECT_OPTIONS = [
+  { value: "16:9", label: "16 : 9 (Widescreen)" },
+  { value: "16:10", label: "16 : 10 (Standard)" },
+  { value: "4:3", label: "4 : 3 (Classic)" },
+  { value: "1:1", label: "1 : 1 (Square)" },
+  { value: "21:9", label: "21 : 9 (Ultra-wide cinematic)" },
+  { value: "auto", label: "Original / Auto" },
+];
+
 function ServicesForm({ data, onChange }: DataFormProps<ServicesData>) {
+  const isSplit = data.variant === "split-showcase";
+
   return (
     <>
-      <FormGroup title="Content">
+      <FormGroup title="Layout & variant">
+        <SelectField
+          label="Layout variant"
+          value={data.variant ?? "cards-grid"}
+          options={SERVICES_VARIANT_OPTIONS}
+          onChange={(variant) => onChange({ ...data, variant })}
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <SelectField
+            label="Card style"
+            value={data.cardStyle ?? "surface"}
+            options={SERVICE_CARD_STYLE_OPTIONS}
+            onChange={(cardStyle) =>
+              onChange({
+                ...data,
+                cardStyle: cardStyle as ServicesData["cardStyle"],
+              })
+            }
+          />
+          <SelectField
+            label="Icon style"
+            value={data.iconStyle ?? "pastel-circle"}
+            options={SERVICE_ICON_STYLE_OPTIONS}
+            onChange={(iconStyle) =>
+              onChange({
+                ...data,
+                iconStyle: iconStyle as ServicesData["iconStyle"],
+              })
+            }
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <SelectField
+            label="Image aspect"
+            value={data.imageAspect ?? "16:9"}
+            options={SERVICE_IMAGE_ASPECT_OPTIONS}
+            onChange={(imageAspect) =>
+              onChange({
+                ...data,
+                imageAspect: imageAspect as ServicesData["imageAspect"],
+              })
+            }
+          />
+          <SelectField
+            label="Alignment"
+            value={data.align ?? "left"}
+            options={ALIGN_OPTIONS}
+            onChange={(align) => onChange({ ...data, align })}
+          />
+        </div>
+        {!isSplit && data.variant !== "interactive-list" && data.variant !== "horizontal-cards" && (
+          <ColumnsFields data={data} onChange={onChange} />
+        )}
+      </FormGroup>
+
+      <FormGroup title="Header content">
+        <TextField
+          label="Eyebrow (optional)"
+          value={data.eyebrow ?? ""}
+          onChange={(eyebrow) =>
+            onChange({ ...data, eyebrow: eyebrow || undefined })
+          }
+          maxLength={100}
+          placeholder="WHAT WE OFFER"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -956,22 +1081,123 @@ function ServicesForm({ data, onChange }: DataFormProps<ServicesData>) {
           onChange={(intro) => onChange({ ...data, intro })}
           maxLength={500}
         />
-        <ColumnsFields data={data} onChange={onChange} />
       </FormGroup>
-      <FormGroup title="Services">
-        <ItemList<ServicesData["items"][number]>
-          label="Items"
+
+      {isSplit && (
+        <FormGroup title="Split showcase options">
+          <SelectField
+            label="Hero position"
+            value={data.splitPosition ?? "left"}
+            options={[
+              { value: "left", label: "Hero on Left" },
+              { value: "right", label: "Hero on Right" },
+            ]}
+            onChange={(pos) =>
+              onChange({
+                ...data,
+                splitPosition: pos as "left" | "right",
+              })
+            }
+          />
+          <ImageField
+            label="Showcase image"
+            value={data.splitImage}
+            onChange={(splitImage) => onChange({ ...data, splitImage })}
+            optional
+          />
+          <TextField
+            label="Showcase tagline (optional)"
+            value={data.splitTagline ?? ""}
+            onChange={(splitTagline) =>
+              onChange({ ...data, splitTagline: splitTagline || undefined })
+            }
+            maxLength={200}
+            placeholder="Trusted by over 500+ clients worldwide"
+          />
+          <OptionalLinkField
+            label="Primary CTA button"
+            value={data.splitCta}
+            onChange={(splitCta) => onChange({ ...data, splitCta })}
+            fallback={{ label: "Book a consultation", href: "/contact" }}
+          />
+          <OptionalLinkField
+            label="Secondary CTA button"
+            value={data.secondaryCta}
+            onChange={(secondaryCta) => onChange({ ...data, secondaryCta })}
+            fallback={{ label: "View portfolio", href: "/portfolio" }}
+          />
+        </FormGroup>
+      )}
+
+      <FormGroup title="Display options">
+        <div className="grid grid-cols-2 gap-2">
+          <CheckboxField
+            label="Show badges"
+            checked={data.showBadges !== false}
+            onChange={(checked) => onChange({ ...data, showBadges: checked })}
+          />
+          <CheckboxField
+            label="Show icons"
+            checked={data.showIcons !== false}
+            onChange={(checked) => onChange({ ...data, showIcons: checked })}
+          />
+          <CheckboxField
+            label="Show images"
+            checked={data.showImages !== false}
+            onChange={(checked) => onChange({ ...data, showImages: checked })}
+          />
+          <CheckboxField
+            label="Show prices"
+            checked={data.showPrices !== false}
+            onChange={(checked) => onChange({ ...data, showPrices: checked })}
+          />
+          <CheckboxField
+            label="Show deliverables"
+            checked={data.showBullets !== false}
+            onChange={(checked) => onChange({ ...data, showBullets: checked })}
+          />
+          <CheckboxField
+            label="Show 01, 02 indices"
+            checked={data.showNumbers === true}
+            onChange={(checked) => onChange({ ...data, showNumbers: checked })}
+          />
+        </div>
+      </FormGroup>
+
+      <FormGroup title="Services list">
+        <ItemList<ServiceItem>
+          label="Services"
           items={data.items}
           max={24}
           onChange={(items) => onChange({ ...data, items })}
           create={() => ({
             title: "New service",
-            description: "A short description of this service.",
+            description: "A comprehensive description of what this service delivers.",
+            badge: "Popular",
+            badgeColor: "blue",
+            icon: "sparkles",
+            iconColor: "blue",
+            price: "From $499",
+            duration: "3-5 days",
+            features: [
+              "Dedicated project lead",
+              "Full source assets included",
+              "Unlimited revisions during review",
+            ],
+            link: { label: "Get started", href: "/contact" },
           })}
           itemTitle={(item) => item.title}
           addLabel="Add service"
           renderItem={(item, update) => (
             <>
+              <div className="flex items-center justify-between pb-1">
+                <CheckboxField
+                  label="Featured / Spotlight item"
+                  checked={item.featured === true}
+                  onChange={(featured) => update({ ...item, featured })}
+                />
+              </div>
+
               <TextField
                 label="Title"
                 value={item.title}
@@ -979,26 +1205,169 @@ function ServicesForm({ data, onChange }: DataFormProps<ServicesData>) {
                 maxLength={120}
                 required
               />
+
               <TextAreaField
                 label="Description"
                 value={item.description}
                 onChange={(description) => update({ ...item, description })}
-                maxLength={600}
+                maxLength={1000}
               />
+
+              <div className="grid grid-cols-2 gap-2">
+                <TextField
+                  label="Tag / Badge (optional)"
+                  value={item.badge ?? ""}
+                  onChange={(badge) =>
+                    update({ ...item, badge: badge || undefined })
+                  }
+                  maxLength={30}
+                  placeholder="e.g. Popular, Turnkey"
+                />
+                <SelectField
+                  label="Badge color"
+                  value={item.badgeColor ?? "default"}
+                  options={FEATURE_COLOR_OPTIONS}
+                  onChange={(col) =>
+                    update({
+                      ...item,
+                      badgeColor:
+                        col === "default"
+                          ? undefined
+                          : (col as FeatureItem["iconColor"]),
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <SelectField
+                  label="Icon"
+                  value={item.icon ?? ""}
+                  options={ICON_OPTIONS}
+                  onChange={(icon) =>
+                    update({ ...item, icon: icon || undefined })
+                  }
+                />
+                <SelectField
+                  label="Icon color"
+                  value={item.iconColor ?? "default"}
+                  options={FEATURE_COLOR_OPTIONS}
+                  onChange={(col) =>
+                    update({
+                      ...item,
+                      iconColor:
+                        col === "default"
+                          ? undefined
+                          : (col as FeatureItem["iconColor"]),
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <TextField
+                  label="Price tag (optional)"
+                  value={item.price ?? ""}
+                  onChange={(price) =>
+                    update({ ...item, price: price || undefined })
+                  }
+                  maxLength={50}
+                  placeholder="e.g. From $499 or $120/hr"
+                />
+                <TextField
+                  label="Turnaround (optional)"
+                  value={item.duration ?? ""}
+                  onChange={(duration) =>
+                    update({ ...item, duration: duration || undefined })
+                  }
+                  maxLength={50}
+                  placeholder="e.g. 3-5 days delivery"
+                />
+              </div>
+
               <ImageField
-                label="Image"
+                label="Image / Media"
                 value={item.image}
                 onChange={(image) => update({ ...item, image })}
                 optional
               />
+
+              <StringList
+                label="Deliverables / Checklist bullets"
+                items={item.features ?? []}
+                max={10}
+                onChange={(features) => update({ ...item, features })}
+                addLabel="Add deliverable"
+              />
+
+              <div className="grid grid-cols-2 gap-2 items-end">
+                <SelectField
+                  label="Card background"
+                  value={item.backgroundColor ?? ""}
+                  options={[
+                    ...FEATURE_CARD_BG_PRESETS,
+                    ...(item.backgroundColor &&
+                    !FEATURE_CARD_BG_PRESETS.some(
+                      (p) =>
+                        p.value.toLowerCase() ===
+                        item.backgroundColor?.toLowerCase(),
+                    )
+                      ? [
+                          {
+                            value: item.backgroundColor,
+                            label: `Custom (${item.backgroundColor})`,
+                          },
+                        ]
+                      : []),
+                  ]}
+                  onChange={(val) =>
+                    update({ ...item, backgroundColor: val || undefined })
+                  }
+                />
+                <div className="pb-0.5">
+                  <ColorField
+                    label="Custom card bg"
+                    value={item.backgroundColor}
+                    onChange={(color) =>
+                      update({ ...item, backgroundColor: color || undefined })
+                    }
+                    fallback="#ffffff"
+                  />
+                </div>
+              </div>
+
               <OptionalLinkField
-                label="Link"
+                label="Primary link / button"
                 value={item.link}
                 onChange={(link) => update({ ...item, link })}
-                fallback={{ label: "Learn more", href: "/contact" }}
+                fallback={{ label: "Get started", href: "/contact" }}
+              />
+
+              <OptionalLinkField
+                label="Secondary link (optional)"
+                value={item.secondaryLink}
+                onChange={(secondaryLink) => update({ ...item, secondaryLink })}
+                fallback={{ label: "View details", href: "#" }}
               />
             </>
           )}
+        />
+      </FormGroup>
+
+      <FormGroup title="Section bottom CTA">
+        <OptionalLinkField
+          label="Bottom primary button (optional)"
+          value={data.bottomCta}
+          onChange={(bottomCta) => onChange({ ...data, bottomCta })}
+          fallback={{ label: "Explore all services", href: "/services" }}
+        />
+        <OptionalLinkField
+          label="Bottom secondary button (optional)"
+          value={data.bottomSecondaryCta}
+          onChange={(bottomSecondaryCta) =>
+            onChange({ ...data, bottomSecondaryCta })
+          }
+          fallback={{ label: "Schedule a call", href: "/contact" }}
         />
       </FormGroup>
     </>
@@ -1059,10 +1428,56 @@ function TestimonialsForm({ data, onChange }: DataFormProps<TestimonialsData>) {
   );
 }
 
+const FAQ_VARIANT_OPTIONS: { value: FaqVariant; label: string }[] = [
+  { value: "accordion-classic", label: "Classic accordion (Modern standard)" },
+  { value: "two-column-grid", label: "Two-column grid (Balanced matrix)" },
+  { value: "split-sidebar", label: "Split layout (Sticky sidebar + list)" },
+  { value: "minimal-numbered", label: "Minimal numbered (Swiss editorial)" },
+  { value: "categorized-cards", label: "Categorized cards (Boxed modules)" },
+];
+
+const FAQ_CARD_STYLE_OPTIONS: { value: FaqCardStyle; label: string }[] = [
+  { value: "default", label: "Surface (Clean neutral)" },
+  { value: "bordered", label: "Bordered (Crisp hairline)" },
+  { value: "flat", label: "Flat (Hairline separator)" },
+  { value: "glass", label: "Glassmorphism (Frosted glass)" },
+  { value: "elevated", label: "Elevated (Subtle shadow)" },
+];
+
 function FaqForm({ data, onChange }: DataFormProps<FaqData>) {
   return (
     <>
+      <FormGroup title="Layout & Style">
+        <SelectField
+          label="Variant"
+          value={data.variant || "accordion-classic"}
+          options={FAQ_VARIANT_OPTIONS}
+          onChange={(variant) => onChange({ ...data, variant })}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField
+            label="Card style"
+            value={data.cardStyle || "default"}
+            options={FAQ_CARD_STYLE_OPTIONS}
+            onChange={(cardStyle) => onChange({ ...data, cardStyle })}
+          />
+          <SelectField
+            label="Text align"
+            value={data.align || "center"}
+            options={ALIGN_OPTIONS}
+            onChange={(align) => onChange({ ...data, align })}
+          />
+        </div>
+      </FormGroup>
+
       <FormGroup title="Content">
+        <TextField
+          label="Eyebrow"
+          value={data.eyebrow}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. HELP CENTER"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -1077,8 +1492,9 @@ function FaqForm({ data, onChange }: DataFormProps<FaqData>) {
           maxLength={500}
         />
       </FormGroup>
+
       <FormGroup title="Questions">
-        <ItemList
+        <ItemList<FaqItem>
           label="Questions"
           items={data.items}
           max={40}
@@ -1098,6 +1514,22 @@ function FaqForm({ data, onChange }: DataFormProps<FaqData>) {
                 maxLength={300}
                 required
               />
+              <div className="grid grid-cols-2 gap-3">
+                <TextField
+                  label="Category (optional)"
+                  value={item.category}
+                  onChange={(category) => update({ ...item, category })}
+                  maxLength={50}
+                  placeholder="e.g. Billing, General"
+                />
+                <TextField
+                  label="Badge (optional)"
+                  value={item.badge}
+                  onChange={(badge) => update({ ...item, badge })}
+                  maxLength={40}
+                  placeholder="e.g. Popular, New"
+                />
+              </div>
               <TextAreaField
                 label="Answer"
                 value={item.answer}
@@ -1106,43 +1538,107 @@ function FaqForm({ data, onChange }: DataFormProps<FaqData>) {
                 required
                 rows={4}
               />
+              <CheckboxField
+                label="Open by default"
+                checked={!!item.isOpenDefault}
+                onChange={(isOpenDefault) => update({ ...item, isOpenDefault })}
+              />
             </>
           )}
+        />
+      </FormGroup>
+
+      <FormGroup title="Support / Contact Box (Optional)">
+        <TextField
+          label="Support title"
+          value={data.supportCta?.title}
+          onChange={(title) =>
+            onChange({
+              ...data,
+              supportCta: { ...data.supportCta, title },
+            })
+          }
+          maxLength={100}
+          placeholder="e.g. Still have questions?"
+        />
+        <TextAreaField
+          label="Support description"
+          value={data.supportCta?.description}
+          onChange={(description) =>
+            onChange({
+              ...data,
+              supportCta: { ...data.supportCta, description },
+            })
+          }
+          maxLength={300}
+          rows={2}
+        />
+        <OptionalLinkField
+          label="Support button"
+          value={data.supportCta?.link}
+          onChange={(link) =>
+            onChange({
+              ...data,
+              supportCta: { ...data.supportCta, link },
+            })
+          }
+          fallback={{ label: "Contact support", href: "/contact" }}
         />
       </FormGroup>
     </>
   );
 }
 
+const CTA_VARIANT_OPTIONS: { value: CtaVariant; label: string }[] = [
+  { value: "centered-card", label: "Centered banner (Modern standard)" },
+  { value: "split-visual", label: "Split visual (Metric / Proof showcase)" },
+  { value: "floating-card", label: "Floating card (Ambient framed glow)" },
+  { value: "minimal-editorial", label: "Minimal editorial (Swiss architectural)" },
+];
+
+const CTA_CARD_STYLE_OPTIONS: { value: CtaCardStyle; label: string }[] = [
+  { value: "default", label: "Surface (Clean neutral)" },
+  { value: "bordered", label: "Bordered (Crisp hairline)" },
+  { value: "flat", label: "Flat (Transparent)" },
+  { value: "glass", label: "Glassmorphism (Frosted glass)" },
+  { value: "elevated", label: "Elevated (Layered shadow)" },
+  { value: "contrast", label: "High contrast" },
+];
+
 function CtaForm({ data, onChange }: DataFormProps<CtaData>) {
   return (
-    <FormGroup title="Content">
-      <TextField
-        label="Heading"
-        value={data.heading}
-        onChange={(heading) => onChange({ ...data, heading })}
-        maxLength={200}
-        required
-      />
-      <TextAreaField
-        label="Text"
-        value={data.text}
-        onChange={(text) => onChange({ ...data, text })}
-        maxLength={500}
-      />
-      <LinkField
-        label="Button"
-        value={data.button}
-        onChange={(button) => onChange({ ...data, button })}
-      />
-    </FormGroup>
-  );
-}
-
-function ContactForm({ data, onChange }: DataFormProps<ContactData>) {
-  return (
     <>
+      <FormGroup title="Layout & Style">
+        <SelectField
+          label="Variant"
+          value={data.variant || "centered-card"}
+          options={CTA_VARIANT_OPTIONS}
+          onChange={(variant) => onChange({ ...data, variant })}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField
+            label="Card style"
+            value={data.cardStyle || "default"}
+            options={CTA_CARD_STYLE_OPTIONS}
+            onChange={(cardStyle) => onChange({ ...data, cardStyle })}
+          />
+          <SelectField
+            label="Text align"
+            value={data.align || "center"}
+            options={ALIGN_OPTIONS}
+            onChange={(align) => onChange({ ...data, align })}
+          />
+        </div>
+      </FormGroup>
+
       <FormGroup title="Content">
+        <TextField
+          label="Eyebrow"
+          value={data.eyebrow}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. GET STARTED TODAY"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -1151,50 +1647,293 @@ function ContactForm({ data, onChange }: DataFormProps<ContactData>) {
           required
         />
         <TextAreaField
-          label="Text"
+          label="Description text"
+          value={data.text}
+          onChange={(text) => onChange({ ...data, text })}
+          maxLength={500}
+          rows={3}
+        />
+      </FormGroup>
+
+      <FormGroup title="Action Buttons">
+        <LinkField
+          label="Primary button"
+          value={data.button}
+          onChange={(button) => onChange({ ...data, button })}
+        />
+        <OptionalLinkField
+          label="Secondary button (optional)"
+          value={data.secondaryButton}
+          onChange={(secondaryButton) => onChange({ ...data, secondaryButton })}
+          fallback={{ label: "Learn more", href: "/about" }}
+        />
+      </FormGroup>
+
+      <FormGroup title="Trust Badges">
+        <StringList
+          label="Checklist badges"
+          items={data.trustBadges || []}
+          max={6}
+          onChange={(trustBadges) => onChange({ ...data, trustBadges })}
+          addLabel="Add trust badge"
+        />
+      </FormGroup>
+
+      <FormGroup title="Metric Showcase (Split Visual)">
+        <div className="grid grid-cols-2 gap-3">
+          <TextField
+            label="Metric value"
+            value={data.highlightMetric?.value}
+            onChange={(value) =>
+              onChange({
+                ...data,
+                highlightMetric: {
+                  value,
+                  label: data.highlightMetric?.label || "Reliability",
+                  subtext: data.highlightMetric?.subtext,
+                },
+              })
+            }
+            maxLength={30}
+            placeholder="e.g. 99.9% or 10k+"
+          />
+          <TextField
+            label="Metric label"
+            value={data.highlightMetric?.label}
+            onChange={(label) =>
+              onChange({
+                ...data,
+                highlightMetric: {
+                  value: data.highlightMetric?.value || "100%",
+                  label,
+                  subtext: data.highlightMetric?.subtext,
+                },
+              })
+            }
+            maxLength={80}
+            placeholder="e.g. Uptime SLA"
+          />
+        </div>
+        <TextField
+          label="Metric subtext"
+          value={data.highlightMetric?.subtext}
+          onChange={(subtext) =>
+            onChange({
+              ...data,
+              highlightMetric: {
+                value: data.highlightMetric?.value || "100%",
+                label: data.highlightMetric?.label || "Reliability",
+                subtext,
+              },
+            })
+          }
+          maxLength={120}
+          placeholder="e.g. Enterprise SLA guarantee with 24/7 monitoring"
+        />
+      </FormGroup>
+    </>
+  );
+}
+
+const CONTACT_VARIANT_OPTIONS: { value: ContactVariant; label: string }[] = [
+  { value: "split-form", label: "Split Screen Form & Direct Links (Default)" },
+  { value: "cards-hub", label: "Multi-Channel Direct Hub Cards" },
+  { value: "minimal-editorial", label: "Minimal Architectural Editorial" },
+  { value: "floating-glass", label: "Floating Glass Framed Card" },
+];
+
+const CONTACT_CARD_STYLE_OPTIONS: { value: ContactCardStyle; label: string }[] = [
+  { value: "default", label: "Default (Soft Tone & Clean Border)" },
+  { value: "bordered", label: "Bordered (Crisp Accent Line)" },
+  { value: "elevated", label: "Elevated (Subtle Depth Shadow)" },
+  { value: "flat", label: "Flat (Modern Minimalist)" },
+  { value: "glass", label: "Frosted Glass" },
+  { value: "contrast", label: "High Contrast" },
+];
+
+function ContactForm({ data, onChange }: DataFormProps<ContactData>) {
+  const currentVariant = data.variant || "split-form";
+
+  return (
+    <>
+      <FormGroup title="Layout & Styling">
+        <SelectField
+          label="Layout Variant"
+          value={currentVariant}
+          onChange={(variant) =>
+            onChange({ ...data, variant: variant as ContactVariant })
+          }
+          options={CONTACT_VARIANT_OPTIONS}
+        />
+        <SelectField
+          label="Card Styling"
+          value={data.cardStyle || "default"}
+          onChange={(cardStyle) =>
+            onChange({ ...data, cardStyle: cardStyle as ContactCardStyle })
+          }
+          options={CONTACT_CARD_STYLE_OPTIONS}
+        />
+        <SelectField
+          label="Header Alignment"
+          value={data.align || "left"}
+          onChange={(align) => onChange({ ...data, align: align as SectionAlign })}
+          options={ALIGN_OPTIONS}
+        />
+      </FormGroup>
+
+      <FormGroup title="Header & Meta">
+        <TextField
+          label="Eyebrow / Badge"
+          value={data.eyebrow || ""}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. GET IN TOUCH • FAST RESPONSE"
+        />
+        <TextField
+          label="Heading"
+          value={data.heading}
+          onChange={(heading) => onChange({ ...data, heading })}
+          maxLength={200}
+          required
+        />
+        <TextAreaField
+          label="Subheading / Text"
           value={data.text}
           onChange={(text) => onChange({ ...data, text })}
           maxLength={500}
         />
-      </FormGroup>
-      <FormGroup title="Contact details">
         <TextField
-          label="Email"
+          label="Response Time Badge"
+          value={data.responseTime || ""}
+          onChange={(responseTime) => onChange({ ...data, responseTime })}
+          maxLength={60}
+          placeholder="e.g. Average response time: < 2 hours"
+        />
+        <TextField
+          label="Office / Working Hours"
+          value={data.officeHours || ""}
+          onChange={(officeHours) => onChange({ ...data, officeHours })}
+          maxLength={100}
+          placeholder="e.g. Mon – Fri: 9:00 AM – 6:00 PM EST"
+        />
+      </FormGroup>
+
+      <FormGroup title="Direct Contact Details">
+        <TextField
+          label="Primary Email"
           type="email"
           value={data.email}
           onChange={(email) => onChange({ ...data, email })}
           maxLength={255}
         />
         <TextField
-          label="Phone"
+          label="Primary Phone"
           type="tel"
           value={data.phone}
           onChange={(phone) => onChange({ ...data, phone })}
           maxLength={32}
         />
         <TextAreaField
-          label="Address"
+          label="Physical Address / Location"
           value={data.address}
           onChange={(address) => onChange({ ...data, address })}
           maxLength={500}
           rows={2}
         />
       </FormGroup>
-      <FormGroup title="Form">
+
+      <FormGroup title="Direct Communication Channels">
+        <ItemList<ContactChannel>
+          label="Direct Channels / Hubs"
+          items={data.channels || []}
+          max={6}
+          onChange={(channels) => onChange({ ...data, channels })}
+          create={() => ({
+            label: "Support Desk",
+            value: "help@example.com",
+            description: "Direct assistance for active clients.",
+            icon: "mail",
+          })}
+          itemTitle={(item) => item.label || "Channel"}
+          addLabel="Add Direct Channel"
+          renderItem={(channel, onChannelChange) => (
+            <>
+              <TextField
+                label="Channel Label / Department"
+                value={channel.label}
+                onChange={(label) => onChannelChange({ ...channel, label })}
+                maxLength={60}
+                required
+              />
+              <TextField
+                label="Value / Email / Phone / URL"
+                value={channel.value}
+                onChange={(value) => onChannelChange({ ...channel, value })}
+                maxLength={255}
+                placeholder="e.g. hello@company.com or +1 (555) 000-0000"
+                required
+              />
+              <TextField
+                label="Description / Context"
+                value={channel.description || ""}
+                onChange={(description) =>
+                  onChannelChange({ ...channel, description })
+                }
+                maxLength={140}
+                placeholder="e.g. Inquiries and client onboarding"
+              />
+              <SelectField
+                label="Icon"
+                value={channel.icon || "mail"}
+                onChange={(icon) =>
+                  onChannelChange({
+                    ...channel,
+                    icon: (icon as "mail" | "phone" | "chat" | "user") || undefined,
+                  })
+                }
+                options={[
+                  { value: "mail", label: "Mail / Email" },
+                  { value: "phone", label: "Phone" },
+                  { value: "chat", label: "Chat / Messaging" },
+                  { value: "user", label: "Support / Agent" },
+                ]}
+              />
+            </>
+          )}
+        />
+      </FormGroup>
+
+      <FormGroup title="Interactive Inquiry Form">
         <CheckboxField
           label="Show enquiry form"
           checked={data.showForm}
           onChange={(showForm) => onChange({ ...data, showForm })}
-          hint="Form submissions are switched on when the site is published."
+          hint="Allows visitors to submit direct project inquiries online."
         />
         {data.showForm && (
-          <TextField
-            label="Button text"
-            value={data.submitLabel}
-            onChange={(submitLabel) => onChange({ ...data, submitLabel })}
-            maxLength={40}
-            required
-          />
+          <>
+            <TextField
+              label="Form Header / Title"
+              value={data.formHeading || ""}
+              onChange={(formHeading) => onChange({ ...data, formHeading })}
+              maxLength={100}
+              placeholder="e.g. Send us a message"
+            />
+            <TextField
+              label="Submit Button Label"
+              value={data.submitLabel || "Send Message"}
+              onChange={(submitLabel) => onChange({ ...data, submitLabel })}
+              maxLength={40}
+              required
+            />
+            <StringList
+              label="Service Interest Tags (Clickable Inquiry Options)"
+              items={data.serviceOptions || []}
+              max={8}
+              onChange={(serviceOptions) => onChange({ ...data, serviceOptions })}
+              addLabel="Add Service Tag"
+            />
+          </>
         )}
       </FormGroup>
     </>
@@ -1404,10 +2143,62 @@ function StatsForm({ data, onChange }: DataFormProps<StatsData>) {
   );
 }
 
+const PRICING_VARIANT_OPTIONS: { value: PricingVariant; label: string }[] = [
+  { value: "cards-grid", label: "Executive cards (Modern standard)" },
+  { value: "minimal-monochrome", label: "Minimal monochrome (Swiss architectural)" },
+  { value: "spotlight-tier", label: "Spotlight tier (Asymmetric pro focus)" },
+  { value: "horizontal-rows", label: "Horizontal rows (Enterprise consultative)" },
+];
+
+const PRICING_CARD_STYLE_OPTIONS: { value: PricingCardStyle; label: string }[] = [
+  { value: "default", label: "Surface (Clean neutral)" },
+  { value: "bordered", label: "Bordered (Crisp hairline)" },
+  { value: "flat", label: "Flat (Transparent)" },
+  { value: "glass", label: "Glassmorphism (Frosted glass)" },
+  { value: "elevated", label: "Elevated (Ambient shadow)" },
+  { value: "contrast", label: "High contrast" },
+];
+
 function PricingForm({ data, onChange }: DataFormProps<PricingData>) {
   return (
     <>
+      <FormGroup title="Layout & Style">
+        <SelectField
+          label="Variant"
+          value={data.variant || "cards-grid"}
+          options={PRICING_VARIANT_OPTIONS}
+          onChange={(variant) => onChange({ ...data, variant })}
+        />
+        <SelectField
+          label="Card style"
+          value={data.cardStyle || "default"}
+          options={PRICING_CARD_STYLE_OPTIONS}
+          onChange={(cardStyle) => onChange({ ...data, cardStyle })}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField
+            label="Columns"
+            value={data.columns || (Math.min(Math.max(data.plans.length, 1), 4) as GridColumns)}
+            options={COLUMN_OPTIONS}
+            onChange={(columns) => onChange({ ...data, columns })}
+          />
+          <SelectField
+            label="Text align"
+            value={data.align || "center"}
+            options={ALIGN_OPTIONS}
+            onChange={(align) => onChange({ ...data, align })}
+          />
+        </div>
+      </FormGroup>
+
       <FormGroup title="Content">
+        <TextField
+          label="Eyebrow"
+          value={data.eyebrow}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. PRICING PLANS"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -1421,46 +2212,90 @@ function PricingForm({ data, onChange }: DataFormProps<PricingData>) {
           onChange={(intro) => onChange({ ...data, intro })}
           maxLength={500}
         />
+        <div className="grid grid-cols-2 gap-3">
+          <TextField
+            label="Billing cycle label"
+            value={data.billingCycleLabel}
+            onChange={(billingCycleLabel) => onChange({ ...data, billingCycleLabel })}
+            maxLength={80}
+            placeholder="e.g. Billed annually"
+          />
+          <TextField
+            label="Discount badge"
+            value={data.discountBadge}
+            onChange={(discountBadge) => onChange({ ...data, discountBadge })}
+            maxLength={60}
+            placeholder="e.g. Save 20%"
+          />
+        </div>
+        <TextField
+          label="Footer guarantee / note"
+          value={data.footerNote}
+          onChange={(footerNote) => onChange({ ...data, footerNote })}
+          maxLength={300}
+          placeholder="e.g. 14-day money-back guarantee • No credit card required"
+        />
       </FormGroup>
+
       <FormGroup title="Plans">
         <ItemList<PricingPlan>
           label="Plans"
           items={data.plans}
-          max={4}
+          max={6}
           onChange={(plans) => onChange({ ...data, plans })}
           create={() => ({
-            name: "New plan",
-            price: "$0",
+            name: "New tier",
+            price: "$29",
             period: "/ month",
-            features: [],
+            features: ["Core feature 1", "Core feature 2"],
             featured: false,
           })}
           itemTitle={(plan) => plan.name}
           addLabel="Add plan"
           renderItem={(plan, update) => (
             <>
-              <TextField
-                label="Name"
-                value={plan.name}
-                onChange={(name) => update({ ...plan, name })}
-                maxLength={60}
-                required
-              />
               <div className="grid grid-cols-2 gap-3">
+                <TextField
+                  label="Name"
+                  value={plan.name}
+                  onChange={(name) => update({ ...plan, name })}
+                  maxLength={60}
+                  required
+                />
+                <TextField
+                  label="Badge / Tag"
+                  value={plan.badge}
+                  onChange={(badge) => update({ ...plan, badge })}
+                  maxLength={50}
+                  placeholder="e.g. Most Popular"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
                 <TextField
                   label="Price"
                   value={plan.price}
                   onChange={(price) => update({ ...plan, price })}
-                  maxLength={20}
+                  maxLength={30}
                   required
+                  placeholder="$49"
                 />
                 <TextField
                   label="Period"
                   value={plan.period}
                   onChange={(period) => update({ ...plan, period })}
-                  maxLength={20}
+                  maxLength={30}
+                  placeholder="/ month"
+                />
+                <TextField
+                  label="Original price"
+                  value={plan.originalPrice}
+                  onChange={(originalPrice) => update({ ...plan, originalPrice })}
+                  maxLength={30}
+                  placeholder="$79 (strike)"
                 />
               </div>
+
               <TextAreaField
                 label="Description"
                 value={plan.description}
@@ -1468,21 +2303,40 @@ function PricingForm({ data, onChange }: DataFormProps<PricingData>) {
                 maxLength={300}
                 rows={2}
               />
+
               <StringList
-                label="Features"
+                label="Included Features"
                 items={plan.features}
-                max={12}
+                max={15}
                 onChange={(features) => update({ ...plan, features })}
                 addLabel="Add feature"
               />
+
+              <StringList
+                label="Excluded Features (Optional Strike)"
+                items={plan.excludedFeatures || []}
+                max={15}
+                onChange={(excludedFeatures) => update({ ...plan, excludedFeatures })}
+                addLabel="Add excluded feature"
+              />
+
               <OptionalLinkField
                 label="Button"
                 value={plan.cta}
                 onChange={(cta) => update({ ...plan, cta })}
                 fallback={{ label: "Get started", href: "/contact" }}
               />
+
+              <TextField
+                label="Highlight Note"
+                value={plan.highlightNote}
+                onChange={(highlightNote) => update({ ...plan, highlightNote })}
+                maxLength={120}
+                placeholder="e.g. Free 14-day trial • Cancel anytime"
+              />
+
               <CheckboxField
-                label="Highlight as most popular"
+                label="Highlight as featured plan"
                 checked={plan.featured}
                 onChange={(featured) => update({ ...plan, featured })}
               />
@@ -1563,10 +2417,71 @@ function MediaForm({ data, onChange }: DataFormProps<MediaData>) {
   );
 }
 
+const TEAM_VARIANT_OPTIONS: { value: TeamVariant; label: string }[] = [
+  { value: "grid-cards", label: "Executive Cards Grid (Default)" },
+  { value: "spotlight-featured", label: "Leader Spotlight + Roster Grid" },
+  { value: "minimal-editorial", label: "Swiss Architectural Line Roster" },
+  { value: "glass-overlay", label: "Cinematic Glass Hover Overlay" },
+];
+
+const TEAM_CARD_STYLE_OPTIONS: { value: TeamCardStyle; label: string }[] = [
+  { value: "default", label: "Default (Soft Tone & Clean Border)" },
+  { value: "bordered", label: "Bordered (Crisp Accent Line)" },
+  { value: "elevated", label: "Elevated (Subtle Depth Shadow)" },
+  { value: "flat", label: "Flat (Modern Minimalist)" },
+  { value: "glass", label: "Frosted Glass" },
+  { value: "contrast", label: "High Contrast" },
+];
+
+const TEAM_SOCIAL_PLATFORM_OPTIONS: {
+  value: "linkedin" | "twitter" | "github" | "email" | "link";
+  label: string;
+}[] = [
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "twitter", label: "X / Twitter" },
+  { value: "github", label: "GitHub" },
+  { value: "email", label: "Email (mailto:)" },
+  { value: "link", label: "Custom Link" },
+];
+
 function TeamForm({ data, onChange }: DataFormProps<TeamData>) {
+  const currentVariant = data.variant || "grid-cards";
+
   return (
     <>
-      <FormGroup title="Content">
+      <FormGroup title="Layout & Styling">
+        <SelectField
+          label="Layout Variant"
+          value={currentVariant}
+          onChange={(variant) =>
+            onChange({ ...data, variant: variant as TeamVariant })
+          }
+          options={TEAM_VARIANT_OPTIONS}
+        />
+        <SelectField
+          label="Card Styling"
+          value={data.cardStyle || "default"}
+          onChange={(cardStyle) =>
+            onChange({ ...data, cardStyle: cardStyle as TeamCardStyle })
+          }
+          options={TEAM_CARD_STYLE_OPTIONS}
+        />
+        <SelectField
+          label="Header Alignment"
+          value={data.align || "center"}
+          onChange={(align) => onChange({ ...data, align: align as SectionAlign })}
+          options={ALIGN_OPTIONS}
+        />
+      </FormGroup>
+
+      <FormGroup title="Header & Meta">
+        <TextField
+          label="Eyebrow / Badge"
+          value={data.eyebrow || ""}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. OUR PEOPLE • WORLD-CLASS LEADERSHIP"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -1580,55 +2495,549 @@ function TeamForm({ data, onChange }: DataFormProps<TeamData>) {
           onChange={(intro) => onChange({ ...data, intro })}
           maxLength={500}
         />
-        <ColumnsFields data={data} onChange={onChange} />
+        <TextField
+          label="Status / Counter Badge"
+          value={data.badge || ""}
+          onChange={(badge) => onChange({ ...data, badge })}
+          maxLength={80}
+          placeholder="e.g. 40+ Specialists Worldwide"
+        />
+        {currentVariant !== "spotlight-featured" && currentVariant !== "minimal-editorial" && (
+          <ColumnsFields data={data} onChange={onChange} />
+        )}
       </FormGroup>
-      <FormGroup title="People">
+
+      <FormGroup title="Team Members">
         <ItemList<TeamMember>
           label="Members"
           items={data.members}
           max={24}
           onChange={(members) => onChange({ ...data, members })}
-          create={() => ({ name: "New member", role: "Role" })}
-          itemTitle={(member) => member.name}
-          addLabel="Add person"
+          create={() => ({
+            name: "Jane Doe",
+            role: "Principal Architect",
+            department: "Engineering",
+            bio: "Leads distributed systems engineering and AI platform infrastructure.",
+          })}
+          itemTitle={(member) => member.name || "Member"}
+          addLabel="Add Team Member"
           renderItem={(member, update) => (
             <>
               <TextField
-                label="Name"
+                label="Full Name"
                 value={member.name}
                 onChange={(name) => update({ ...member, name })}
                 maxLength={120}
                 required
               />
               <TextField
-                label="Role"
+                label="Role / Title"
                 value={member.role}
                 onChange={(role) => update({ ...member, role })}
                 maxLength={120}
+                placeholder="e.g. Chief Executive Officer"
+              />
+              <TextField
+                label="Department / Focus"
+                value={member.department || ""}
+                onChange={(department) => update({ ...member, department })}
+                maxLength={80}
+                placeholder="e.g. Leadership, Design, Engineering"
+              />
+              <TextField
+                label="Location / Base"
+                value={member.location || ""}
+                onChange={(location) => update({ ...member, location })}
+                maxLength={100}
+                placeholder="e.g. San Francisco, CA or London, UK"
               />
               <TextAreaField
-                label="Short bio"
+                label="Short Bio / Description"
                 value={member.bio}
                 onChange={(bio) => update({ ...member, bio })}
                 maxLength={600}
                 rows={2}
               />
               <ImageField
-                label="Photo"
+                label="Portrait Photo"
                 value={member.photo}
                 onChange={(photo) => update({ ...member, photo })}
                 optional
               />
+              <StringList
+                label="Skills / Highlights / Credentials"
+                items={member.tags || []}
+                max={5}
+                onChange={(tags) => update({ ...member, tags })}
+                addLabel="Add Highlight Tag"
+              />
               <OptionalLinkField
-                label="Link"
+                label="Primary Profile Link"
                 value={member.link}
                 onChange={(link) => update({ ...member, link })}
-                fallback={{ label: "LinkedIn", href: "https://linkedin.com/" }}
+                fallback={{ label: "View Profile", href: "https://linkedin.com/" }}
+              />
+              <ItemList<TeamSocialLink>
+                label="Social & Direct Channels"
+                items={member.socialLinks || []}
+                max={5}
+                onChange={(socialLinks) => update({ ...member, socialLinks })}
+                create={() => ({ platform: "linkedin", url: "https://linkedin.com/" })}
+                itemTitle={(item) => item.platform}
+                addLabel="Add Social Link"
+                renderItem={(social, updateSocial) => (
+                  <>
+                    <SelectField
+                      label="Platform"
+                      value={social.platform}
+                      onChange={(platform) =>
+                        updateSocial({
+                          ...social,
+                          platform: platform as TeamSocialLink["platform"],
+                        })
+                      }
+                      options={TEAM_SOCIAL_PLATFORM_OPTIONS}
+                    />
+                    <TextField
+                      label="Profile URL / Link"
+                      value={social.url}
+                      onChange={(url) => updateSocial({ ...social, url })}
+                      maxLength={255}
+                      placeholder="https://..."
+                      required
+                    />
+                  </>
+                )}
               />
             </>
           )}
         />
       </FormGroup>
+    </>
+  );
+}
+
+const CAROUSEL_VARIANT_OPTIONS: { value: CarouselVariant; label: string }[] = [
+  { value: "image-gallery", label: "Images Carousel · Full Visual Gallery" },
+  { value: "image-strip", label: "Images Carousel · Multi-Image Filmstrip" },
+  { value: "image-coverflow", label: "Images Carousel · 3D Coverflow Reel" },
+  { value: "cards", label: "Multi-Cards Interactive Slider" },
+  { value: "hero-slider", label: "Cinematic Hero Banner Slider" },
+  { value: "showcase", label: "3D Perspective Focus Showcase" },
+  { value: "minimal-editorial", label: "Minimal Editorial Slide Deck" },
+];
+
+const CAROUSEL_CARD_STYLE_OPTIONS: { value: CarouselCardStyle; label: string }[] = [
+  { value: "default", label: "Default (Soft Tone & Clean Border)" },
+  { value: "bordered", label: "Bordered (Crisp Accent Line)" },
+  { value: "elevated", label: "Elevated (Subtle Depth Shadow)" },
+  { value: "flat", label: "Flat (Modern Minimalist)" },
+  { value: "glass", label: "Frosted Glass" },
+  { value: "contrast", label: "High Contrast" },
+];
+
+function CarouselForm({ data, onChange }: DataFormProps<CarouselData>) {
+  const currentVariant = data.variant || "cards";
+  const isImageVariant =
+    currentVariant === "image-gallery" ||
+    currentVariant === "image-strip" ||
+    currentVariant === "image-coverflow";
+
+  return (
+    <>
+      <FormGroup title="Layout & Styling">
+        <SelectField
+          label="Layout Variant"
+          value={currentVariant}
+          onChange={(variant) =>
+            onChange({ ...data, variant: variant as CarouselVariant })
+          }
+          options={CAROUSEL_VARIANT_OPTIONS}
+        />
+        {isImageVariant && (
+          <SelectField
+            label="Image Aspect Ratio"
+            value={data.imageAspect || "16:9"}
+            onChange={(aspect) =>
+              onChange({
+                ...data,
+                imageAspect: aspect as "16:9" | "4:3" | "1:1" | "21:9" | "3:4",
+              })
+            }
+            options={[
+              { value: "16:9", label: "16:9 (Landscape Cinematic)" },
+              { value: "4:3", label: "4:3 (Standard Visual)" },
+              { value: "1:1", label: "1:1 (Square)" },
+              { value: "21:9", label: "21:9 (Ultrawide Banner)" },
+              { value: "3:4", label: "3:4 (Portrait)" },
+            ]}
+          />
+        )}
+        {currentVariant === "image-strip" && (
+          <SelectField
+            label="Visible Columns (Desktop)"
+            value={String(data.columns || 3)}
+            onChange={(val) =>
+              onChange({ ...data, columns: parseInt(val, 10) as GridColumns })
+            }
+            options={[
+              { value: "2", label: "2 Columns (Large Showcase)" },
+              { value: "3", label: "3 Columns (Balanced Filmstrip)" },
+              { value: "4", label: "4 Columns (Compact Grid Reel)" },
+            ]}
+          />
+        )}
+        {!isImageVariant && (
+          <SelectField
+            label="Card Styling"
+            value={data.cardStyle || "default"}
+            onChange={(cardStyle) =>
+              onChange({ ...data, cardStyle: cardStyle as CarouselCardStyle })
+            }
+            options={CAROUSEL_CARD_STYLE_OPTIONS}
+          />
+        )}
+        <SelectField
+          label="Header Alignment"
+          value={data.align || "left"}
+          onChange={(align) => onChange({ ...data, align: align as SectionAlign })}
+          options={ALIGN_OPTIONS}
+        />
+      </FormGroup>
+
+      {currentVariant !== "hero-slider" && (
+        <FormGroup title="Header & Meta">
+          <TextField
+            label="Eyebrow / Badge"
+            value={data.eyebrow || ""}
+            onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+            maxLength={80}
+            placeholder="e.g. VISUAL GALLERY"
+          />
+          <TextField
+            label="Heading"
+            value={data.heading || ""}
+            onChange={(heading) => onChange({ ...data, heading })}
+            maxLength={200}
+          />
+          <TextAreaField
+            label="Intro / Subheading"
+            value={data.intro || ""}
+            onChange={(intro) => onChange({ ...data, intro })}
+            maxLength={500}
+          />
+          <TextField
+            label="Status / Counter Badge"
+            value={data.badge || ""}
+            onChange={(badge) => onChange({ ...data, badge })}
+            maxLength={80}
+            placeholder="e.g. Interactive Showcase"
+          />
+        </FormGroup>
+      )}
+
+      <FormGroup title="Playback & Controls">
+        <CheckboxField
+          label="Auto-play slides"
+          checked={data.autoPlay ?? false}
+          onChange={(autoPlay) => onChange({ ...data, autoPlay })}
+          hint="Automatically transitions through slides continuously."
+        />
+        {data.autoPlay && (
+          <TextField
+            label="Slide Interval (seconds)"
+            type="number"
+            value={String(data.interval || 5)}
+            onChange={(val) => {
+              const num = parseInt(val, 10);
+              onChange({ ...data, interval: isNaN(num) ? 5 : Math.max(2, Math.min(30, num)) });
+            }}
+          />
+        )}
+        <CheckboxField
+          label="Pause auto-play on mouse hover"
+          checked={data.pauseOnHover ?? true}
+          onChange={(pauseOnHover) => onChange({ ...data, pauseOnHover })}
+        />
+        <CheckboxField
+          label="Show navigation arrows"
+          checked={data.showArrows ?? true}
+          onChange={(showArrows) => onChange({ ...data, showArrows })}
+        />
+        <CheckboxField
+          label="Show pagination dots / progress bar"
+          checked={data.showDots ?? true}
+          onChange={(showDots) => onChange({ ...data, showDots })}
+        />
+        {currentVariant === "image-gallery" && (
+          <CheckboxField
+            label="Show bottom thumbnail strip"
+            checked={data.showThumbnails ?? true}
+            onChange={(showThumbnails) => onChange({ ...data, showThumbnails })}
+          />
+        )}
+      </FormGroup>
+
+      <FormGroup title="Slides & Imagery">
+        <ItemList<CarouselSlide>
+          label="Slides"
+          items={data.slides}
+          max={12}
+          onChange={(slides) => onChange({ ...data, slides })}
+          create={() => ({
+            title: "New Highlight Image",
+            subtitle: "Category",
+            caption: "Detailed visual caption and snapshot description.",
+            badge: "FEATURED",
+            image: {
+              url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&auto=format&fit=crop&q=80",
+              alt: "Visual showcase slide",
+            },
+          })}
+          itemTitle={(slide) => slide.title || "Slide"}
+          addLabel="Add Slide / Image"
+          renderItem={(slide, update) => (
+            <>
+              <ImageField
+                label="Slide Image / Photography"
+                value={slide.image}
+                onChange={(image) => update({ ...slide, image })}
+                optional
+              />
+              <TextField
+                label="Slide Title / Headline"
+                value={slide.title}
+                onChange={(title) => update({ ...slide, title })}
+                maxLength={120}
+                required
+              />
+              <TextField
+                label="Subtitle / Category"
+                value={slide.subtitle || ""}
+                onChange={(subtitle) => update({ ...slide, subtitle })}
+                maxLength={120}
+                placeholder="e.g. Architectural Design"
+              />
+              <TextField
+                label="Badge / Tag"
+                value={slide.badge || ""}
+                onChange={(badge) => update({ ...slide, badge })}
+                maxLength={60}
+                placeholder="e.g. 2026 ARCHIVE"
+              />
+              <TextAreaField
+                label="Caption / Description"
+                value={slide.caption || slide.description || ""}
+                onChange={(text) => update({ ...slide, caption: text, description: text })}
+                maxLength={600}
+                rows={2}
+              />
+              <OptionalLinkField
+                label="Primary Button / Action"
+                value={slide.button}
+                onChange={(button) => update({ ...slide, button })}
+                fallback={{ label: "View Details", href: "/work" }}
+              />
+              <OptionalLinkField
+                label="Secondary Button"
+                value={slide.secondaryButton}
+                onChange={(secondaryButton) => update({ ...slide, secondaryButton })}
+                fallback={{ label: "Explore", href: "/contact" }}
+              />
+            </>
+          )}
+        />
+      </FormGroup>
+    </>
+  );
+}
+
+const MARQUEE_VARIANT_OPTIONS: { value: MarqueeVariant; label: string }[] = [
+  { value: "ticker-text", label: "Bold Infinite Typographic Ticker" },
+  { value: "cards-stream", label: "Continuous Feature Cards Stream" },
+  { value: "pill-badges", label: "Glowing Capability Badges / Tech Stream" },
+  { value: "dual-directional", label: "Dual Opposite Streaming Tracks" },
+];
+
+function MarqueeForm({ data, onChange }: DataFormProps<MarqueeData>) {
+  const currentVariant = data.variant || "ticker-text";
+
+  return (
+    <>
+      <FormGroup title="Layout & Styling">
+        <SelectField
+          label="Marquee Style"
+          value={currentVariant}
+          onChange={(variant) =>
+            onChange({ ...data, variant: variant as MarqueeVariant })
+          }
+          options={MARQUEE_VARIANT_OPTIONS}
+        />
+        <SelectField
+          label="Scroll Speed"
+          value={data.speed || "normal"}
+          onChange={(speed) =>
+            onChange({ ...data, speed: speed as "slow" | "normal" | "fast" })
+          }
+          options={[
+            { value: "slow", label: "Gentle (Slow / Relaxed)" },
+            { value: "normal", label: "Normal (Standard Flow)" },
+            { value: "fast", label: "Dynamic (Fast Pace)" },
+          ]}
+        />
+        <SelectField
+          label="Primary Direction"
+          value={data.direction || "left"}
+          onChange={(direction) =>
+            onChange({ ...data, direction: direction as "left" | "right" })
+          }
+          options={[
+            { value: "left", label: "Leftward (Standard ←)" },
+            { value: "right", label: "Rightward (Reverse →)" },
+          ]}
+        />
+        {currentVariant === "ticker-text" && (
+          <SelectField
+            label="Typography Size"
+            value={data.fontSize || "medium"}
+            onChange={(fontSize) =>
+              onChange({
+                ...data,
+                fontSize: fontSize as "small" | "medium" | "large" | "huge",
+              })
+            }
+            options={[
+              { value: "small", label: "Small (18px)" },
+              { value: "medium", label: "Medium (28px - Standard)" },
+              { value: "large", label: "Large (42px - Impact)" },
+              { value: "huge", label: "Huge (60px - Marquee Headline)" },
+            ]}
+          />
+        )}
+        <CheckboxField
+          label="Pause scrolling on hover"
+          checked={data.pauseOnHover ?? true}
+          onChange={(pauseOnHover) => onChange({ ...data, pauseOnHover })}
+        />
+        <CheckboxField
+          label="Soft edge gradient fade masks"
+          checked={data.gradientFades ?? true}
+          onChange={(gradientFades) => onChange({ ...data, gradientFades })}
+          hint="Creates a seamless fade transition on the left and right screen borders."
+        />
+      </FormGroup>
+
+      <FormGroup title="Optional Header">
+        <TextField
+          label="Eyebrow"
+          value={data.eyebrow || ""}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. LIVE NETWORK ACTIVITY"
+        />
+        <TextField
+          label="Heading"
+          value={data.heading || ""}
+          onChange={(heading) => onChange({ ...data, heading })}
+          maxLength={200}
+        />
+        <TextAreaField
+          label="Intro"
+          value={data.intro || ""}
+          onChange={(intro) => onChange({ ...data, intro })}
+          maxLength={500}
+        />
+      </FormGroup>
+
+      <FormGroup title="Streaming Items (Track 1)">
+        <ItemList<MarqueeItem>
+          label="Marquee Items"
+          items={data.items}
+          max={24}
+          onChange={(items) => onChange({ ...data, items })}
+          create={() => ({
+            text: "ENTERPRISE QUALITY",
+            badge: "99.99%",
+            icon: "bolt",
+          })}
+          itemTitle={(item) => item.text || "Item"}
+          addLabel="Add Marquee Item"
+          renderItem={(item, update) => (
+            <>
+              <TextField
+                label="Primary Text"
+                value={item.text}
+                onChange={(text) => update({ ...item, text })}
+                maxLength={120}
+                required
+              />
+              <TextField
+                label="Badge / Tag"
+                value={item.badge || ""}
+                onChange={(badge) => update({ ...item, badge })}
+                maxLength={60}
+                placeholder="e.g. NEW or 99.9%"
+              />
+              {currentVariant === "cards-stream" && (
+                <TextField
+                  label="Subtext / Description"
+                  value={item.subtext || ""}
+                  onChange={(subtext) => update({ ...item, subtext })}
+                  maxLength={120}
+                  placeholder="e.g. High-throughput edge cluster"
+                />
+              )}
+              <SelectField
+                label="Icon"
+                value={item.icon || ""}
+                onChange={(icon) => update({ ...item, icon: (icon as IconName) || undefined })}
+                options={ICON_OPTIONS}
+              />
+            </>
+          )}
+        />
+      </FormGroup>
+
+      {currentVariant === "dual-directional" && (
+        <FormGroup title="Opposing Track Items (Track 2)">
+          <ItemList<MarqueeItem>
+            label="Secondary Stream Items"
+            items={data.secondaryItems || []}
+            max={24}
+            onChange={(secondaryItems) => onChange({ ...data, secondaryItems })}
+            create={() => ({
+              text: "GLOBAL CAPABILITY",
+              badge: "CLOUD",
+              icon: "cloud",
+            })}
+            itemTitle={(item) => item.text || "Item"}
+            addLabel="Add Secondary Item"
+            renderItem={(item, update) => (
+              <>
+                <TextField
+                  label="Primary Text"
+                  value={item.text}
+                  onChange={(text) => update({ ...item, text })}
+                  maxLength={120}
+                  required
+                />
+                <TextField
+                  label="Badge / Tag"
+                  value={item.badge || ""}
+                  onChange={(badge) => update({ ...item, badge })}
+                  maxLength={60}
+                />
+                <SelectField
+                  label="Icon"
+                  value={item.icon || ""}
+                  onChange={(icon) => update({ ...item, icon: (icon as IconName) || undefined })}
+                  options={ICON_OPTIONS}
+                />
+              </>
+            )}
+          />
+        </FormGroup>
+      )}
     </>
   );
 }
@@ -1933,6 +3342,20 @@ function DataForm({
     case "team":
       return (
         <TeamForm
+          data={section.data}
+          onChange={(data) => onChange({ ...section, data })}
+        />
+      );
+    case "carousel":
+      return (
+        <CarouselForm
+          data={section.data}
+          onChange={(data) => onChange({ ...section, data })}
+        />
+      );
+    case "marquee":
+      return (
+        <MarqueeForm
           data={section.data}
           onChange={(data) => onChange({ ...section, data })}
         />

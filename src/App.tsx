@@ -27,7 +27,7 @@ const ClientsPage = lazy(() => import("./pages/admin/ClientsPage.tsx"));
 const ClientFormPage = lazy(() => import("./pages/admin/ClientFormPage.tsx"));
 const AllWebsitesPage = lazy(() => import("./pages/admin/AllWebsitesPage.tsx"));
 const SectionLibraryPage = lazy(() => import("./pages/admin/SectionLibraryPage.tsx"));
-const EmailSettingsPage = lazy(() => import("./pages/admin/EmailSettingsPage.tsx"));
+const SettingsPage = lazy(() => import("./pages/admin/SettingsPage.tsx"));
 
 function PageLoading() {
   return (
@@ -78,7 +78,8 @@ export default function App() {
                 <Route path="websites" element={<AllWebsitesPage />} />
                 <Route path="sections" element={<SectionLibraryPage />} />
                 <Route path="media" element={<MediaLibraryPage />} />
-                <Route path="settings/email" element={<EmailSettingsPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="settings/email" element={<SettingsPage />} />
               </Route>
             </Route>
           </Routes>

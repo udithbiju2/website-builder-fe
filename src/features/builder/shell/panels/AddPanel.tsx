@@ -17,6 +17,8 @@ import {
   Plus,
   Rocket,
   SearchX,
+  SlidersHorizontal,
+  MoveHorizontal,
   Users,
   type LucideProps,
 } from "lucide-react";
@@ -58,6 +60,8 @@ const CATEGORIES: CategoryItem[] = [
   { id: "portfolio", category: "Portfolio", label: "Gallery", shortLabel: "Gallery", icon: Image },
   { id: "media", category: "Media", label: "Media", shortLabel: "Media", icon: PlaySquare },
   { id: "team", category: "Team", label: "Team", shortLabel: "Team", icon: Users },
+  { id: "carousel", category: "Carousel", label: "Carousel & Sliders", shortLabel: "Carousel", icon: SlidersHorizontal },
+  { id: "marquee", category: "Marquee", label: "Marquee & Tickers", shortLabel: "Marquee", icon: MoveHorizontal },
   { id: "footer", category: "Footer", label: "Footer", shortLabel: "Footer", icon: PanelBottom },
 ];
 

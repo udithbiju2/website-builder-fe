@@ -12,6 +12,8 @@ import HeroSection from "./sections/HeroSection.tsx";
 import LogosSection from "./sections/LogosSection.tsx";
 import MediaSection from "./sections/MediaSection.tsx";
 import PricingSection from "./sections/PricingSection.tsx";
+import CarouselSection from "./sections/CarouselSection.tsx";
+import MarqueeSection from "./sections/MarqueeSection.tsx";
 import ServicesSection from "./sections/ServicesSection.tsx";
 import SplitSection from "./sections/SplitSection.tsx";
 import StatsSection from "./sections/StatsSection.tsx";
@@ -58,6 +60,10 @@ export function SectionView({ section }: { section: Section }) {
       return <MediaSection section={section} />;
     case "team":
       return <TeamSection section={section} />;
+    case "carousel":
+      return <CarouselSection section={section} />;
+    case "marquee":
+      return <MarqueeSection section={section} />;
   }
 }
 

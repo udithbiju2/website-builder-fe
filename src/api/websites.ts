@@ -203,4 +203,20 @@ export const websitesApi = {
 
   versions: (id: string) =>
     request<{ versions: WebsiteVersion[] }>(`${BASE}/${id}/versions`).then((data) => data.versions),
+
+  generateAiSuggestion: (
+    id: string,
+    input: {
+      prompt: string;
+      scope: "section" | "page";
+      sectionId?: string;
+      currentSection?: Section;
+      currentSections?: Section[];
+      history?: Array<{ role: "user" | "assistant"; content: string }>;
+    },
+  ) =>
+    request<{ suggestion: any }>(`${BASE}/${id}/ai/generate`, {
+      method: "POST",
+      body: input,
+    }).then((data) => data.suggestion),
 };

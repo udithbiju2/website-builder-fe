@@ -109,7 +109,14 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
     </>
   ),
   sparkles: (
-    <path d="M12 2l2.4 7.2L21.6 12l-7.2 2.8L12 22l-2.4-7.2L2.4 12l7.2-2.8z" />
+    <>
+      {/* Large 4-point star */}
+      <path d="M 8.2 7.0 Q 8.2 14.2 15.4 14.2 Q 8.2 14.2 8.2 21.4 Q 8.2 14.2 1.0 14.2 Q 8.2 14.2 8.2 7.0 Z" />
+      {/* Medium 4-point star */}
+      <path d="M 15.2 3.2 Q 15.2 6.8 18.8 6.8 Q 15.2 6.8 15.2 10.4 Q 15.2 6.8 11.6 6.8 Q 15.2 6.8 15.2 3.2 Z" opacity="0.9" />
+      {/* Small 4-point star */}
+      <path d="M 19.8 9.6 Q 19.8 11.8 22.0 11.8 Q 19.8 11.8 19.8 14.0 Q 19.8 11.8 17.6 11.8 Q 19.8 11.8 19.8 9.6 Z" opacity="0.8" />
+    </>
   ),
   rocket: (
     <>
@@ -364,9 +371,10 @@ type SectionShellProps = {
   className?: string;
   label?: string;
   children: ReactNode;
+  fullWidth?: boolean;
 };
 
-export function SectionShell({ sectionId, settings, className, label, children }: SectionShellProps) {
+export function SectionShell({ sectionId, settings, className, label, children, fullWidth }: SectionShellProps) {
   const customColors = settings.customColors;
   const customStyle: CSSProperties = {
     ...sectionFontStyle(settings.font),
@@ -397,18 +405,89 @@ export function SectionShell({ sectionId, settings, className, label, children }
       aria-label={label}
       style={Object.keys(customStyle).length > 0 ? customStyle : undefined}
     >
-      <div className="wb-container">{children}</div>
+      <div className={fullWidth ? "wb-container-full" : "wb-container"}>{children}</div>
     </section>
   );
+}
+
+export function parseRichText(text?: string | null): ReactNode {
+  if (!text) return text ?? null;
+  if (!text.includes("<") && !text.includes("**") && !text.includes("*")) {
+    return text;
+  }
+
+  // Regex to match <span style="..." class="...">...</span>, <strong>, <em>, <mark>, <br>, etc.
+  const tagRegex =
+    /<span(?:\s+style=(['"])(.*?)\1|\s+class=(['"])(.*?)\3|[^>])*>(.*?)<\/span>|<strong>(.*?)<\/strong>|<b>(.*?)<\/b>|<em>(.*?)<\/em>|<i>(.*?)<\/i>|<mark>(.*?)<\/mark>|<br\s*\/?>/gis;
+
+  const elements: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      elements.push(text.substring(lastIndex, match.index));
+    }
+
+    const fullMatch = match[0];
+    const styleAttr = match[2];
+    const classAttr = match[4];
+    const spanContent = match[5];
+    const strongContent = match[6] ?? match[7];
+    const emContent = match[8] ?? match[9];
+    const markContent = match[10];
+
+    if (spanContent !== undefined) {
+      const inlineStyle: CSSProperties = {};
+      if (styleAttr) {
+        const styleRules = styleAttr.split(";");
+        for (const rule of styleRules) {
+          const [prop, val] = rule.split(":").map((s) => s.trim());
+          if (prop && val) {
+            if (prop === "color") inlineStyle.color = val;
+            if (prop === "background-color" || prop === "background") inlineStyle.background = val;
+            if (prop === "font-weight") inlineStyle.fontWeight = val as CSSProperties["fontWeight"];
+            if (prop === "font-style") inlineStyle.fontStyle = val as CSSProperties["fontStyle"];
+            if (prop === "text-decoration") inlineStyle.textDecoration = val;
+          }
+        }
+      }
+      elements.push(
+        <span key={elements.length} style={inlineStyle} className={classAttr}>
+          {parseRichText(spanContent)}
+        </span>,
+      );
+    } else if (strongContent !== undefined) {
+      elements.push(<strong key={elements.length}>{parseRichText(strongContent)}</strong>);
+    } else if (emContent !== undefined) {
+      elements.push(<em key={elements.length}>{parseRichText(emContent)}</em>);
+    } else if (markContent !== undefined) {
+      elements.push(
+        <mark key={elements.length} className="wb-text-gradient">
+          {parseRichText(markContent)}
+        </mark>,
+      );
+    } else if (fullMatch.toLowerCase().startsWith("<br")) {
+      elements.push(<br key={elements.length} />);
+    }
+
+    lastIndex = tagRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    elements.push(text.substring(lastIndex));
+  }
+
+  return elements.length > 0 ? <>{elements}</> : text;
 }
 
 export function SectionHead({ heading, intro, eyebrow }: { heading?: string; intro?: string; eyebrow?: string }) {
   if (!heading && !intro && !eyebrow) return null;
   return (
     <div className="wb-section-head">
-      {eyebrow && <p className="wb-eyebrow">{eyebrow}</p>}
-      {heading && <h2>{heading}</h2>}
-      {intro && <p className="wb-muted">{intro}</p>}
+      {eyebrow && <p className="wb-eyebrow">{parseRichText(eyebrow)}</p>}
+      {heading && <h2>{parseRichText(heading)}</h2>}
+      {intro && <p className="wb-muted">{parseRichText(intro)}</p>}
     </div>
   );
 }
