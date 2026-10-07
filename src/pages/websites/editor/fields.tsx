@@ -302,19 +302,20 @@ export function LinkField({ label, value, onChange }: LinkFieldProps) {
       ? "Use a page like /contact, https://…, mailto: or tel:"
       : undefined;
   return (
-    <fieldset className="flex flex-col gap-2 rounded-ed border border-ed-border bg-ed-subtle/30 p-2.5 shadow-ed-xs">
-      <legend className="px-1 text-ed-xs font-semibold text-ed-text">
-        {label}
-      </legend>
+    <div className="flex flex-col gap-2.5 rounded-ed-lg border border-ed-border/90 bg-ed-subtle/40 p-3 shadow-2xs">
+      <div className="flex items-center gap-1.5">
+        <span className="size-1.5 rounded-full bg-ed-accent" />
+        <span className="text-ed-xs font-semibold text-ed-text">{label}</span>
+      </div>
       <TextField
-        label="Text"
+        label="Button / Link text"
         value={value.label}
         onChange={(text) => onChange({ ...value, label: text })}
         maxLength={80}
         required
       />
       <TextField
-        label="Goes to"
+        label="Destination page or URL"
         value={value.href}
         onChange={(href) => onChange({ ...value, href })}
         placeholder="/contact or https://…"
@@ -330,7 +331,7 @@ export function LinkField({ label, value, onChange }: LinkFieldProps) {
           </option>
         ))}
       </datalist>
-    </fieldset>
+    </div>
   );
 }
 
@@ -448,10 +449,22 @@ export function ImageField({
   }
 
   return (
-    <fieldset className="flex flex-col gap-2 rounded-ed border border-ed-border bg-ed-subtle/30 p-2.5 shadow-ed-xs">
-      <legend className="px-1 text-ed-xs font-semibold text-ed-text">
-        {label}
-      </legend>
+    <div className="flex flex-col gap-3 rounded-ed-lg border border-ed-border/90 bg-ed-subtle/40 p-3 shadow-2xs">
+      <div className="flex items-center justify-between">
+        <span className="text-ed-xs font-semibold text-ed-text flex items-center gap-1.5">
+          <Images className="size-3.5 text-ed-accent" />
+          {label}
+        </span>
+        {optional && value && (
+          <button
+            type="button"
+            onClick={() => onChange(undefined)}
+            className="text-[11px] font-medium text-ed-danger hover:underline"
+          >
+            Remove image
+          </button>
+        )}
+      </div>
 
       {/* Image Thumbnail with Click-to-Lightbox & Action Overlay */}
       {image.url && !urlError && (
@@ -459,7 +472,7 @@ export function ImageField({
           <img
             src={image.url}
             alt={image.alt || label}
-            className="h-24 w-full object-cover transition-transform duration-200 group-hover/preview:scale-105 cursor-pointer"
+            className="h-28 w-full object-cover transition-transform duration-200 group-hover/preview:scale-105 cursor-pointer"
             onClick={() => setLightboxOpen(true)}
           />
 
@@ -589,16 +602,7 @@ export function ImageField({
         hint="Describes the image for screen readers and search engines."
         maxLength={300}
       />
-      {optional && value && (
-        <button
-          type="button"
-          onClick={() => onChange(undefined)}
-          className="self-start text-ed-xs font-medium text-ed-danger hover:underline"
-        >
-          Remove image
-        </button>
-      )}
-    </fieldset>
+    </div>
   );
 }
 
@@ -678,10 +682,22 @@ export function VideoField({
   }
 
   return (
-    <fieldset className="flex flex-col gap-2 rounded-ed border border-ed-border bg-ed-subtle/30 p-2.5 shadow-ed-xs">
-      <legend className="px-1 text-ed-xs font-semibold text-ed-text">
-        {label}
-      </legend>
+    <div className="flex flex-col gap-3 rounded-ed-lg border border-ed-border/90 bg-ed-subtle/40 p-3 shadow-2xs">
+      <div className="flex items-center justify-between">
+        <span className="text-ed-xs font-semibold text-ed-text flex items-center gap-1.5">
+          <Film className="size-3.5 text-ed-accent" />
+          {label}
+        </span>
+        {optional && value && (
+          <button
+            type="button"
+            onClick={() => onChange(undefined)}
+            className="text-[11px] font-medium text-ed-danger hover:underline"
+          >
+            Remove video
+          </button>
+        )}
+      </div>
 
       {/* Video Preview Player / Embed Info */}
       {videoUrl && (
@@ -810,7 +826,7 @@ export function VideoField({
           onClose={() => setPicking(false)}
         />
       )}
-    </fieldset>
+    </div>
   );
 }
 
@@ -966,18 +982,39 @@ export function IconButton({
 
 export function FormGroup({
   title,
+  description,
+  badge,
   children,
 }: {
   title: string;
+  description?: string;
+  badge?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3 border-b border-ed-border px-3.5 py-3.5 last:border-b-0">
-      <h3 className="text-ed-2xs font-semibold uppercase tracking-wider text-ed-faint">
-        {title}
-      </h3>
-      {children}
-    </section>
+    <div className="flex flex-col gap-3.5 border-b border-ed-border/70 p-4 transition-colors">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="size-2 rounded-full bg-ed-accent shadow-xs" />
+          <h3 className="text-ed-xs font-bold uppercase tracking-wider text-ed-text">
+            {title}
+          </h3>
+        </div>
+        {badge && (
+          <span className="rounded-full bg-ed-subtle px-2 py-0.5 text-[10px] font-semibold text-ed-muted">
+            {badge}
+          </span>
+        )}
+      </div>
+      {description && (
+        <p className="text-ed-2xs text-ed-muted leading-relaxed -mt-1.5 pl-4">
+          {description}
+        </p>
+      )}
+      <div className="flex flex-col gap-3 pl-1">
+        {children}
+      </div>
+    </div>
   );
 }
 

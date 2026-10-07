@@ -60,34 +60,40 @@ function SectionInspector({ item, index }: { item: BuilderItem; index: number })
 
   return (
     <>
-      <header className="flex items-center gap-1 border-b border-ed-border py-2 pl-3 pr-1.5">
+      <header className="flex items-center gap-2 border-b border-ed-border bg-ed-panel px-3.5 py-2.5">
         <div className="min-w-0 flex-1">
-          <p className="text-ed-2xs font-medium uppercase tracking-wider text-ed-faint">Section</p>
-          <h2 className="truncate text-ed-sm font-semibold text-ed-text">{definition.label}</h2>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="rounded-full bg-ed-accent/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-ed-accent">
+              Section
+            </span>
+          </div>
+          <h2 className="truncate text-ed-sm font-bold text-ed-text">{definition.label}</h2>
         </div>
-        <ToolButton label="Save to library" size="sm" onClick={() => setSaving(true)}>
-          <BookmarkPlus className="size-3.5" aria-hidden />
-        </ToolButton>
-        <ToolButton label="Duplicate section" size="sm" onClick={() => duplicateSection(dispatch, index)}>
-          <Copy className="size-3.5" aria-hidden />
-        </ToolButton>
-        <ToolButton label="Delete section" size="sm" tone="danger" onClick={() => removeSection(dispatch, index)}>
-          <Trash2 className="size-3.5" aria-hidden />
-        </ToolButton>
-        <ToolButton label="Deselect" size="sm" onClick={() => selectSection(dispatch, null)}>
-          <X className="size-3.5" aria-hidden />
-        </ToolButton>
+        <div className="flex items-center gap-0.5">
+          <ToolButton label="Save to library" size="sm" onClick={() => setSaving(true)}>
+            <BookmarkPlus className="size-3.5" aria-hidden />
+          </ToolButton>
+          <ToolButton label="Duplicate section" size="sm" onClick={() => duplicateSection(dispatch, index)}>
+            <Copy className="size-3.5" aria-hidden />
+          </ToolButton>
+          <ToolButton label="Delete section" size="sm" tone="danger" onClick={() => removeSection(dispatch, index)}>
+            <Trash2 className="size-3.5" aria-hidden />
+          </ToolButton>
+          <ToolButton label="Deselect" size="sm" onClick={() => selectSection(dispatch, null)}>
+            <X className="size-3.5" aria-hidden />
+          </ToolButton>
+        </div>
       </header>
       <Tabs tabs={SECTION_TABS} value={tab} onChange={setTab} label="Section properties" />
       <div role="tabpanel" aria-label={SECTION_TABS.find((candidate) => candidate.id === tab)?.label} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {tab === "content" && (
           <div className="flex flex-col">
             <SectionContentForm key={section.id} section={section} onChange={change} />
-            <div className="border-t border-ed-border/70 p-3 mt-4">
+            <div className="border-t border-ed-border/70 p-4 mt-2">
               <button
                 type="button"
                 onClick={() => removeSection(dispatch, index)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-ed border border-ed-danger/40 bg-ed-danger-soft/50 py-2 text-ed-xs font-semibold text-ed-danger hover:bg-ed-danger hover:text-white transition-colors"
+                className="flex w-full items-center justify-center gap-2 rounded-ed-lg border border-red-500/25 bg-red-500/10 py-2.5 text-ed-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white dark:hover:bg-red-500 transition-all shadow-xs"
               >
                 <Trash2 className="size-3.5" aria-hidden />
                 Delete {definition.label.toLowerCase()}

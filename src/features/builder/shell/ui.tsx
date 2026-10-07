@@ -120,7 +120,12 @@ export function Tabs<T extends string>({ tabs, value, onChange, label }: { tabs:
   }
 
   return (
-    <div role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-0.5 border-b border-ed-border px-2">
+    <div
+      role="tablist"
+      aria-label={label}
+      onKeyDown={onKeyDown}
+      className="flex items-center gap-1 border-b border-ed-border/80 bg-ed-subtle/40 px-2.5 py-1.5 backdrop-blur-xs"
+    >
       {tabs.map((tab) => {
         const selected = tab.id === value;
         return (
@@ -135,8 +140,10 @@ export function Tabs<T extends string>({ tabs, value, onChange, label }: { tabs:
             aria-selected={selected}
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.id)}
-            className={`relative -mb-px h-9 px-2 text-ed-xs font-medium transition-colors ${
-              selected ? "text-ed-text after:absolute after:inset-x-1 after:bottom-0 after:h-0.5 after:rounded-full after:bg-ed-accent" : "text-ed-muted hover:text-ed-text"
+            className={`relative flex-1 rounded-ed py-1.5 text-center text-ed-xs font-semibold transition-all duration-150 select-none ${
+              selected
+                ? "bg-ed-panel text-ed-accent shadow-ed-xs border border-ed-border/80"
+                : "text-ed-muted hover:bg-ed-subtle hover:text-ed-text"
             }`}
           >
             {tab.label}
