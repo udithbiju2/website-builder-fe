@@ -414,16 +414,84 @@ export type TestimonialsData = {
   items: { quote: string; name: string; role?: string }[];
 };
 
+export const FAQ_VARIANTS = [
+  "accordion-classic",
+  "two-column-grid",
+  "split-sidebar",
+  "minimal-numbered",
+  "categorized-cards",
+] as const;
+export type FaqVariant = (typeof FAQ_VARIANTS)[number];
+
+export const FAQ_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+] as const;
+export type FaqCardStyle = (typeof FAQ_CARD_STYLES)[number];
+
+export type FaqItem = {
+  question: string;
+  answer: string;
+  category?: string;
+  badge?: string;
+  isOpenDefault?: boolean;
+};
+
+export type FaqSupportCta = {
+  title?: string;
+  description?: string;
+  link?: LinkRef;
+};
+
 export type FaqData = {
+  variant?: FaqVariant;
+  eyebrow?: string;
   heading: string;
   intro?: string;
-  items: { question: string; answer: string }[];
+  cardStyle?: FaqCardStyle;
+  align?: SectionAlign;
+  supportCta?: FaqSupportCta;
+  items: FaqItem[];
+};
+
+export const CTA_VARIANTS = [
+  "centered-card",
+  "split-visual",
+  "floating-card",
+  "minimal-editorial",
+] as const;
+export type CtaVariant = (typeof CTA_VARIANTS)[number];
+
+export const CTA_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type CtaCardStyle = (typeof CTA_CARD_STYLES)[number];
+
+export type CtaMetric = {
+  value: string;
+  label: string;
+  subtext?: string;
 };
 
 export type CtaData = {
+  variant?: CtaVariant;
+  eyebrow?: string;
   heading: string;
   text?: string;
   button: LinkRef;
+  secondaryButton?: LinkRef;
+  trustBadges?: string[];
+  highlightMetric?: CtaMetric;
+  cardStyle?: CtaCardStyle;
+  align?: SectionAlign;
 };
 
 export type ContactData = {

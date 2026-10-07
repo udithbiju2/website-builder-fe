@@ -239,6 +239,99 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
         </div>
       );
 
+    case "faq-accordion":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1 px-3 py-1.5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={`flex items-center justify-between rounded-sm border px-1.5 py-1 ${
+                i === 0
+                  ? "border-zinc-800 bg-zinc-100 dark:border-zinc-200 dark:bg-zinc-800"
+                  : "border-zinc-200/80 bg-white dark:border-zinc-700/60 dark:bg-zinc-900"
+              }`}
+            >
+              <div className="flex flex-col gap-0.5">
+                <div className="h-1 w-20 rounded-full bg-zinc-600 dark:bg-zinc-300" />
+                {i === 0 && <div className="h-0.5 w-24 rounded-full bg-zinc-400 dark:bg-zinc-500" />}
+              </div>
+              <div className="size-1.5 rounded-full bg-zinc-400 dark:bg-zinc-400" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "faq-grid":
+      return (
+        <div className="grid h-full w-full grid-cols-2 items-center gap-1.5 p-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="flex flex-col gap-0.5 rounded-sm border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800"
+            >
+              <div className="h-1 w-12 rounded-xs bg-zinc-600 dark:bg-zinc-300" />
+              <div className="h-0.5 w-full rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "faq-split":
+      return (
+        <div className="grid h-full w-full grid-cols-2 items-center gap-2 p-2">
+          <div className="flex flex-col gap-1">
+            <div className="h-2 w-14 rounded-xs bg-zinc-800 dark:bg-zinc-100" />
+            <div className="h-1 w-18 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+            <div className="mt-1 h-3 w-full rounded-xs border border-zinc-300 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 p-0.5" />
+          </div>
+          <div className="flex flex-col gap-0.5">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-xs border border-zinc-200 bg-white px-1 py-0.5 dark:border-zinc-700 dark:bg-zinc-800"
+              >
+                <div className="h-1 w-12 rounded-full bg-zinc-500 dark:bg-zinc-300" />
+                <div className="size-1 rounded-full bg-zinc-400" />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case "faq-minimal":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1 px-3 py-1.5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between border-b border-zinc-200/80 py-0.5 dark:border-zinc-700"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-[7px] font-bold text-zinc-400">0{i + 1}</span>
+                <div className="h-1 w-20 rounded-full bg-zinc-600 dark:bg-zinc-300" />
+              </div>
+              <span className="text-[8px] text-zinc-400">+</span>
+            </div>
+          ))}
+        </div>
+      );
+
+    case "faq-cards":
+      return (
+        <div className="grid h-full w-full grid-cols-3 items-stretch gap-1 p-1.5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="flex flex-col justify-between rounded-sm border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800"
+            >
+              <div className="h-1 w-6 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+              <div className="h-1.5 w-full rounded-xs bg-zinc-700 dark:bg-zinc-200" />
+              <div className="h-1 w-3/4 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            </div>
+          ))}
+        </div>
+      );
+
     case "faq":
       return (
         <div className="flex h-full w-full flex-col justify-center gap-1 px-3 py-1.5">
@@ -248,6 +341,56 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
               <div className="size-1 rounded-full bg-zinc-300 dark:bg-zinc-600" />
             </div>
           ))}
+        </div>
+      );
+
+    case "cta-centered":
+      return (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-sm border border-zinc-200/80 bg-zinc-50 p-2 text-center dark:border-zinc-700/60 dark:bg-zinc-850">
+          <div className="h-1 w-12 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+          <div className="h-2 w-28 rounded-xs bg-zinc-800 dark:bg-zinc-100" />
+          <div className="h-1 w-36 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+          <div className="mt-0.5 flex items-center gap-1">
+            <div className="h-2 w-8 rounded-xs bg-zinc-800 dark:bg-zinc-200" />
+            <div className="h-2 w-7 rounded-xs border border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-800" />
+          </div>
+        </div>
+      );
+
+    case "cta-split":
+      return (
+        <div className="grid h-full w-full grid-cols-2 items-center gap-2 p-2">
+          <div className="flex flex-col gap-1">
+            <div className="h-2 w-20 rounded-xs bg-zinc-800 dark:bg-zinc-100" />
+            <div className="h-1 w-24 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+            <div className="h-2 w-10 rounded-xs bg-zinc-700 dark:bg-zinc-200" />
+          </div>
+          <div className="flex flex-col items-center justify-center gap-0.5 rounded-sm border border-zinc-300 bg-white p-1.5 dark:border-zinc-700 dark:bg-zinc-800 shadow-2xs">
+            <div className="h-2.5 w-12 rounded-xs bg-zinc-800 dark:bg-zinc-100" />
+            <div className="h-0.5 w-14 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+          </div>
+        </div>
+      );
+
+    case "cta-floating":
+      return (
+        <div className="flex h-full w-full items-center justify-center p-2">
+          <div className="flex w-full flex-col items-center justify-center gap-1 rounded-sm border border-zinc-300 bg-white/80 p-2 text-center backdrop-blur-xs dark:border-zinc-600 dark:bg-zinc-800/80 shadow-xs">
+            <div className="h-2 w-24 rounded-xs bg-zinc-800 dark:bg-zinc-100" />
+            <div className="h-1 w-32 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+            <div className="h-2 w-10 rounded-xs bg-zinc-800 dark:bg-zinc-200" />
+          </div>
+        </div>
+      );
+
+    case "cta-editorial":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1 border-y border-zinc-200 px-2 py-1.5 dark:border-zinc-700">
+          <div className="flex items-center justify-between">
+            <div className="h-2 w-24 rounded-xs bg-zinc-800 dark:bg-zinc-100" />
+            <div className="h-2 w-8 rounded-xs bg-zinc-700 dark:bg-zinc-200" />
+          </div>
+          <div className="h-1 w-32 rounded-full bg-zinc-400 dark:bg-zinc-500" />
         </div>
       );
 

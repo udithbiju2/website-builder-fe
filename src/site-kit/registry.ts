@@ -1750,12 +1750,304 @@ export const SECTION_PRESETS: SectionPreset[] = [
       createSection("testimonials", { settings: { background: "surface" } }),
   },
   {
+    key: "faq-accordion",
+    type: "faq",
+    label: "FAQ · Modern Accordion",
+    category: "FAQ",
+    description: "Centered accordion with category pills, micro chevron transitions, and support footer.",
+    create: () =>
+      createSection("faq", {
+        data: {
+          variant: "accordion-classic",
+          eyebrow: "COMMON QUESTIONS",
+          heading: "Frequently asked questions",
+          intro: "Everything you need to know about our product, pricing, and onboarding process.",
+          supportCta: {
+            title: "Still have questions?",
+            description: "Can't find what you're looking for? Reach out to our dedicated support engineering team.",
+            link: { label: "Contact support", href: "/contact" },
+          },
+          items: [
+            {
+              question: "How does the onboarding and deployment process work?",
+              answer:
+                "Once you choose your package, you will get instant access to your dedicated dashboard. We provision your staging environments within 24 hours and begin collaboration directly via Slack or email.",
+              category: "Onboarding",
+              badge: "Popular",
+              isOpenDefault: true,
+            },
+            {
+              question: "Can I upgrade, downgrade, or cancel my subscription at any time?",
+              answer:
+                "Yes, absolutely. There are no lock-in contracts. You can change plans or cancel anytime directly from your account settings with a single click.",
+              category: "Billing",
+            },
+            {
+              question: "Is custom domain integration and SSL certificate included?",
+              answer:
+                "Yes. Every published website receives automatic SSL encryption with global edge CDN distribution for sub-second page loads worldwide.",
+              category: "Security",
+            },
+            {
+              question: "Do you support custom integrations with CRMs and webhooks?",
+              answer:
+                "Yes, our system supports turnkey integrations with HubSpot, Salesforce, Zapier, and custom HTTP webhooks for automated lead routing.",
+              category: "Integrations",
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "faq-grid",
+    type: "faq",
+    label: "FAQ · 2-Column Matrix",
+    category: "FAQ",
+    description: "Spacious two-column grid matrix for dense, well-organized documentation and support.",
+    create: () =>
+      createSection("faq", {
+        data: {
+          variant: "two-column-grid",
+          eyebrow: "HELP CENTER",
+          heading: "Answers to common questions",
+          intro: "Quickly browse our most frequent questions across product, engineering, and account management.",
+          items: [
+            {
+              question: "What web frameworks and technologies are supported?",
+              answer:
+                "We support React, Next.js, and static vanilla HTML/CSS exports with zero vendor lock-in.",
+              category: "Engineering",
+            },
+            {
+              question: "How are software updates and security patches handled?",
+              answer:
+                "All core libraries and security patches are automatically updated in the cloud with zero downtime.",
+              category: "Security",
+            },
+            {
+              question: "Can multiple team members collaborate simultaneously?",
+              answer:
+                "Yes. Role-based permissions allow designers, copywriters, and developers to work seamlessly together.",
+              category: "Collaboration",
+            },
+            {
+              question: "What payment methods do you accept?",
+              answer:
+                "We accept all major credit cards, Stripe, Apple Pay, Google Pay, and bank wire transfers for enterprise tiers.",
+              category: "Billing",
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "faq-split",
+    type: "faq",
+    label: "FAQ · Sticky Sidebar + Stack",
+    category: "FAQ",
+    description: "Asymmetric split layout with sticky sidebar heading, contact CTA, and clean accordion stack.",
+    create: () =>
+      createSection("faq", {
+        data: {
+          variant: "split-sidebar",
+          eyebrow: "SUPPORT & FAQS",
+          heading: "Got questions? We've got answers.",
+          intro: "Find clear answers to standard questions, or get in touch with our team for personalized assistance.",
+          supportCta: {
+            title: "Need custom advisory?",
+            description: "Speak with a solutions architect today.",
+            link: { label: "Schedule a Call", href: "/contact" },
+          },
+          items: [
+            {
+              question: "What is your typical turnaround time for custom setups?",
+              answer:
+                "Standard deployments are live within 48 to 72 hours. Enterprise custom builds typically take 2 to 3 weeks depending on scope.",
+              isOpenDefault: true,
+            },
+            {
+              question: "Do you provide dedicated post-launch maintenance?",
+              answer:
+                "Yes, every engagement includes at least 30 days of warranty support with optional continuous retainer bandwidth.",
+            },
+            {
+              question: "How does the SEO and page speed optimization work?",
+              answer:
+                "We implement automated OpenGraph meta tags, clean semantic HTML5, and asset minification to ensure 95+ Google Lighthouse scores.",
+            },
+            {
+              question: "Where is our site data hosted and backed up?",
+              answer:
+                "Data is hosted on enterprise cloud infrastructure with automated daily snapshots and 99.99% guaranteed uptime.",
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "faq-minimal",
+    type: "faq",
+    label: "FAQ · Swiss Architectural",
+    category: "FAQ",
+    description: "Minimalist editorial layout with hairline dividers, numbered indices (01, 02), and bold typography.",
+    create: () =>
+      createSection("faq", {
+        data: {
+          variant: "minimal-numbered",
+          eyebrow: "TRANSPARENCY",
+          heading: "Questions & Insights",
+          intro: "A clear overview of our operational standards, agreements, and execution.",
+          items: [
+            {
+              question: "What makes your architectural approach different?",
+              answer:
+                "We prioritize ultra-clean codebases, zero bloated dependencies, and pixel-perfect design craftsmanship that performs at scale.",
+              isOpenDefault: true,
+            },
+            {
+              question: "How are project milestones and revisions structured?",
+              answer:
+                "Each project follows structured 2-week sprints with transparent milestone reviews and unlimited revision rounds within scope.",
+            },
+            {
+              question: "Do I own 100% of the Intellectual Property and code?",
+              answer:
+                "Yes. Upon final delivery, all intellectual property, source code, designs, and assets belong entirely to you.",
+            },
+            {
+              question: "What SLA guarantees are provided for production outages?",
+              answer:
+                "Enterprise tiers include 99.99% uptime SLAs with a guaranteed 1-hour critical response window 24/7.",
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "faq-cards",
+    type: "faq",
+    label: "FAQ · Categorized Boxed Modules",
+    category: "FAQ",
+    description: "Boxed 3-column surface cards with category tags, clean question headers, and direct answers.",
+    create: () =>
+      createSection("faq", {
+        data: {
+          variant: "categorized-cards",
+          eyebrow: "KNOWLEDGE BASE",
+          heading: "Essential information",
+          intro: "Explore modular answers categorized for quick discovery.",
+          items: [
+            {
+              question: "How secure is data transmission?",
+              answer:
+                "All communications are encrypted end-to-end using TLS 1.3 with AES-256 bit encryption at rest.",
+              category: "Security",
+            },
+            {
+              question: "Can I export my data at any time?",
+              answer:
+                "Yes. You can export all content, media, and site structures into standard JSON or zip archives anytime.",
+              category: "Data Portability",
+            },
+            {
+              question: "What level of support is included?",
+              answer:
+                "All plans include priority email support with standard 4-hour turnaround during business days.",
+              category: "Support",
+            },
+          ],
+        },
+      }),
+  },
+  {
     key: "faq",
     type: "faq",
-    label: "FAQ accordion",
+    label: "FAQ · 2 Questions (Simple)",
     category: "FAQ",
     description: "Questions that open to show the answer.",
     create: () => createSection("faq"),
+  },
+  {
+    key: "cta-centered",
+    type: "cta",
+    label: "CTA · Centered Executive Banner",
+    category: "CTA",
+    description: "Centered high-impact callout with live pulse dot, dual actions, and trust checklist.",
+    create: () =>
+      createSection("cta", {
+        data: {
+          variant: "centered-card",
+          eyebrow: "READY TO ACCELERATE",
+          heading: "Build something extraordinary today",
+          text: "Join thousands of product teams shipping delightful, high-converting digital experiences with our modern platform.",
+          button: { label: "Get Started Free", href: "/contact" },
+          secondaryButton: { label: "Book a Demo", href: "/contact" },
+          trustBadges: ["No credit card required", "Instant 2-minute setup", "Cancel anytime"],
+        },
+      }),
+  },
+  {
+    key: "cta-split",
+    type: "cta",
+    label: "CTA · Split Metric Showcase",
+    category: "CTA",
+    description: "Asymmetric split layout pairing a strong pitch with an architectural live metric card.",
+    create: () =>
+      createSection("cta", {
+        data: {
+          variant: "split-visual",
+          eyebrow: "ENTERPRISE PERFORMANCE",
+          heading: "Scale your workflow with zero infrastructure overhead",
+          text: "Deploy production-grade experiences backed by automated global CDN routing and sovereign cloud encryption.",
+          button: { label: "Start Free Trial", href: "/contact" },
+          secondaryButton: { label: "Explore Platform", href: "/about" },
+          trustBadges: ["SOC2 Type II certified", "99.99% SLA guarantee", "Dedicated Slack channel"],
+          highlightMetric: {
+            value: "99.99%",
+            label: "Enterprise Uptime SLA",
+            subtext: "Monitored across 34 global availability zones 24/7.",
+          },
+        },
+      }),
+  },
+  {
+    key: "cta-floating",
+    type: "cta",
+    label: "CTA · Floating Ambient Card",
+    category: "CTA",
+    description: "Framed ambient glassmorphism card with prominent typography and dual action cluster.",
+    create: () =>
+      createSection("cta", {
+        data: {
+          variant: "floating-card",
+          cardStyle: "glass",
+          eyebrow: "GET IN TOUCH",
+          heading: "Let’s create your next breakthrough project",
+          text: "Have a new concept or need dedicated engineering bandwidth? Our design engineers are ready to collaborate.",
+          button: { label: "Schedule Discovery Call", href: "/contact" },
+          secondaryButton: { label: "View Portfolio", href: "/work" },
+          trustBadges: ["14-day warranty", "Direct team access"],
+        },
+      }),
+  },
+  {
+    key: "cta-editorial",
+    type: "cta",
+    label: "CTA · Swiss Architectural Line",
+    category: "CTA",
+    description: "Stark editorial callout with top/bottom hairline borders and high-contrast typography.",
+    create: () =>
+      createSection("cta", {
+        data: {
+          variant: "minimal-editorial",
+          eyebrow: "NEXT STEPS",
+          heading: "Take the next step in your digital journey.",
+          text: "Direct advisory and end-to-end execution for founders who value precision craftsmanship.",
+          button: { label: "Begin Engagement", href: "/contact" },
+          secondaryButton: { label: "Read Case Studies", href: "/about" },
+          trustBadges: ["Fixed sprint scopes", "100% IP ownership"],
+        },
+      }),
   },
   {
     key: "cta-banner",

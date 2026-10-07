@@ -1750,23 +1750,694 @@ export const SITE_CSS = `
 .wb-quote figcaption { margin-top: 20px; font-size: 14px; }
 .wb-quote figcaption strong { display: block; font-size: 15px; color: var(--wb-text); }
 
-/* FAQ */
-.wb-faq { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
-.wb-faq details { border: 1px solid var(--wb-border); border-radius: var(--wb-radius); background: var(--wb-bg); color: var(--wb-text); }
-.wb-faq summary {
-  list-style: none; cursor: pointer; padding: 18px 22px; font-weight: 600;
-  display: flex; justify-content: space-between; gap: 16px;
-}
-.wb-faq summary::-webkit-details-marker { display: none; }
-.wb-faq summary::after { content: "+"; font-size: 20px; line-height: 1; color: var(--wb-primary); }
-.wb-faq details[open] summary::after { content: "\\2212"; }
-.wb-faq details p { padding: 0 22px 20px; color: var(--wb-muted); }
+/* ==========================================================================
+   FAQ Section (Clean Modern & Architectural System)
+   ========================================================================== */
 
-/* CTA */
-.wb-cta { text-align: center; }
-.wb-cta .wb-container { max-width: 760px; }
-.wb-cta p { margin-top: 16px; font-size: 18px; }
-.wb-cta .wb-actions { justify-content: center; }
+/* Shared FAQ Element Styles */
+.wb-faq-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  user-select: none;
+  font-family: var(--wb-font-heading);
+  transition: background-color 0.18s ease;
+}
+.wb-faq-summary::-webkit-details-marker {
+  display: none;
+}
+.wb-faq-summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.wb-faq-question-text {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--wb-text);
+}
+.wb-faq-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wb-faq-category-pill {
+  font-family: var(--wb-font-base);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  color: var(--wb-muted);
+}
+.wb-faq-badge-pill {
+  font-family: var(--wb-font-base);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--wb-text);
+  color: var(--wb-bg);
+}
+
+/* Micro Indicators */
+.wb-faq-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--wb-text);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+details[open] > summary .wb-faq-chevron {
+  transform: rotate(180deg);
+}
+details[open] > summary .wb-faq-plus {
+  transform: rotate(45deg);
+}
+
+/* Answer Body */
+.wb-faq-answer-body {
+  padding: 0 24px 22px 24px;
+  animation: wb-fade-in 0.2s ease-out;
+}
+.wb-faq-answer-body p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--wb-muted);
+}
+
+/* Card Surface Styles */
+.wb-faq-card-style-default {
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+}
+.wb-faq-card-style-bordered {
+  background: var(--wb-bg);
+  border: 1px solid var(--wb-border);
+}
+.wb-faq-card-style-flat {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--wb-border);
+  border-radius: 0 !important;
+}
+.wb-faq-card-style-glass {
+  background: color-mix(in srgb, var(--wb-surface) 60%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--wb-border) 80%, transparent);
+}
+.wb-faq-card-style-elevated {
+  background: var(--wb-bg);
+  border: 1px solid var(--wb-border);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.06);
+}
+
+/* Support Card Component */
+.wb-faq-support-card {
+  max-width: 820px;
+  margin: 48px auto 0 auto;
+  padding: 24px 28px;
+  border-radius: var(--wb-radius);
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.wb-faq-support-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--wb-text);
+}
+.wb-faq-support-desc {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: var(--wb-muted);
+}
+.wb-faq-support-action {
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .wb-faq-support-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+/* ==========================================================================
+   Variant 1: Classic Modern Accordion
+   ========================================================================== */
+.wb-faq-classic-container {
+  max-width: 820px;
+  margin: 0 auto;
+}
+.wb-faq-accordion-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.wb-faq-accordion-item {
+  border-radius: var(--wb-radius);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.wb-faq-accordion-item:hover {
+  border-color: color-mix(in srgb, var(--wb-text) 30%, var(--wb-border));
+}
+.wb-faq-accordion-item[open] {
+  border-color: color-mix(in srgb, var(--wb-text) 45%, var(--wb-border));
+}
+
+/* ==========================================================================
+   Variant 2: Two-Column Grid
+   ========================================================================== */
+.wb-faq-two-cols-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.wb-faq-card-item {
+  border-radius: var(--wb-radius);
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.wb-faq-card-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.08);
+}
+@media (max-width: 800px) {
+  .wb-faq-two-cols-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Variant 3: Split Sidebar (Sticky Hero + Accordion)
+   ========================================================================== */
+.wb-faq-split-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 56px;
+  align-items: start;
+}
+.wb-faq-split-sidebar {
+  position: relative;
+}
+.wb-faq-sidebar-sticky {
+  position: sticky;
+  top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.wb-faq-split-heading {
+  font-family: var(--wb-font-heading);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--wb-text);
+  margin: 0;
+}
+.wb-faq-split-intro {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--wb-muted);
+  margin: 4px 0 0 0;
+}
+.wb-faq-split-support-box {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: var(--wb-radius);
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.wb-faq-split-content {
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .wb-faq-split-layout {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .wb-faq-sidebar-sticky {
+    position: static;
+  }
+}
+
+/* ==========================================================================
+   Variant 4: Minimal Numbered (Swiss Architectural)
+   ========================================================================== */
+.wb-faq-minimal-container {
+  max-width: 880px;
+  margin: 0 auto;
+  border-top: 1px solid var(--wb-border);
+}
+.wb-faq-minimal-item {
+  border-bottom: 1px solid var(--wb-border);
+  transition: background-color 0.18s ease;
+}
+.wb-faq-minimal-item:hover {
+  background: color-mix(in srgb, var(--wb-surface) 35%, transparent);
+}
+.wb-faq-minimal-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 24px 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  user-select: none;
+}
+.wb-faq-minimal-summary::-webkit-details-marker {
+  display: none;
+}
+.wb-faq-minimal-num {
+  font-family: var(--wb-font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--wb-muted);
+  letter-spacing: 0.04em;
+  margin-top: 1px;
+}
+.wb-faq-minimal-q-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wb-faq-minimal-question {
+  font-family: var(--wb-font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--wb-text);
+}
+.wb-faq-minimal-answer {
+  padding: 0 8px 24px 44px;
+  animation: wb-fade-in 0.2s ease-out;
+}
+.wb-faq-minimal-answer p {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--wb-muted);
+}
+
+/* ==========================================================================
+   Variant 5: Categorized Boxed Cards
+   ========================================================================== */
+.wb-faq-categorized-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+.wb-faq-boxed-card {
+  display: flex;
+  flex-direction: column;
+  padding: 28px 24px;
+  border-radius: var(--wb-radius);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.wb-faq-boxed-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.08);
+}
+.wb-faq-boxed-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.wb-faq-boxed-question {
+  font-family: var(--wb-font-heading);
+  font-size: 17.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--wb-text);
+  margin: 0;
+}
+.wb-faq-boxed-answer {
+  flex: 1;
+}
+.wb-faq-boxed-answer p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--wb-muted);
+}
+@media (max-width: 960px) {
+  .wb-faq-categorized-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .wb-faq-categorized-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   CTA Section (Modern Executive & Animated Action System)
+   ========================================================================== */
+
+@keyframes wb-pulse-dot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 color-mix(in srgb, var(--wb-text) 50%, transparent); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px color-mix(in srgb, var(--wb-text) 0%, transparent); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 color-mix(in srgb, var(--wb-text) 0%, transparent); }
+}
+
+/* Eyebrow & Status Dot */
+.wb-cta-eyebrow-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.wb-cta-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--wb-primary);
+  animation: wb-pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.wb-cta-eyebrow {
+  font-family: var(--wb-font-base);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--wb-muted);
+}
+
+/* Action Group */
+.wb-cta-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+.wb-cta-actions.wb-align-center {
+  justify-content: center;
+}
+.wb-cta-actions.wb-align-left {
+  justify-content: flex-start;
+}
+
+/* Trust Badges */
+.wb-cta-trust-list {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.wb-cta-trust-list.wb-align-center {
+  justify-content: center;
+}
+.wb-cta-trust-list.wb-align-left {
+  justify-content: flex-start;
+}
+.wb-cta-trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wb-muted);
+}
+.wb-cta-check-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--wb-text);
+  flex-shrink: 0;
+}
+
+/* Surface Styles */
+.wb-cta-card-style-default {
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+}
+.wb-cta-card-style-bordered {
+  background: var(--wb-bg);
+  border: 1px solid var(--wb-border);
+}
+.wb-cta-card-style-flat {
+  background: transparent;
+  border: none;
+}
+.wb-cta-card-style-glass {
+  background: color-mix(in srgb, var(--wb-surface) 60%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--wb-border) 80%, transparent);
+}
+.wb-cta-card-style-elevated {
+  background: var(--wb-bg);
+  border: 1px solid var(--wb-border);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.09);
+}
+.wb-cta-card-style-contrast {
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+}
+
+/* ==========================================================================
+   Variant 1: Centered Card Banner
+   ========================================================================== */
+.wb-cta-variant-centered {
+  text-align: center;
+}
+.wb-cta-centered-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 56px 40px;
+  border-radius: var(--wb-radius);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.wb-cta-centered-heading {
+  font-family: var(--wb-font-heading);
+  font-size: clamp(30px, 4.5vw, 44px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--wb-text);
+  margin: 0;
+}
+.wb-cta-centered-text {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--wb-muted);
+  max-width: 620px;
+  margin: 16px auto 0 auto;
+}
+
+/* ==========================================================================
+   Variant 2: Split Visual (Proof Metric Highlight)
+   ========================================================================== */
+.wb-cta-split-card {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 48px;
+  align-items: center;
+  padding: 48px 44px;
+  border-radius: var(--wb-radius);
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease;
+}
+.wb-cta-split-card:hover {
+  box-shadow: 0 20px 44px -12px rgba(0, 0, 0, 0.08);
+}
+.wb-cta-split-heading {
+  font-family: var(--wb-font-heading);
+  font-size: clamp(28px, 3.8vw, 40px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--wb-text);
+  margin: 0;
+}
+.wb-cta-split-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--wb-muted);
+  margin: 14px 0 0 0;
+}
+.wb-cta-metric-showcase {
+  background: var(--wb-bg);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+  padding: 32px 28px;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.06);
+}
+.wb-cta-metric-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.wb-cta-metric-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wb-cta-metric-value {
+  font-family: var(--wb-font-heading);
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--wb-text);
+}
+.wb-cta-metric-label {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--wb-muted);
+}
+.wb-cta-metric-subtext {
+  font-size: 13.5px;
+  color: var(--wb-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.wb-cta-metric-footer {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--wb-border);
+}
+.wb-cta-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wb-text);
+}
+.wb-cta-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--wb-text);
+}
+
+@media (max-width: 860px) {
+  .wb-cta-split-card {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 32px 24px;
+  }
+}
+
+/* ==========================================================================
+   Variant 3: Floating Box (Ambient Framed Glow)
+   ========================================================================== */
+.wb-cta-floating-box {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 60px 48px;
+  border-radius: var(--wb-radius);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease, border-color 0.24s ease;
+}
+.wb-cta-floating-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.1);
+}
+.wb-cta-floating-heading {
+  font-family: var(--wb-font-heading);
+  font-size: clamp(32px, 4.5vw, 46px);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--wb-text);
+  margin: 0;
+}
+.wb-cta-floating-text {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--wb-muted);
+  max-width: 640px;
+  margin: 16px 0 0 0;
+}
+.wb-align-center .wb-cta-floating-text {
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 640px) {
+  .wb-cta-floating-box {
+    padding: 36px 24px;
+  }
+}
+
+/* ==========================================================================
+   Variant 4: Minimal Editorial (Swiss Architectural Lines)
+   ========================================================================== */
+.wb-cta-editorial-frame {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 0;
+  border-top: 1px solid var(--wb-border);
+  border-bottom: 1px solid var(--wb-border);
+}
+.wb-cta-editorial-topline {
+  margin-bottom: 16px;
+}
+.wb-cta-editorial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.wb-cta-editorial-heading {
+  font-family: var(--wb-font-heading);
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--wb-text);
+  margin: 0;
+}
+.wb-cta-editorial-text {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--wb-muted);
+  margin: 0 0 24px 0;
+}
+.wb-cta-editorial-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+@media (max-width: 800px) {
+  .wb-cta-editorial-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
 
 /* Contact */
 .wb-contact-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 56px; align-items: start; }
