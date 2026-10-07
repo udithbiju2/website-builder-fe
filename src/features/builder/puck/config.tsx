@@ -20,10 +20,22 @@ function sectionComponent<T extends SectionType>(type: T): ComponentConfig<Secti
     label: definition.label,
     defaultProps: { data: definition.createData(), settings: DEFAULT_SECTION_SETTINGS, hidden: false },
     render: ({ id, data, settings, hidden, puck }) => {
+      const rawData = (data || {}) as Record<string, unknown>;
+      if (rawData._aiPlaceholder) {
+        return (
+          <div
+            id={id}
+            data-ai-placeholder="true"
+            className="wb-editor-section-wrap relative w-full my-4 min-h-[220px] rounded-2xl border border-dashed border-cyan-400/35 bg-cyan-500/[0.03] select-none transition-all duration-300 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] opacity-15" />
+          </div>
+        );
+      }
       const section = itemToSection(type, { id, data: data as SectionDataMap[T], settings, hidden });
       const view = <SectionView section={section} />;
-      if (!hidden) return <div className="wb-editor-section-wrap w-full">{view}</div>;
-      return puck.isEditing ? <div className="wb-editor-hidden wb-editor-section-wrap w-full">{view}</div> : <></>;
+      if (!hidden) return <div id={id} className="wb-editor-section-wrap w-full">{view}</div>;
+      return puck.isEditing ? <div id={id} className="wb-editor-hidden wb-editor-section-wrap w-full">{view}</div> : <></>;
     },
   };
 }

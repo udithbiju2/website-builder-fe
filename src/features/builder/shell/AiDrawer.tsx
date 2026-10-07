@@ -23,8 +23,8 @@ import type { AiSuggestion } from "../schema/editor-document.ts";
 import { useEditor } from "../editor-context.ts";
 import { itemAsSection, sectionToItem } from "../puck/adapter.ts";
 import { selectSection, useBuilderPuck } from "../puck/puck-api.ts";
+import { scrollCanvasToSection } from "./AiBuilderCanvasOverlay.tsx";
 import { ToolButton } from "./ui.tsx";
-
 
 const COLOR_MAP: Record<string, string> = {
   red: "#dc2626",
@@ -66,8 +66,8 @@ function sanitizeHex(val: unknown): string | undefined {
 }
 
 function normalizeSection(raw: Section): Section {
-  const type = (raw.type as SectionType) in SECTION_DEFINITIONS ? (raw.type as SectionType) : "features";
-  const def = SECTION_DEFINITIONS[type];
+  const type = (raw.type as SectionType) in SECTION_DEFINITIONS ? (raw.type as SectionType) : "hero";
+  const def = SECTION_DEFINITIONS[type] || SECTION_DEFINITIONS.hero;
   const defaultData = def ? def.createData() : {};
   const rawData = (raw.data || {}) as Record<string, unknown>;
 
@@ -90,16 +90,87 @@ function normalizeSection(raw: Section): Section {
     mergedData.intro = rawData.description;
   }
 
-  // Normalize string image URLs to { url, alt } objects
+  // Normalize string image URLs to { url, alt } objects, and strip empty images
   if (typeof mergedData.backgroundImage === "string") {
-    mergedData.backgroundImage = { url: mergedData.backgroundImage, alt: "Hero Background" };
+    mergedData.backgroundImage = mergedData.backgroundImage.trim()
+      ? { url: mergedData.backgroundImage.trim(), alt: "Hero Background" }
+      : undefined;
   }
+  if (mergedData.backgroundImage && typeof mergedData.backgroundImage === "object") {
+    const bg = mergedData.backgroundImage as Record<string, unknown>;
+    if (!bg.url || typeof bg.url !== "string" || !bg.url.trim()) {
+      delete mergedData.backgroundImage;
+    }
+  }
+
   if (typeof mergedData.image === "string") {
-    mergedData.image = { url: mergedData.image, alt: "Image" };
+    mergedData.image = mergedData.image.trim() ? { url: mergedData.image.trim(), alt: "Image" } : undefined;
+  }
+  if (mergedData.image && typeof mergedData.image === "object") {
+    const img = mergedData.image as Record<string, unknown>;
+    if (!img.url || typeof img.url !== "string" || !img.url.trim()) {
+      delete mergedData.image;
+    }
+  }
+
+  if (mergedData.secondaryImage && typeof mergedData.secondaryImage === "object") {
+    const img = mergedData.secondaryImage as Record<string, unknown>;
+    if (!img.url || typeof img.url !== "string" || !img.url.trim()) {
+      delete mergedData.secondaryImage;
+    }
   }
 
   // Type-specific schema normalization
-  if (type === "cta") {
+  if (type === "hero") {
+    const validHeroVariants = ["centered", "split", "split-left", "background-image", "video-bg", "gradient", "curved-bottom", "soft-card", "minimal-typography", "floating-cards", "asymmetric"];
+    if (typeof mergedData.variant !== "string" || !validHeroVariants.includes(mergedData.variant)) {
+      mergedData.variant = mergedData.backgroundImage ? "background-image" : "centered";
+    }
+    const validImagePositions = ["right", "left", "bottom", "background", "card"];
+    if (mergedData.imagePosition && !validImagePositions.includes(mergedData.imagePosition as string)) {
+      delete mergedData.imagePosition;
+    }
+    const validBgPositions = ["bottom", "center", "top", "cover"];
+    if (mergedData.bgImagePosition && !validBgPositions.includes(mergedData.bgImagePosition as string)) {
+      delete mergedData.bgImagePosition;
+    }
+    const validBgOverlays = ["dark", "light", "gradient", "none"];
+    if (mergedData.bgOverlayType && !validBgOverlays.includes(mergedData.bgOverlayType as string)) {
+      delete mergedData.bgOverlayType;
+    }
+    const validImageStyles = ["mockup", "rounded", "glow", "shadow", "plain"];
+    if (mergedData.imageStyle && !validImageStyles.includes(mergedData.imageStyle as string)) {
+      delete mergedData.imageStyle;
+    }
+    const validMinHeights = ["auto", "compact", "screen", "tall"];
+    if (mergedData.minHeight && !validMinHeights.includes(mergedData.minHeight as string)) {
+      delete mergedData.minHeight;
+    }
+    const validAligns = ["center", "left", "right"];
+    if (mergedData.contentAlign && !validAligns.includes(mergedData.contentAlign as string)) {
+      delete mergedData.contentAlign;
+    }
+    const validBottomShapes = ["none", "wave", "curve", "slant", "tilt"];
+    if (mergedData.bottomShape && !validBottomShapes.includes(mergedData.bottomShape as string)) {
+      delete mergedData.bottomShape;
+    }
+
+    if (mergedData.primaryCta && typeof mergedData.primaryCta === "object") {
+      const cta = mergedData.primaryCta as Record<string, unknown>;
+      if (!cta.href || typeof cta.href !== "string" || !cta.href.trim()) {
+        cta.href = "/contact";
+      }
+      if (!cta.label || typeof cta.label !== "string" || !cta.label.trim()) {
+        cta.label = "Get Started";
+      }
+    }
+    if (mergedData.secondaryCta && typeof mergedData.secondaryCta === "object") {
+      const cta = mergedData.secondaryCta as Record<string, unknown>;
+      if (!cta.href || typeof cta.href !== "string" || !cta.href.trim() || !cta.label || typeof cta.label !== "string" || !cta.label.trim()) {
+        delete mergedData.secondaryCta;
+      }
+    }
+  } else if (type === "cta") {
     const validCtaVariants = ["centered-card", "split-visual", "floating-card", "minimal-editorial"];
     if (typeof mergedData.variant !== "string" || !validCtaVariants.includes(mergedData.variant)) {
       mergedData.variant = "centered-card";
@@ -169,13 +240,41 @@ function normalizeSection(raw: Section): Section {
     if (typeof mergedData.variant !== "string" || !validTeamVariants.includes(mergedData.variant)) {
       mergedData.variant = "grid-cards";
     }
-  } else if (type === "hero") {
-    const validHeroVariants = ["centered", "split", "split-left", "background-image", "video-bg", "gradient", "curved-bottom", "soft-card", "minimal-typography", "floating-cards", "asymmetric"];
-    if (typeof mergedData.variant !== "string" || !validHeroVariants.includes(mergedData.variant)) {
-      mergedData.variant = mergedData.backgroundImage ? "background-image" : "centered";
+  } else if (type === "footer") {
+    const validFooterDesigns = ["columns", "simple", "mega", "newsletter", "split", "inline", "centered", "cta-banner"];
+    if (typeof mergedData.design !== "string" || !validFooterDesigns.includes(mergedData.design)) {
+      mergedData.design = "columns";
     }
-    if (mergedData.backgroundImage && !mergedData.imagePosition) {
-      mergedData.imagePosition = "background";
+    if (!mergedData.siteName) {
+      mergedData.siteName = "Brand";
+    }
+    if (!Array.isArray(mergedData.columns) || (mergedData.columns as unknown[]).length === 0) {
+      mergedData.columns = [
+        { title: "Product", links: [{ label: "Features", href: "#features" }, { label: "Pricing", href: "#pricing" }] },
+        { title: "Company", links: [{ label: "About", href: "#about" }, { label: "Contact", href: "#contact" }] },
+      ];
+    }
+    if (!mergedData.copyright) {
+      mergedData.copyright = `© ${new Date().getFullYear()} ${mergedData.siteName || "Company"}. All rights reserved.`;
+    }
+  } else if (type === "header") {
+    const validHeaderDesigns = ["logo-left", "centered", "classical", "minimalist", "comprehensive", "ecommerce", "floating", "transparent"];
+    if (typeof mergedData.design !== "string" || !validHeaderDesigns.includes(mergedData.design)) {
+      mergedData.design = "logo-left";
+    }
+    if (!mergedData.siteName) {
+      mergedData.siteName = "Brand";
+    }
+    if (!Array.isArray(mergedData.menu) || (mergedData.menu as unknown[]).length === 0) {
+      mergedData.menu = [
+        { label: "Home", href: "/" },
+        { label: "Features", href: "#features" },
+        { label: "Pricing", href: "#pricing" },
+        { label: "Contact", href: "#contact" },
+      ];
+    }
+    if (mergedData.sticky === undefined) {
+      mergedData.sticky = false;
     }
   }
 
@@ -241,14 +340,6 @@ function normalizeSection(raw: Section): Section {
   } as Section;
 }
 
-type PromptHistoryItem = {
-  id: string;
-  title: string;
-  prompt: string;
-  timeAgo: string;
-  timestamp: number;
-};
-
 function formatRelativeTime(ts: number): string {
   const diffMs = Date.now() - ts;
   const mins = Math.floor(diffMs / 60000);
@@ -260,15 +351,24 @@ function formatRelativeTime(ts: number): string {
   return `${days}d`;
 }
 
-type ChatTurn = {
+type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+  suggestion?: AiSuggestion | null;
+  chatReply?: string | null;
+};
+
+type ChatSession = {
+  id: string;
+  title: string;
+  timestamp: number;
+  messages: ChatMessage[];
 };
 
 export default function AiDrawer() {
-  const { aiOpen, setAiOpen, website, notify } = useEditor();
+  const { aiOpen, setAiOpen, website, notify, setAiBuilding } = useEditor();
   const dispatch = useBuilderPuck((state) => state.dispatch);
   const selectedIndex = useBuilderPuck(
     (state) => state.appState.ui.itemSelector?.index ?? null,
@@ -282,12 +382,13 @@ export default function AiDrawer() {
 
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [suggestion, setSuggestion] = useState<AiSuggestion | null>(null);
-  const [chatHistory, setChatHistory] = useState<ChatTurn[]>([]);
-  const [chatReply, setChatReply] = useState<string | null>(null);
-  const [promptHistory, setPromptHistory] = useState<PromptHistoryItem[]>(() => {
+
+  // Chat sessions history
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
     try {
-      const stored = localStorage.getItem(`ai_prompt_history_${website?.id}`);
+      const stored = localStorage.getItem(`ai_chat_sessions_${website?.id}`);
       if (stored) {
         return JSON.parse(stored);
       }
@@ -305,8 +406,16 @@ export default function AiDrawer() {
     summary: string;
     timestamp: string;
   } | null>(null);
+
   const promptId = useId();
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const isAcceptedRef = useRef(false);
+  const originalCanvasRef = useRef<typeof allItems | null>(null);
+
+  useEffect(() => {
+    originalCanvasRef.current = originalCanvasContent;
+  }, [originalCanvasContent]);
 
   useEffect(() => {
     if (aiOpen) {
@@ -314,27 +423,36 @@ export default function AiDrawer() {
     }
   }, [aiOpen]);
 
-  // Clean up and restore original canvas if drawer is closed without accepting
+  // Auto-scroll chat feed to bottom on new messages
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      chatScrollRef.current?.scrollTo({
+        top: chatScrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [chatMessages, suggestion, loading]);
+
+  // Clean up and restore original canvas ONLY if drawer is unmounted/closed without accepting
   useEffect(() => {
     return () => {
-      if (originalCanvasContent) {
+      setAiBuilding(null);
+      if (!isAcceptedRef.current && originalCanvasRef.current) {
         dispatch({
           type: "setData",
           data: (previous) => ({
             ...previous,
             root: previous.root ?? { props: {} },
-            content: originalCanvasContent,
+            content: originalCanvasRef.current!,
           }),
         });
       }
     };
-  }, [originalCanvasContent, dispatch]);
+  }, [dispatch, setAiBuilding]);
 
   if (!aiOpen) return null;
 
   const currentSection = selectedItem ? itemAsSection(selectedItem) : null;
-  const currentSections = allItems.map(itemAsSection);
-
   const isSectionScope = Boolean(currentSection);
   const activeType = currentSection?.type as SectionType | undefined;
 
@@ -356,19 +474,26 @@ export default function AiDrawer() {
     if (originalCanvasContent) {
       handleReject();
     }
-    setChatHistory([]);
-    setChatReply(null);
+    setChatMessages([]);
     setPrompt("");
     setSuggestion(null);
     notify("Started a fresh AI conversation session.", "success");
   };
 
   const handleClearHistory = () => {
-    setPromptHistory([]);
+    setSessions([]);
     try {
-      localStorage.removeItem(`ai_prompt_history_${website?.id}`);
+      localStorage.removeItem(`ai_chat_sessions_${website?.id}`);
     } catch {
       // ignore
+    }
+  };
+
+  const handleRestoreSession = (session: ChatSession) => {
+    setChatMessages(session.messages);
+    const lastMsgWithSuggestion = [...session.messages].reverse().find((m) => m.suggestion);
+    if (lastMsgWithSuggestion?.suggestion) {
+      setSuggestion(lastMsgWithSuggestion.suggestion);
     }
   };
 
@@ -376,88 +501,310 @@ export default function AiDrawer() {
     const textToRun = (typeof customPrompt === "string" ? customPrompt : prompt).trim();
     if (!textToRun || loading) return;
 
-    if (customPrompt) {
-      setPrompt(customPrompt);
-    }
+    // Immediately clear input box
+    setPrompt("");
 
+    const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    // Add user message to thread
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: textToRun,
+      timestamp: nowTime,
+    };
+
+    const nextMessages = [...chatMessages, userMessage];
+    setChatMessages(nextMessages);
     setLoading(true);
 
+    const isExplicitAdd =
+      /\b(add|insert|create|append|build|make|generate|design|put|give|also)\b/i.test(textToRun);
+
+    const currentValidItems = allItems.filter(
+      (it) => !(it.props?.data as Record<string, unknown>)?._aiPlaceholder
+    );
+    const baseline = structuredClone(currentValidItems);
+    setOriginalCanvasContent(baseline);
+
+    let placeholderId: string | null = null;
+    const isAddingNewSection = isExplicitAdd || (!isSectionScope && baseline.length > 0);
+
+    const match = textToRun.toLowerCase().match(/(header|haedrr|haeder|headrr|hedar|heder|navbar|nav|footer|footr|foter|hero|feature|faeture|pricing|service|testimonial|faq|cta|contact|team|marquee|carousel)/);
+    const matchedWord = match ? match[1] : "hero";
+    const rawType =
+      matchedWord.startsWith("haed") || matchedWord.startsWith("hed") || matchedWord.startsWith("nav")
+        ? "header"
+        : matchedWord.startsWith("foot") || matchedWord.startsWith("fot")
+        ? "footer"
+        : matchedWord.startsWith("faet")
+        ? "features"
+        : matchedWord;
+    const detectedType: SectionType = (rawType in SECTION_DEFINITIONS ? rawType : "hero") as SectionType;
+
+    const isHeader = detectedType === "header";
+    const isFooter = detectedType === "footer";
+    const isHero = detectedType === "hero";
+    const headerIdx = baseline.findIndex((it) => itemAsSection(it).type === "header");
+    const footerIdx = baseline.findIndex((it) => itemAsSection(it).type === "footer");
+    const heroIdx = baseline.findIndex((it) => itemAsSection(it).type === "hero");
+
+    let computedInsertIdx = baseline.length;
+    let computedReplaceIdx = -1;
+
+    if (isHeader) {
+      computedInsertIdx = 0;
+      computedReplaceIdx = headerIdx;
+    } else if (isHero) {
+      computedReplaceIdx = heroIdx;
+      computedInsertIdx = heroIdx !== -1 ? heroIdx : headerIdx !== -1 ? headerIdx + 1 : 0;
+    } else if (isFooter) {
+      computedReplaceIdx = footerIdx;
+      computedInsertIdx = footerIdx !== -1 ? footerIdx : baseline.length;
+    } else {
+      if (selectedIndex !== null && selectedIndex >= 0 && selectedIndex < baseline.length) {
+        computedInsertIdx = selectedIndex + 1;
+      } else {
+        computedInsertIdx = footerIdx !== -1 ? footerIdx : baseline.length;
+      }
+    }
+
+    if (isAddingNewSection) {
+      placeholderId = `ai-placeholder-${Date.now()}`;
+      const def = SECTION_DEFINITIONS[detectedType] || SECTION_DEFINITIONS.hero;
+      const defaultData = def ? def.createData() : { variant: "centered", heading: "" };
+
+      const placeholderItem = {
+        type: detectedType,
+        props: {
+          id: placeholderId,
+          data: {
+            ...defaultData,
+            variant: (defaultData as any)?.variant || "centered",
+            design: (defaultData as any)?.design || "logo-left",
+            heading: (defaultData as any)?.heading || "",
+            siteName: (defaultData as any)?.siteName || "Brand",
+            menu: (defaultData as any)?.menu || [{ label: "Home", href: "/" }],
+            sticky: Boolean((defaultData as any)?.sticky),
+            _aiPlaceholder: true,
+            _placeholderLabel: `AI Building ${rawType.toUpperCase()} Section...`,
+          },
+          settings: DEFAULT_SECTION_SETTINGS,
+          hidden: false,
+        },
+      } as unknown as (typeof allItems)[number];
+
+      let initialItems: typeof allItems;
+      if (computedReplaceIdx !== -1) {
+        initialItems = baseline.map((it, idx) => (idx === computedReplaceIdx ? placeholderItem : it));
+      } else {
+        initialItems = [
+          ...baseline.slice(0, computedInsertIdx),
+          placeholderItem,
+          ...baseline.slice(computedInsertIdx),
+        ];
+      }
+
+      // 1. Immediately render the placeholder empty gap space box into canvas!
+      dispatch({
+        type: "setData",
+        data: (previous) => ({
+          ...previous,
+          root: previous.root ?? { props: {} },
+          content: initialItems,
+        }),
+      });
+
+      // 2. Scroll canvas directly to this placeholder box so it's 100% visible
+      setTimeout(() => {
+        scrollCanvasToSection({
+          sectionIndex: computedInsertIdx,
+          targetId: placeholderId,
+        });
+      }, 50);
+
+      // 3. Set aiBuilding tracking on the placeholder box
+      setAiBuilding({
+        active: true,
+        step: `Constructing ${rawType.toUpperCase()} in dedicated slot...`,
+        scope: "section",
+        sectionType: rawType,
+        sectionIndex: computedInsertIdx,
+        targetId: placeholderId,
+        progressPercent: 30,
+        pointerY: isHeader ? 15 : 75,
+      });
+    } else {
+      setAiBuilding({
+        active: true,
+        step: "Synthesizing prompt & architecture...",
+        scope: isSectionScope ? "section" : "page",
+        progressPercent: 20,
+        pointerY: isSectionScope ? 40 : 25,
+      });
+    }
+
     try {
-      const historyPayload = chatHistory.slice(-10).map((m) => ({
+      const historyPayload = nextMessages.slice(-10).map((m) => ({
         role: m.role,
         content: m.content,
       }));
 
+      const targetScope = isSectionScope && !isExplicitAdd ? "section" : "page";
+
       const result = await websitesApi.generateAiSuggestion(website.id, {
         prompt: textToRun,
-        scope: isSectionScope ? "section" : "page",
-        sectionId: currentSection?.id,
-        currentSection: currentSection ?? undefined,
-        currentSections,
+        scope: targetScope,
+        sectionId: isSectionScope && !isExplicitAdd ? currentSection?.id : undefined,
+        currentSection: isSectionScope && !isExplicitAdd ? currentSection ?? undefined : undefined,
+        currentSections: baseline.map(itemAsSection),
         history: historyPayload,
-      });
-
-      // Append turns to chat history (cap at last 10 messages)
-      const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      setChatHistory((prev) => [
-        ...prev.slice(-8),
-        { id: crypto.randomUUID(), role: "user", content: textToRun, timestamp: nowTime },
-        { id: crypto.randomUUID(), role: "assistant", content: result.summary, timestamp: nowTime },
-      ]);
-
-      // Save to prompt history
-      const newHistoryItem: PromptHistoryItem = {
-        id: crypto.randomUUID(),
-        title: textToRun.length > 40 ? `${textToRun.slice(0, 40)}…` : textToRun,
-        prompt: textToRun,
-        timeAgo: "Just now",
-        timestamp: Date.now(),
-      };
-      setPromptHistory((prev) => {
-        const filtered = prev.filter((p) => p.prompt !== textToRun);
-        const updated = [newHistoryItem, ...filtered].slice(0, 15);
-        try {
-          localStorage.setItem(`ai_prompt_history_${website?.id}`, JSON.stringify(updated));
-        } catch {
-          // ignore
-        }
-        return updated;
       });
 
       const isChatScope =
         (result.target as Record<string, unknown>).scope === "chat" ||
         (result.before.length === 0 && result.after.length === 0);
 
+      // Assistant response message
+      const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: isChatScope ? ((result as { chatReply?: string }).chatReply || result.summary) : result.summary,
+        timestamp: nowTime,
+        suggestion: isChatScope ? null : result,
+        chatReply: isChatScope ? ((result as { chatReply?: string }).chatReply || result.summary) : null,
+      };
+
+      const updatedChatList = [...nextMessages, assistantMessage];
+      setChatMessages(updatedChatList);
+
+      // Save / Update session in sessions history
+      const sessionTitle = nextMessages[0]?.content
+        ? (nextMessages[0].content.length > 40 ? `${nextMessages[0].content.slice(0, 40)}…` : nextMessages[0].content)
+        : textToRun;
+
+      setSessions((prev) => {
+        const existingIdx = prev.findIndex((s) => s.title === sessionTitle);
+        let updated: ChatSession[];
+        if (existingIdx !== -1) {
+          const s = prev[existingIdx];
+          const updatedSession: ChatSession = { ...s, timestamp: Date.now(), messages: updatedChatList };
+          updated = [updatedSession, ...prev.filter((_, i) => i !== existingIdx)].slice(0, 15);
+        } else {
+          const newSession: ChatSession = {
+            id: crypto.randomUUID(),
+            title: sessionTitle,
+            timestamp: Date.now(),
+            messages: updatedChatList,
+          };
+          updated = [newSession, ...prev].slice(0, 15);
+        }
+        try {
+          localStorage.setItem(`ai_chat_sessions_${website?.id}`, JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
+        return updated;
+      });
+
       if (isChatScope) {
-        setChatReply((result as { chatReply?: string }).chatReply || result.summary);
+        // Revert placeholder on chat-only reply
+        if (placeholderId) {
+          dispatch({
+            type: "setData",
+            data: (previous) => ({
+              ...previous,
+              root: previous.root ?? { props: {} },
+              content: baseline,
+            }),
+          });
+        }
+        setAiBuilding(null);
         setSuggestion(null);
         setOriginalCanvasContent(null);
         setPreviewCanvasContent(null);
         return;
       }
 
-      setChatReply(null);
-
-      // Save original baseline before previewing
-      const baseline = originalCanvasContent ?? structuredClone(allItems);
-      setOriginalCanvasContent(baseline);
-
       // Compute preview items
       let nextItems: typeof allItems = [];
       const isAddScope =
         (result.target as Record<string, unknown>).scope === "section_add" ||
-        (result.before.length === 0 && result.after.length === 1);
+        (result.before.length === 0 && result.after.length === 1 && result.target.scope !== "section") ||
+        (result.after.length === 1 && Boolean(baseline.length));
 
       if (isAddScope) {
         const rawSection = result.after[0];
         if (rawSection) {
           const normalized = normalizeSection(rawSection as Section);
-          const insertIdx = selectedIndex !== null ? selectedIndex + 1 : baseline.length;
-          nextItems = [
-            ...baseline.slice(0, insertIdx),
-            sectionToItem(normalized),
-            ...baseline.slice(insertIdx),
-          ];
+          const isHeader = normalized.type === "header";
+          const isFooter = normalized.type === "footer";
+          const isHero = normalized.type === "hero";
+          const headerIdx = baseline.findIndex((it) => itemAsSection(it).type === "header");
+          const footerIdx = baseline.findIndex((it) => itemAsSection(it).type === "footer");
+          const heroIdx = baseline.findIndex((it) => itemAsSection(it).type === "hero");
+
+          let finalInsertIdx = baseline.length;
+          let finalReplaceIdx = -1;
+
+          if (isHeader) {
+            finalInsertIdx = 0;
+            finalReplaceIdx = headerIdx;
+          } else if (isHero) {
+            finalReplaceIdx = heroIdx;
+            finalInsertIdx = heroIdx !== -1 ? heroIdx : headerIdx !== -1 ? headerIdx + 1 : 0;
+          } else if (isFooter) {
+            finalReplaceIdx = footerIdx;
+            finalInsertIdx = footerIdx !== -1 ? footerIdx : baseline.length;
+          } else {
+            if (selectedIndex !== null && selectedIndex >= 0 && selectedIndex < baseline.length) {
+              finalInsertIdx = selectedIndex + 1;
+            } else {
+              finalInsertIdx = footerIdx !== -1 ? footerIdx : baseline.length;
+            }
+          }
+
+          if (finalReplaceIdx !== -1) {
+            nextItems = baseline.map((it, idx) => (idx === finalReplaceIdx ? sectionToItem(normalized) : it));
+          } else {
+            nextItems = [
+              ...baseline.slice(0, finalInsertIdx),
+              sectionToItem(normalized),
+              ...baseline.slice(finalInsertIdx),
+            ];
+          }
+
+          // Swap placeholder box with actual completed section!
+          dispatch({
+            type: "setData",
+            data: (previous) => ({
+              ...previous,
+              root: previous.root ?? { props: {} },
+              content: nextItems,
+            }),
+          });
+
+          setAiBuilding({
+            active: true,
+            step: `Finalizing ${normalized.type.toUpperCase()} section layout...`,
+            scope: "section",
+            sectionType: normalized.type,
+            sectionIndex: finalInsertIdx,
+            targetId: normalized.id,
+            progressPercent: 80,
+            pointerY: 65,
+          });
+
+          // Scroll fully so the new section is 100% visible
+          setTimeout(() => {
+            scrollCanvasToSection({
+              sectionIndex: finalInsertIdx,
+              sectionType: normalized.type,
+              targetId: normalized.id,
+            });
+          }, 60);
+
+          await new Promise((r) => setTimeout(r, 450));
         }
       } else if (result.target.scope === "section") {
         const rawSection = result.after[0];
@@ -470,6 +817,36 @@ export default function AiDrawer() {
           } else {
             nextItems = [...baseline, sectionToItem(normalized)];
           }
+
+          dispatch({
+            type: "setData",
+            data: (previous) => ({
+              ...previous,
+              root: previous.root ?? { props: {} },
+              content: nextItems,
+            }),
+          });
+
+          setAiBuilding({
+            active: true,
+            step: `Updating ${normalized.type.toUpperCase()} layout & typography...`,
+            scope: "section",
+            sectionType: normalized.type,
+            sectionIndex: targetIdx ?? undefined,
+            targetId: normalized.id,
+            progressPercent: 70,
+            pointerY: 45,
+          });
+
+          setTimeout(() => {
+            scrollCanvasToSection({
+              sectionIndex: targetIdx ?? undefined,
+              sectionType: normalized.type,
+              targetId: normalized.id,
+            });
+          }, 60);
+
+          await new Promise((r) => setTimeout(r, 450));
         }
       } else {
         const validSections: Section[] = result.after.map((s: unknown) => normalizeSection(s as Section));
@@ -486,11 +863,59 @@ export default function AiDrawer() {
           assembled = [...assembled, baselineFooter];
         }
         nextItems = assembled;
+
+        // Progressive section-by-section construction on canvas
+        for (let i = 0; i < nextItems.length; i++) {
+          const currentPartial = nextItems.slice(0, i + 1);
+          const sec = itemAsSection(nextItems[i]);
+          const pct = Math.round(20 + ((i + 1) / nextItems.length) * 75);
+          const posY = Math.min(92, Math.max(12, Math.round(15 + ((i + 1) / nextItems.length) * 75)));
+
+          dispatch({
+            type: "setData",
+            data: (previous) => ({
+              ...previous,
+              root: previous.root ?? { props: {} },
+              content: currentPartial,
+            }),
+          });
+
+          setAiBuilding({
+            active: true,
+            step: `Building ${sec.type.toUpperCase()} section...`,
+            scope: "page",
+            sectionIndex: i,
+            totalSections: nextItems.length,
+            sectionType: sec.type,
+            targetId: sec.id,
+            progressPercent: pct,
+            pointerY: posY,
+          });
+
+          setTimeout(() => {
+            scrollCanvasToSection({
+              sectionIndex: i,
+              sectionType: sec.type,
+              targetId: sec.id,
+            });
+          }, 40);
+
+          await new Promise((r) => setTimeout(r, 320));
+        }
       }
 
       setPreviewCanvasContent(nextItems);
       setPreviewMode("ai");
       setSuggestion(result);
+
+      // Final styling polish pass
+      setAiBuilding({
+        active: true,
+        step: "Polishing responsive tokens & theme aesthetics...",
+        scope: isSectionScope ? "section" : "page",
+        progressPercent: 100,
+        pointerY: 85,
+      });
 
       // Immediately render live preview onto canvas!
       dispatch({
@@ -501,7 +926,24 @@ export default function AiDrawer() {
           content: nextItems,
         }),
       });
+
+      await new Promise((r) => setTimeout(r, 300));
+
+      setAiBuilding({
+        active: false,
+        step: "Completed",
+        progressPercent: 100,
+      });
     } catch (err: unknown) {
+      setAiBuilding(null);
+      dispatch({
+        type: "setData",
+        data: (previous) => ({
+          ...previous,
+          root: previous.root ?? { props: {} },
+          content: baseline,
+        }),
+      });
       const errorMsg =
         err instanceof Error ? err.message : "Failed to generate AI changes.";
       notify(errorMsg, "danger");
@@ -526,7 +968,9 @@ export default function AiDrawer() {
   };
 
   const handleAccept = () => {
-    if (!previewCanvasContent || !originalCanvasContent) return;
+    if (!previewCanvasContent) return;
+
+    isAcceptedRef.current = true;
 
     // Commit preview content as the permanent canvas state
     dispatch({
@@ -539,20 +983,26 @@ export default function AiDrawer() {
     });
 
     // Save baseline to rollback history
-    setHistorySnapshot({
-      content: originalCanvasContent,
-      summary: suggestion?.summary || "AI Changes",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    });
+    if (originalCanvasContent) {
+      setHistorySnapshot({
+        content: originalCanvasContent,
+        summary: suggestion?.summary || "AI Changes",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      });
+    }
 
     notify("AI changes accepted and saved!", "success");
 
     setSuggestion(null);
     setOriginalCanvasContent(null);
     setPreviewCanvasContent(null);
+    setTimeout(() => {
+      isAcceptedRef.current = false;
+    }, 150);
   };
 
   const handleReject = () => {
+    isAcceptedRef.current = true;
     if (originalCanvasContent) {
       // Revert canvas to original
       dispatch({
@@ -568,6 +1018,9 @@ export default function AiDrawer() {
     setSuggestion(null);
     setOriginalCanvasContent(null);
     setPreviewCanvasContent(null);
+    setTimeout(() => {
+      isAcceptedRef.current = false;
+    }, 150);
   };
 
   const handleRollback = () => {
@@ -584,7 +1037,7 @@ export default function AiDrawer() {
     setHistorySnapshot(null);
   };
 
-  const isNewChat = !suggestion && !chatReply && chatHistory.length === 0;
+  const isNewChat = chatMessages.length === 0;
 
   return (
     <aside
@@ -625,9 +1078,12 @@ export default function AiDrawer() {
       </header>
 
       {/* Main Drawer Scroll Area */}
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-3.5">
-        {/* Sleek Glowing Dot Mode Indicator */}
-        <div className="flex items-center justify-between px-1 text-ed-xs">
+      <div
+        ref={chatScrollRef}
+        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-3.5"
+      >
+        {/* Sleek Mode Indicator Bar */}
+        <div className="flex items-center justify-between px-1 text-ed-xs shrink-0">
           <div className="flex items-center gap-2">
             <span className="relative flex size-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
@@ -668,7 +1124,7 @@ export default function AiDrawer() {
           </div>
         )}
 
-        {/* Centered Antigravity Prompt Box (Shown on fresh / new chat) */}
+        {/* Centered Prompt Box (ONLY on fresh / new chat) */}
         {isNewChat && (
           <div className="flex flex-col rounded-2xl border border-ed-border bg-ed-panel p-3 shadow-xs focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 transition-all animate-in fade-in duration-200">
             <textarea
@@ -687,8 +1143,8 @@ export default function AiDrawer() {
               }}
               placeholder={
                 isSectionScope
-                  ? `Ask anything, describe changes to this ${activeType || "section"}, or type / for actions...`
-                  : "Ask anything, describe your website goal, or type / for actions..."
+                  ? `Ask anything, describe changes to this ${activeType || "section"}...`
+                  : "Ask anything, describe your website goal..."
               }
               className="w-full resize-none bg-transparent text-ed-xs text-ed-text placeholder:text-ed-muted/60 focus:outline-none leading-relaxed"
             />
@@ -717,40 +1173,164 @@ export default function AiDrawer() {
           </div>
         )}
 
-        {/* AI Copilot Direct Response / Guidance Card */}
-        {chatReply && !suggestion && (
-          <div className="flex flex-col gap-2 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-3.5 shadow-xs animate-in fade-in duration-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <AiSparklesIcon className="size-3.5" variant="glossy" />
-                <span className="text-[11.5px] font-bold text-ed-text">AI Copilot</span>
+        {/* ACTIVE CONVERSATION CHAT FEED (WhatsApp / ChatGPT conversational bubbles) */}
+        {!isNewChat && (
+          <div className="flex flex-col gap-3 py-1 animate-in fade-in duration-200">
+            {chatMessages.map((msg, idx) => {
+              const isUser = msg.role === "user";
+              const isLast = idx === chatMessages.length - 1;
+
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col gap-1.5 ${isUser ? "items-end" : "items-start"}`}
+                >
+                  {/* Message Bubble */}
+                  <div
+                    className={`max-w-[88%] rounded-2xl p-3 text-ed-xs leading-relaxed shadow-xs transition-all ${
+                      isUser
+                        ? "bg-brand text-white rounded-tr-xs"
+                        : "bg-ed-subtle/80 border border-ed-border/70 text-ed-text rounded-tl-xs"
+                    }`}
+                  >
+                    {!isUser && (
+                      <div className="flex items-center gap-1.5 mb-1 text-[11px] font-bold text-brand">
+                        <AiSparklesIcon className="size-3.5" variant="glossy" />
+                        <span>AI Copilot</span>
+                      </div>
+                    )}
+                    <p className="whitespace-pre-line">{msg.content}</p>
+                    <span
+                      className={`mt-1 block text-[9.5px] font-mono ${
+                        isUser ? "text-blue-100/70 text-right" : "text-ed-muted/70 text-left"
+                      }`}
+                    >
+                      {msg.timestamp}
+                    </span>
+                  </div>
+
+                  {/* Attached Live Canvas Preview Capsule under latest active suggestion */}
+                  {!isUser && isLast && suggestion && (
+                    <section
+                      aria-label="Suggested change"
+                      className="w-full flex flex-col gap-2.5 rounded-2xl border border-brand/30 bg-ed-panel p-3 shadow-md animate-in fade-in slide-in-from-bottom-2 duration-200 mt-1"
+                    >
+                      {/* Live Indicator Header & Toggle */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="relative flex size-2">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                          </span>
+                          <span className="text-[11px] font-bold tracking-tight text-ed-text">
+                            Live Canvas Preview
+                          </span>
+                        </div>
+
+                        {/* Minimal Segmented Toggle */}
+                        <div className="flex items-center rounded-lg bg-ed-subtle p-0.5 border border-ed-border/70 text-[10.5px]">
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePreview("ai")}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition-all cursor-pointer ${
+                              previewMode === "ai"
+                                ? "bg-brand text-white shadow-xs"
+                                : "text-ed-muted hover:text-ed-text"
+                            }`}
+                          >
+                            <Eye className="size-3" />
+                            AI
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePreview("original")}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition-all cursor-pointer ${
+                              previewMode === "original"
+                                ? "bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-900 shadow-xs"
+                                : "text-ed-muted hover:text-ed-text"
+                            }`}
+                          >
+                            <Undo2 className="size-3" />
+                            Original
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Affected Section Tags */}
+                      <div className="flex flex-wrap gap-1">
+                        {suggestion.after.map((sec, sIdx) => (
+                          <span
+                            key={sec.id || sIdx}
+                            className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-brand"
+                          >
+                            <span className="size-1 rounded-full bg-brand" />
+                            {SECTION_DEFINITIONS[sec.type as SectionType]?.label || sec.type}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Primary Actions: Accept / Reject / Retry */}
+                      <div className="flex flex-col gap-1.5 pt-0.5">
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={handleAccept}
+                            className="flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-ed-xs font-bold text-white shadow-sm hover:bg-emerald-500 active:scale-[0.98] transition-all cursor-pointer"
+                          >
+                            <Check className="size-3.5" />
+                            Accept Changes
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleReject}
+                            className="flex h-8.5 px-3 items-center justify-center gap-1.5 rounded-xl border border-ed-border bg-ed-subtle text-ed-xs font-medium text-ed-text hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-500 active:scale-[0.98] transition-all cursor-pointer"
+                          >
+                            <X className="size-3" />
+                            Reject
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-0.5 text-[10.5px] text-ed-muted">
+                          <button
+                            type="button"
+                            onClick={() => handleGenerate(msg.content)}
+                            disabled={loading}
+                            className="flex items-center gap-1 hover:text-brand transition-colors cursor-pointer"
+                          >
+                            <RotateCcw className="size-3" />
+                            Regenerate
+                          </button>
+                          <span className="text-[9.5px] text-ed-muted/80">Click Accept to keep on canvas</span>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Loading Thinking Indicator */}
+            {loading && (
+              <div className="flex items-start gap-2 max-w-[85%] rounded-2xl bg-ed-subtle/80 border border-ed-border/70 p-3 text-ed-xs text-ed-text rounded-tl-xs shadow-xs animate-pulse">
+                <AiSparklesIcon className="size-3.5 animate-spin text-brand" variant="glossy" />
+                <span className="text-ed-muted font-medium">Generating section on canvas...</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setChatReply(null)}
-                className="text-ed-muted hover:text-ed-text p-0.5 rounded transition-colors cursor-pointer"
-                title="Dismiss message"
-              >
-                <X className="size-3.5" />
-              </button>
-            </div>
-            <div className="text-ed-xs text-ed-text leading-relaxed whitespace-pre-line">
-              {chatReply}
-            </div>
+            )}
           </div>
         )}
 
-        {/* 1-Click Rollback History Banner */}
+        {/* 1-Click Rollback History Banner (Shown in active chat when checkpoint exists) */}
         {historySnapshot && !suggestion && (
           <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-ed-xs text-amber-900 dark:text-amber-200">
             <div className="flex items-center gap-2 truncate">
               <History className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-              <span className="truncate">Saved checkpoint ({historySnapshot.timestamp})</span>
+              <span className="truncate text-[11px]">Saved checkpoint ({historySnapshot.timestamp})</span>
             </div>
             <button
               type="button"
               onClick={handleRollback}
-              className="flex items-center gap-1 rounded-lg bg-amber-500/20 px-2 py-1 text-[11px] font-semibold text-amber-700 hover:bg-amber-500/30 dark:text-amber-300 transition-colors shrink-0 ml-2 cursor-pointer"
+              className="flex items-center gap-1 rounded-lg bg-amber-500/20 px-2 py-1 text-[10.5px] font-semibold text-amber-700 hover:bg-amber-500/30 dark:text-amber-300 transition-colors shrink-0 ml-2 cursor-pointer"
             >
               <Undo2 className="size-3" />
               Rollback
@@ -758,115 +1338,12 @@ export default function AiDrawer() {
           </div>
         )}
 
-        {/* Suggestion Live Preview & Decision Controller (Premium Minimalist UI) */}
-        {suggestion && (
-          <section
-            aria-label="Suggested change"
-            className="flex flex-col gap-3 rounded-2xl border border-brand/30 bg-ed-panel p-3.5 shadow-md animate-in fade-in slide-in-from-bottom-2 duration-200"
-          >
-            {/* Live Indicator Header & Toggle */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="relative flex size-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-                </span>
-                <span className="text-[11.5px] font-bold tracking-tight text-ed-text">
-                  Live Canvas Preview
-                </span>
-              </div>
-
-              {/* Minimal Segmented Toggle */}
-              <div className="flex items-center rounded-lg bg-ed-subtle p-0.5 border border-ed-border/70 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() => handleTogglePreview("ai")}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-md font-medium transition-all cursor-pointer ${
-                    previewMode === "ai"
-                      ? "bg-brand text-white shadow-xs"
-                      : "text-ed-muted hover:text-ed-text"
-                  }`}
-                >
-                  <Eye className="size-3" />
-                  AI
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTogglePreview("original")}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-md font-medium transition-all cursor-pointer ${
-                    previewMode === "original"
-                      ? "bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-900 shadow-xs"
-                      : "text-ed-muted hover:text-ed-text"
-                  }`}
-                >
-                  <Undo2 className="size-3" />
-                  Original
-                </button>
-              </div>
-            </div>
-
-            {/* Summary & Affected Section Tags */}
-            <div className="rounded-xl bg-ed-subtle/50 p-2.5 border border-ed-border/40">
-              <p className="text-ed-xs text-ed-text leading-relaxed font-normal">
-                {suggestion.summary}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {suggestion.after.map((sec, idx) => (
-                  <span
-                    key={sec.id || idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-[10.5px] font-medium text-brand"
-                  >
-                    <span className="size-1.5 rounded-full bg-brand" />
-                    {SECTION_DEFINITIONS[sec.type as SectionType]?.label || sec.type}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Primary Actions: Accept / Reject / Retry */}
-            <div className="flex flex-col gap-2 pt-0.5">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleAccept}
-                  className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-ed-xs font-bold text-white shadow-sm hover:bg-emerald-500 active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  <Check className="size-4" />
-                  Accept Changes
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleReject}
-                  className="flex h-9 px-3.5 items-center justify-center gap-1.5 rounded-xl border border-ed-border bg-ed-subtle text-ed-xs font-medium text-ed-text hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-500 active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  <X className="size-3.5" />
-                  Reject
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between pt-1 text-[11px] text-ed-muted">
-                <button
-                  type="button"
-                  onClick={() => handleGenerate()}
-                  disabled={loading}
-                  className="flex items-center gap-1 hover:text-brand transition-colors cursor-pointer"
-                >
-                  <RotateCcw className="size-3" />
-                  Regenerate
-                </button>
-                <span className="text-[10px] text-ed-muted/80">Click Accept to keep on canvas</span>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Antigravity Context & Prompt History */}
-        {promptHistory.length > 0 && (
-          <div className="flex flex-col gap-1 pt-1">
+        {/* SESSIONS HISTORY (ONLY rendered on fresh / new chat screen) */}
+        {isNewChat && sessions.length > 0 && (
+          <div className="flex flex-col gap-1 pt-1 animate-in fade-in duration-200">
             <div className="flex items-center justify-between px-1">
               <span className="text-[10.5px] font-bold uppercase tracking-wider text-ed-faint">
-                Recent History
+                Recent Sessions
               </span>
               <button
                 type="button"
@@ -878,39 +1355,32 @@ export default function AiDrawer() {
             </div>
 
             <div className="flex flex-col gap-0.5">
-              {promptHistory.slice(0, 6).map((item) => (
+              {sessions.slice(0, 8).map((sess) => (
                 <button
-                  key={item.id}
+                  key={sess.id}
                   type="button"
-                  onClick={() => {
-                    setPrompt(item.prompt);
-                    promptRef.current?.focus();
-                  }}
+                  onClick={() => handleRestoreSession(sess)}
                   className="group flex items-center justify-between rounded-xl px-2.5 py-1.5 text-left hover:bg-ed-subtle/80 transition-all cursor-pointer"
                 >
-                  <span className="truncate text-ed-xs text-ed-text/90 group-hover:text-brand font-normal group-hover:font-medium">
-                    {item.title}
-                  </span>
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="truncate text-ed-xs text-ed-text/90 group-hover:text-brand font-normal group-hover:font-medium">
+                      {sess.title}
+                    </span>
+                    <span className="rounded bg-ed-subtle px-1 py-0.2 text-[9.5px] font-mono text-ed-muted shrink-0">
+                      {sess.messages.length} msg{sess.messages.length > 1 ? "s" : ""}
+                    </span>
+                  </div>
                   <span className="shrink-0 text-[11px] text-ed-muted/70 font-mono ml-2">
-                    {formatRelativeTime(item.timestamp)}
+                    {formatRelativeTime(sess.timestamp)}
                   </span>
                 </button>
               ))}
             </div>
           </div>
         )}
-
-        {/* Disclaimer for Fresh Chat */}
-        {isNewChat && (
-          <div className="mt-auto pt-4 pb-1 text-center">
-            <p className="text-[10px] text-ed-muted/60">
-              AI may make mistakes. Preview changes before accepting.
-            </p>
-          </div>
-        )}
       </div>
 
-      {/* Bottom Docked Input Area (Shown when conversation/proposal is active) */}
+      {/* Bottom Docked Input Area (Shown when conversation is active) */}
       {!isNewChat && (
         <div className="p-3 border-t border-ed-border shrink-0 bg-ed-panel flex flex-col gap-2 animate-in slide-in-from-bottom-2 duration-200">
           <div className="flex flex-col rounded-2xl border border-ed-border bg-ed-subtle/30 p-2.5 shadow-xs focus-within:border-brand focus-within:bg-ed-panel focus-within:ring-2 focus-within:ring-brand/20 transition-all">
@@ -931,7 +1401,7 @@ export default function AiDrawer() {
               placeholder={
                 isSectionScope
                   ? `Describe changes to ${activeType || "section"}...`
-                  : "Ask anything, describe your website goal..."
+                  : "Ask anything, describe your next section goal..."
               }
               className="w-full resize-none bg-transparent text-ed-xs text-ed-text placeholder:text-ed-muted/60 focus:outline-none leading-relaxed max-h-32"
             />
@@ -958,10 +1428,6 @@ export default function AiDrawer() {
               </div>
             </div>
           </div>
-
-          <p className="text-[10px] text-center text-ed-muted/60">
-            AI may make mistakes. Preview changes before accepting.
-          </p>
         </div>
       )}
     </aside>

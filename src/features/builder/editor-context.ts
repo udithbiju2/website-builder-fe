@@ -28,6 +28,18 @@ export function useBuilderSite(): BuilderSiteValue {
   return value;
 }
 
+export type AiBuildingState = {
+  active: boolean;
+  step: string;
+  scope?: "page" | "section" | "header" | "footer" | "theme" | null;
+  targetId?: string | null;
+  sectionType?: string | null;
+  sectionIndex?: number;
+  totalSections?: number;
+  progressPercent?: number;
+  pointerY?: number; // percentage 0 - 100 for canvas vertical position
+} | null;
+
 export type EditorValue = {
   website: WebsiteDetail;
   draft: EditorDraft;
@@ -48,6 +60,8 @@ export type EditorValue = {
   device: Device;
   setDevice: (device: Device) => void;
   notify: (message: string, tone?: "success" | "danger") => void;
+  aiBuilding: AiBuildingState;
+  setAiBuilding: (state: AiBuildingState | ((prev: AiBuildingState) => AiBuildingState)) => void;
 };
 
 export const EditorContext = createContext<EditorValue | null>(null);

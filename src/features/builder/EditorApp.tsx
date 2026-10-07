@@ -114,6 +114,7 @@ export default function EditorApp({ website: initialWebsite, themes, savedSectio
   const [leftPanel, setLeftPanel] = useState<LeftPanelId | null>("add");
   const [siteArea, setSiteArea] = useState<SiteArea>("page");
   const [aiOpen, setAiOpen] = useState(false);
+  const [aiBuilding, setAiBuilding] = useState<import("./editor-context.ts").AiBuildingState>(null);
   const [device, setDevice] = useState<Device>("desktop");
   const [publishOpen, setPublishOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(
@@ -203,8 +204,10 @@ export default function EditorApp({ website: initialWebsite, themes, savedSectio
       device,
       setDevice,
       notify,
+      aiBuilding,
+      setAiBuilding,
     }),
-    [website, draft, page, role, themes, savedSections, setSavedSections, autosave, editDraft, selectPage, leftPanel, siteArea, aiOpen, device, notify],
+    [website, draft, page, role, themes, savedSections, setSavedSections, autosave, editDraft, selectPage, leftPanel, siteArea, aiOpen, device, notify, aiBuilding],
   );
 
   return (

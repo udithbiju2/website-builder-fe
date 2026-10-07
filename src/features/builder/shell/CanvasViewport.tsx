@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { deviceWidth, type Device } from "../../../components/websites/DevicePreview.tsx";
+import AiBuilderCanvasOverlay from "./AiBuilderCanvasOverlay.tsx";
 
 const GUTTER = 24;
 
@@ -58,6 +59,7 @@ export default function CanvasViewport({
           style={frameStyle}
         >
           {children}
+          <AiBuilderCanvasOverlay />
         </div>
       )}
       {scale < 1 && (
