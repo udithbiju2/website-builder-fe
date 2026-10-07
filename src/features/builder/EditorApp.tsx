@@ -65,13 +65,28 @@ function EditorShell({ backTo, onPublish }: { backTo: string; onPublish: () => v
     [draft.theme, draft.header, draft.footer, hasSelection, siteArea, isEmpty, dispatch, setSiteArea, setLeftPanel],
   );
 
+  const handleDeselect = useCallback(() => {
+    selectSection(dispatch, null);
+    setSiteArea("page");
+  }, [dispatch, setSiteArea]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && (hasSelection || siteArea !== "page")) {
+        handleDeselect();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [hasSelection, siteArea, handleDeselect]);
+
   return (
     <BuilderSiteContext.Provider value={site}>
       <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
         <TopBar backTo={backTo} onPublish={onPublish} />
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
           <LeftRail />
-          <CanvasViewport device={device}>
+          <CanvasViewport device={device} onDeselect={handleDeselect}>
             <Puck.Preview />
           </CanvasViewport>
           <Inspector />

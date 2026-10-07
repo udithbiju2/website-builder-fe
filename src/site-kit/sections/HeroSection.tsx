@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
-import { BottomShapeDivider, PlayIcon, SectionShell, SiteButton, SiteImage, SiteLink } from "../primitives.tsx";
+import { BottomShapeDivider, parseRichText, PlayIcon, SectionShell, SiteButton, SiteImage, SiteLink } from "../primitives.tsx";
 import type { HeroData, SectionOf } from "../types.ts";
 
 function getEmbedUrl(url?: string, isBackground = false): string | null {
@@ -106,14 +106,14 @@ function HeroVideoPlayer({
 
 function renderHighlightedHeading(heading: string, highlight?: string): ReactNode {
   if (!highlight || !heading.includes(highlight)) {
-    return <h1>{heading}</h1>;
+    return <h1>{parseRichText(heading)}</h1>;
   }
   const parts = heading.split(highlight);
   return (
     <h1>
-      {parts[0]}
-      <span className="wb-text-gradient">{highlight}</span>
-      {parts.slice(1).join(highlight)}
+      {parseRichText(parts[0])}
+      <span className="wb-text-gradient">{parseRichText(highlight)}</span>
+      {parseRichText(parts.slice(1).join(highlight))}
     </h1>
   );
 }
@@ -208,8 +208,8 @@ export default function HeroSection({ section }: { section: SectionOf<"hero"> })
 
       {data.heading ? renderHighlightedHeading(data.heading, data.highlightText) : null}
 
-      {data.subheading && <p className="wb-hero-sub wb-muted">{data.subheading}</p>}
-      {data.description && <p className="wb-hero-desc wb-muted">{data.description}</p>}
+      {data.subheading && <p className="wb-hero-sub wb-muted">{parseRichText(data.subheading)}</p>}
+      {data.description && <p className="wb-hero-desc wb-muted">{parseRichText(data.description)}</p>}
 
       {actions}
 

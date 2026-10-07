@@ -47,8 +47,22 @@ function EmptyCanvas() {
 function RootRender({ children }: { children: ReactNode }) {
   const site = useBuilderSite();
 
+  const handleRootClick = (e: MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement | null;
+    const isSection = target?.closest(".wb-editor-section-wrap") !== null;
+    const isInteractive = target?.closest("button, input, textarea, a, select, [role='button']") !== null;
+
+    if (!isSection && !isInteractive) {
+      site.selectArea("page");
+    }
+  };
+
   return (
-    <div onClickCapture={blockLinkNavigation} className="min-h-full h-full flex flex-col flex-1">
+    <div
+      onClickCapture={blockLinkNavigation}
+      onClick={handleRootClick}
+      className="min-h-full h-full flex flex-col flex-1"
+    >
       <SiteStyles />
       <SiteFrame theme={site.theme} header={null} footer={null}>
         <div className="relative flex min-h-full h-full w-full flex-1 flex-col">
