@@ -11,14 +11,18 @@ import type {
   IconName,
   LogosData,
   MediaData,
+  PricingCardStyle,
   PricingData,
   PricingPlan,
+  PricingVariant,
   Section,
   SectionAlign,
   SectionBackground,
   SectionSettings,
   SectionSpacing,
+  ServiceItem,
   ServicesData,
+  ServicesVariant,
   SplitData,
   StatsData,
   TeamData,
@@ -939,10 +943,113 @@ function FeaturesForm({ data, onChange }: DataFormProps<FeaturesData>) {
   );
 }
 
+const SERVICES_VARIANT_OPTIONS: { value: ServicesVariant; label: string }[] = [
+  { value: "cards-grid", label: "Cards grid (Modern standard)" },
+  { value: "bento-grid", label: "Bento box grid (Featured spotlight)" },
+  { value: "split-showcase", label: "Split showcase (Sticky hero + cards)" },
+  { value: "interactive-list", label: "Interactive list (Agency studio hover)" },
+  { value: "horizontal-cards", label: "Horizontal cards (Detailed enterprise)" },
+  { value: "minimal-numbered", label: "Minimal numbered (Editorial / Consulting)" },
+];
+
+const SERVICE_CARD_STYLE_OPTIONS = [
+  { value: "surface", label: "Surface (Tinted bg)" },
+  { value: "bordered", label: "Bordered (Crisp border)" },
+  { value: "flat", label: "Flat (Transparent)" },
+  { value: "glass", label: "Glassmorphism (Frosted)" },
+  { value: "glow", label: "Glow (Accent ambient hover)" },
+  { value: "elevated", label: "Elevated (Layered shadow)" },
+  { value: "gradient", label: "Gradient (Subtle accent glow)" },
+];
+
+const SERVICE_ICON_STYLE_OPTIONS = [
+  { value: "pastel-circle", label: "Soft pastel circle" },
+  { value: "square-badge", label: "Square badge" },
+  { value: "minimal-accent", label: "Minimal accent" },
+  { value: "colored-circle", label: "Vibrant gradient circle" },
+  { value: "glow-icon", label: "Ambient glow" },
+  { value: "none", label: "Hidden / None" },
+];
+
+const SERVICE_IMAGE_ASPECT_OPTIONS = [
+  { value: "16:9", label: "16 : 9 (Widescreen)" },
+  { value: "16:10", label: "16 : 10 (Standard)" },
+  { value: "4:3", label: "4 : 3 (Classic)" },
+  { value: "1:1", label: "1 : 1 (Square)" },
+  { value: "21:9", label: "21 : 9 (Ultra-wide cinematic)" },
+  { value: "auto", label: "Original / Auto" },
+];
+
 function ServicesForm({ data, onChange }: DataFormProps<ServicesData>) {
+  const isSplit = data.variant === "split-showcase";
+
   return (
     <>
-      <FormGroup title="Content">
+      <FormGroup title="Layout & variant">
+        <SelectField
+          label="Layout variant"
+          value={data.variant ?? "cards-grid"}
+          options={SERVICES_VARIANT_OPTIONS}
+          onChange={(variant) => onChange({ ...data, variant })}
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <SelectField
+            label="Card style"
+            value={data.cardStyle ?? "surface"}
+            options={SERVICE_CARD_STYLE_OPTIONS}
+            onChange={(cardStyle) =>
+              onChange({
+                ...data,
+                cardStyle: cardStyle as ServicesData["cardStyle"],
+              })
+            }
+          />
+          <SelectField
+            label="Icon style"
+            value={data.iconStyle ?? "pastel-circle"}
+            options={SERVICE_ICON_STYLE_OPTIONS}
+            onChange={(iconStyle) =>
+              onChange({
+                ...data,
+                iconStyle: iconStyle as ServicesData["iconStyle"],
+              })
+            }
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <SelectField
+            label="Image aspect"
+            value={data.imageAspect ?? "16:9"}
+            options={SERVICE_IMAGE_ASPECT_OPTIONS}
+            onChange={(imageAspect) =>
+              onChange({
+                ...data,
+                imageAspect: imageAspect as ServicesData["imageAspect"],
+              })
+            }
+          />
+          <SelectField
+            label="Alignment"
+            value={data.align ?? "left"}
+            options={ALIGN_OPTIONS}
+            onChange={(align) => onChange({ ...data, align })}
+          />
+        </div>
+        {!isSplit && data.variant !== "interactive-list" && data.variant !== "horizontal-cards" && (
+          <ColumnsFields data={data} onChange={onChange} />
+        )}
+      </FormGroup>
+
+      <FormGroup title="Header content">
+        <TextField
+          label="Eyebrow (optional)"
+          value={data.eyebrow ?? ""}
+          onChange={(eyebrow) =>
+            onChange({ ...data, eyebrow: eyebrow || undefined })
+          }
+          maxLength={100}
+          placeholder="WHAT WE OFFER"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -956,22 +1063,123 @@ function ServicesForm({ data, onChange }: DataFormProps<ServicesData>) {
           onChange={(intro) => onChange({ ...data, intro })}
           maxLength={500}
         />
-        <ColumnsFields data={data} onChange={onChange} />
       </FormGroup>
-      <FormGroup title="Services">
-        <ItemList<ServicesData["items"][number]>
-          label="Items"
+
+      {isSplit && (
+        <FormGroup title="Split showcase options">
+          <SelectField
+            label="Hero position"
+            value={data.splitPosition ?? "left"}
+            options={[
+              { value: "left", label: "Hero on Left" },
+              { value: "right", label: "Hero on Right" },
+            ]}
+            onChange={(pos) =>
+              onChange({
+                ...data,
+                splitPosition: pos as "left" | "right",
+              })
+            }
+          />
+          <ImageField
+            label="Showcase image"
+            value={data.splitImage}
+            onChange={(splitImage) => onChange({ ...data, splitImage })}
+            optional
+          />
+          <TextField
+            label="Showcase tagline (optional)"
+            value={data.splitTagline ?? ""}
+            onChange={(splitTagline) =>
+              onChange({ ...data, splitTagline: splitTagline || undefined })
+            }
+            maxLength={200}
+            placeholder="Trusted by over 500+ clients worldwide"
+          />
+          <OptionalLinkField
+            label="Primary CTA button"
+            value={data.splitCta}
+            onChange={(splitCta) => onChange({ ...data, splitCta })}
+            fallback={{ label: "Book a consultation", href: "/contact" }}
+          />
+          <OptionalLinkField
+            label="Secondary CTA button"
+            value={data.secondaryCta}
+            onChange={(secondaryCta) => onChange({ ...data, secondaryCta })}
+            fallback={{ label: "View portfolio", href: "/portfolio" }}
+          />
+        </FormGroup>
+      )}
+
+      <FormGroup title="Display options">
+        <div className="grid grid-cols-2 gap-2">
+          <CheckboxField
+            label="Show badges"
+            checked={data.showBadges !== false}
+            onChange={(checked) => onChange({ ...data, showBadges: checked })}
+          />
+          <CheckboxField
+            label="Show icons"
+            checked={data.showIcons !== false}
+            onChange={(checked) => onChange({ ...data, showIcons: checked })}
+          />
+          <CheckboxField
+            label="Show images"
+            checked={data.showImages !== false}
+            onChange={(checked) => onChange({ ...data, showImages: checked })}
+          />
+          <CheckboxField
+            label="Show prices"
+            checked={data.showPrices !== false}
+            onChange={(checked) => onChange({ ...data, showPrices: checked })}
+          />
+          <CheckboxField
+            label="Show deliverables"
+            checked={data.showBullets !== false}
+            onChange={(checked) => onChange({ ...data, showBullets: checked })}
+          />
+          <CheckboxField
+            label="Show 01, 02 indices"
+            checked={data.showNumbers === true}
+            onChange={(checked) => onChange({ ...data, showNumbers: checked })}
+          />
+        </div>
+      </FormGroup>
+
+      <FormGroup title="Services list">
+        <ItemList<ServiceItem>
+          label="Services"
           items={data.items}
           max={24}
           onChange={(items) => onChange({ ...data, items })}
           create={() => ({
             title: "New service",
-            description: "A short description of this service.",
+            description: "A comprehensive description of what this service delivers.",
+            badge: "Popular",
+            badgeColor: "blue",
+            icon: "sparkles",
+            iconColor: "blue",
+            price: "From $499",
+            duration: "3-5 days",
+            features: [
+              "Dedicated project lead",
+              "Full source assets included",
+              "Unlimited revisions during review",
+            ],
+            link: { label: "Get started", href: "/contact" },
           })}
           itemTitle={(item) => item.title}
           addLabel="Add service"
           renderItem={(item, update) => (
             <>
+              <div className="flex items-center justify-between pb-1">
+                <CheckboxField
+                  label="Featured / Spotlight item"
+                  checked={item.featured === true}
+                  onChange={(featured) => update({ ...item, featured })}
+                />
+              </div>
+
               <TextField
                 label="Title"
                 value={item.title}
@@ -979,26 +1187,169 @@ function ServicesForm({ data, onChange }: DataFormProps<ServicesData>) {
                 maxLength={120}
                 required
               />
+
               <TextAreaField
                 label="Description"
                 value={item.description}
                 onChange={(description) => update({ ...item, description })}
-                maxLength={600}
+                maxLength={1000}
               />
+
+              <div className="grid grid-cols-2 gap-2">
+                <TextField
+                  label="Tag / Badge (optional)"
+                  value={item.badge ?? ""}
+                  onChange={(badge) =>
+                    update({ ...item, badge: badge || undefined })
+                  }
+                  maxLength={30}
+                  placeholder="e.g. Popular, Turnkey"
+                />
+                <SelectField
+                  label="Badge color"
+                  value={item.badgeColor ?? "default"}
+                  options={FEATURE_COLOR_OPTIONS}
+                  onChange={(col) =>
+                    update({
+                      ...item,
+                      badgeColor:
+                        col === "default"
+                          ? undefined
+                          : (col as FeatureItem["iconColor"]),
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <SelectField
+                  label="Icon"
+                  value={item.icon ?? ""}
+                  options={ICON_OPTIONS}
+                  onChange={(icon) =>
+                    update({ ...item, icon: icon || undefined })
+                  }
+                />
+                <SelectField
+                  label="Icon color"
+                  value={item.iconColor ?? "default"}
+                  options={FEATURE_COLOR_OPTIONS}
+                  onChange={(col) =>
+                    update({
+                      ...item,
+                      iconColor:
+                        col === "default"
+                          ? undefined
+                          : (col as FeatureItem["iconColor"]),
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <TextField
+                  label="Price tag (optional)"
+                  value={item.price ?? ""}
+                  onChange={(price) =>
+                    update({ ...item, price: price || undefined })
+                  }
+                  maxLength={50}
+                  placeholder="e.g. From $499 or $120/hr"
+                />
+                <TextField
+                  label="Turnaround (optional)"
+                  value={item.duration ?? ""}
+                  onChange={(duration) =>
+                    update({ ...item, duration: duration || undefined })
+                  }
+                  maxLength={50}
+                  placeholder="e.g. 3-5 days delivery"
+                />
+              </div>
+
               <ImageField
-                label="Image"
+                label="Image / Media"
                 value={item.image}
                 onChange={(image) => update({ ...item, image })}
                 optional
               />
+
+              <StringList
+                label="Deliverables / Checklist bullets"
+                items={item.features ?? []}
+                max={10}
+                onChange={(features) => update({ ...item, features })}
+                addLabel="Add deliverable"
+              />
+
+              <div className="grid grid-cols-2 gap-2 items-end">
+                <SelectField
+                  label="Card background"
+                  value={item.backgroundColor ?? ""}
+                  options={[
+                    ...FEATURE_CARD_BG_PRESETS,
+                    ...(item.backgroundColor &&
+                    !FEATURE_CARD_BG_PRESETS.some(
+                      (p) =>
+                        p.value.toLowerCase() ===
+                        item.backgroundColor?.toLowerCase(),
+                    )
+                      ? [
+                          {
+                            value: item.backgroundColor,
+                            label: `Custom (${item.backgroundColor})`,
+                          },
+                        ]
+                      : []),
+                  ]}
+                  onChange={(val) =>
+                    update({ ...item, backgroundColor: val || undefined })
+                  }
+                />
+                <div className="pb-0.5">
+                  <ColorField
+                    label="Custom card bg"
+                    value={item.backgroundColor}
+                    onChange={(color) =>
+                      update({ ...item, backgroundColor: color || undefined })
+                    }
+                    fallback="#ffffff"
+                  />
+                </div>
+              </div>
+
               <OptionalLinkField
-                label="Link"
+                label="Primary link / button"
                 value={item.link}
                 onChange={(link) => update({ ...item, link })}
-                fallback={{ label: "Learn more", href: "/contact" }}
+                fallback={{ label: "Get started", href: "/contact" }}
+              />
+
+              <OptionalLinkField
+                label="Secondary link (optional)"
+                value={item.secondaryLink}
+                onChange={(secondaryLink) => update({ ...item, secondaryLink })}
+                fallback={{ label: "View details", href: "#" }}
               />
             </>
           )}
+        />
+      </FormGroup>
+
+      <FormGroup title="Section bottom CTA">
+        <OptionalLinkField
+          label="Bottom primary button (optional)"
+          value={data.bottomCta}
+          onChange={(bottomCta) => onChange({ ...data, bottomCta })}
+          fallback={{ label: "Explore all services", href: "/services" }}
+        />
+        <OptionalLinkField
+          label="Bottom secondary button (optional)"
+          value={data.bottomSecondaryCta}
+          onChange={(bottomSecondaryCta) =>
+            onChange({ ...data, bottomSecondaryCta })
+          }
+          fallback={{ label: "Schedule a call", href: "/contact" }}
         />
       </FormGroup>
     </>
@@ -1404,10 +1755,62 @@ function StatsForm({ data, onChange }: DataFormProps<StatsData>) {
   );
 }
 
+const PRICING_VARIANT_OPTIONS: { value: PricingVariant; label: string }[] = [
+  { value: "cards-grid", label: "Executive cards (Modern standard)" },
+  { value: "minimal-monochrome", label: "Minimal monochrome (Swiss architectural)" },
+  { value: "spotlight-tier", label: "Spotlight tier (Asymmetric pro focus)" },
+  { value: "horizontal-rows", label: "Horizontal rows (Enterprise consultative)" },
+];
+
+const PRICING_CARD_STYLE_OPTIONS: { value: PricingCardStyle; label: string }[] = [
+  { value: "default", label: "Surface (Clean neutral)" },
+  { value: "bordered", label: "Bordered (Crisp hairline)" },
+  { value: "flat", label: "Flat (Transparent)" },
+  { value: "glass", label: "Glassmorphism (Frosted glass)" },
+  { value: "elevated", label: "Elevated (Ambient shadow)" },
+  { value: "contrast", label: "High contrast" },
+];
+
 function PricingForm({ data, onChange }: DataFormProps<PricingData>) {
   return (
     <>
+      <FormGroup title="Layout & Style">
+        <SelectField
+          label="Variant"
+          value={data.variant || "cards-grid"}
+          options={PRICING_VARIANT_OPTIONS}
+          onChange={(variant) => onChange({ ...data, variant })}
+        />
+        <SelectField
+          label="Card style"
+          value={data.cardStyle || "default"}
+          options={PRICING_CARD_STYLE_OPTIONS}
+          onChange={(cardStyle) => onChange({ ...data, cardStyle })}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField
+            label="Columns"
+            value={data.columns || (Math.min(Math.max(data.plans.length, 1), 4) as GridColumns)}
+            options={COLUMN_OPTIONS}
+            onChange={(columns) => onChange({ ...data, columns })}
+          />
+          <SelectField
+            label="Text align"
+            value={data.align || "center"}
+            options={ALIGN_OPTIONS}
+            onChange={(align) => onChange({ ...data, align })}
+          />
+        </div>
+      </FormGroup>
+
       <FormGroup title="Content">
+        <TextField
+          label="Eyebrow"
+          value={data.eyebrow}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. PRICING PLANS"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -1421,46 +1824,90 @@ function PricingForm({ data, onChange }: DataFormProps<PricingData>) {
           onChange={(intro) => onChange({ ...data, intro })}
           maxLength={500}
         />
+        <div className="grid grid-cols-2 gap-3">
+          <TextField
+            label="Billing cycle label"
+            value={data.billingCycleLabel}
+            onChange={(billingCycleLabel) => onChange({ ...data, billingCycleLabel })}
+            maxLength={80}
+            placeholder="e.g. Billed annually"
+          />
+          <TextField
+            label="Discount badge"
+            value={data.discountBadge}
+            onChange={(discountBadge) => onChange({ ...data, discountBadge })}
+            maxLength={60}
+            placeholder="e.g. Save 20%"
+          />
+        </div>
+        <TextField
+          label="Footer guarantee / note"
+          value={data.footerNote}
+          onChange={(footerNote) => onChange({ ...data, footerNote })}
+          maxLength={300}
+          placeholder="e.g. 14-day money-back guarantee • No credit card required"
+        />
       </FormGroup>
+
       <FormGroup title="Plans">
         <ItemList<PricingPlan>
           label="Plans"
           items={data.plans}
-          max={4}
+          max={6}
           onChange={(plans) => onChange({ ...data, plans })}
           create={() => ({
-            name: "New plan",
-            price: "$0",
+            name: "New tier",
+            price: "$29",
             period: "/ month",
-            features: [],
+            features: ["Core feature 1", "Core feature 2"],
             featured: false,
           })}
           itemTitle={(plan) => plan.name}
           addLabel="Add plan"
           renderItem={(plan, update) => (
             <>
-              <TextField
-                label="Name"
-                value={plan.name}
-                onChange={(name) => update({ ...plan, name })}
-                maxLength={60}
-                required
-              />
               <div className="grid grid-cols-2 gap-3">
+                <TextField
+                  label="Name"
+                  value={plan.name}
+                  onChange={(name) => update({ ...plan, name })}
+                  maxLength={60}
+                  required
+                />
+                <TextField
+                  label="Badge / Tag"
+                  value={plan.badge}
+                  onChange={(badge) => update({ ...plan, badge })}
+                  maxLength={50}
+                  placeholder="e.g. Most Popular"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
                 <TextField
                   label="Price"
                   value={plan.price}
                   onChange={(price) => update({ ...plan, price })}
-                  maxLength={20}
+                  maxLength={30}
                   required
+                  placeholder="$49"
                 />
                 <TextField
                   label="Period"
                   value={plan.period}
                   onChange={(period) => update({ ...plan, period })}
-                  maxLength={20}
+                  maxLength={30}
+                  placeholder="/ month"
+                />
+                <TextField
+                  label="Original price"
+                  value={plan.originalPrice}
+                  onChange={(originalPrice) => update({ ...plan, originalPrice })}
+                  maxLength={30}
+                  placeholder="$79 (strike)"
                 />
               </div>
+
               <TextAreaField
                 label="Description"
                 value={plan.description}
@@ -1468,21 +1915,40 @@ function PricingForm({ data, onChange }: DataFormProps<PricingData>) {
                 maxLength={300}
                 rows={2}
               />
+
               <StringList
-                label="Features"
+                label="Included Features"
                 items={plan.features}
-                max={12}
+                max={15}
                 onChange={(features) => update({ ...plan, features })}
                 addLabel="Add feature"
               />
+
+              <StringList
+                label="Excluded Features (Optional Strike)"
+                items={plan.excludedFeatures || []}
+                max={15}
+                onChange={(excludedFeatures) => update({ ...plan, excludedFeatures })}
+                addLabel="Add excluded feature"
+              />
+
               <OptionalLinkField
                 label="Button"
                 value={plan.cta}
                 onChange={(cta) => update({ ...plan, cta })}
                 fallback={{ label: "Get started", href: "/contact" }}
               />
+
+              <TextField
+                label="Highlight Note"
+                value={plan.highlightNote}
+                onChange={(highlightNote) => update({ ...plan, highlightNote })}
+                maxLength={120}
+                placeholder="e.g. Free 14-day trial • Cancel anytime"
+              />
+
               <CheckboxField
-                label="Highlight as most popular"
+                label="Highlight as featured plan"
                 checked={plan.featured}
                 onChange={(featured) => update({ ...plan, featured })}
               />

@@ -339,12 +339,74 @@ export type FeaturesData = {
   bottomCta?: LinkRef;
 };
 
+export const SERVICES_VARIANTS = [
+  "cards-grid",
+  "bento-grid",
+  "split-showcase",
+  "interactive-list",
+  "horizontal-cards",
+  "minimal-numbered",
+] as const;
+
+export type ServicesVariant = (typeof SERVICES_VARIANTS)[number];
+
+export type ServiceItem = {
+  title: string;
+  description: string;
+  badge?: string;
+  badgeColor?: FeatureColor;
+  icon?: IconName | string;
+  iconColor?: FeatureColor;
+  image?: ImageRef;
+  price?: string;
+  duration?: string;
+  features?: string[];
+  link?: LinkRef;
+  secondaryLink?: LinkRef;
+  backgroundColor?: string;
+  featured?: boolean;
+};
+
 export type ServicesData = {
   heading: string;
+  eyebrow?: string;
   intro?: string;
+  variant?: ServicesVariant;
+  cardStyle?:
+    | "surface"
+    | "bordered"
+    | "flat"
+    | "glass"
+    | "glow"
+    | "elevated"
+    | "gradient";
+  iconStyle?:
+    | "pastel-circle"
+    | "square-badge"
+    | "minimal-accent"
+    | "colored-circle"
+    | "glow-icon"
+    | "none";
+  imageAspect?: "16:9" | "4:3" | "1:1" | "21:9" | "auto";
+  align?: "left" | "center";
   columns: GridColumns;
   mobileColumns: GridColumns;
-  items: { title: string; description: string; image?: ImageRef; link?: LinkRef }[];
+  items: ServiceItem[];
+  // Split showcase options
+  splitPosition?: "left" | "right";
+  splitImage?: ImageRef;
+  splitTagline?: string;
+  splitCta?: LinkRef;
+  secondaryCta?: LinkRef;
+  // Section bottom CTAs & toggles
+  bottomCta?: LinkRef;
+  bottomSecondaryCta?: LinkRef;
+  showBadges?: boolean;
+  showIcons?: boolean;
+  showImages?: boolean;
+  showPrices?: boolean;
+  showBullets?: boolean;
+  showNumbers?: boolean;
 };
 
 export type TestimonialsData = {
@@ -410,19 +472,50 @@ export type StatsData = {
   items: { value: string; label: string }[];
 };
 
+export const PRICING_VARIANTS = [
+  "cards-grid",
+  "minimal-monochrome",
+  "spotlight-tier",
+  "horizontal-rows",
+] as const;
+export type PricingVariant = (typeof PRICING_VARIANTS)[number];
+
+export const PRICING_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type PricingCardStyle = (typeof PRICING_CARD_STYLES)[number];
+
 export type PricingPlan = {
   name: string;
   price: string;
   period?: string;
+  originalPrice?: string;
+  badge?: string;
   description?: string;
   features: string[];
+  excludedFeatures?: string[];
   cta?: LinkRef;
   featured: boolean;
+  highlightNote?: string;
 };
 
 export type PricingData = {
+  variant?: PricingVariant;
+  eyebrow?: string;
   heading: string;
   intro?: string;
+  billingCycleLabel?: string;
+  discountBadge?: string;
+  footerNote?: string;
+  cardStyle?: PricingCardStyle;
+  columns?: GridColumns;
+  mobileColumns?: GridColumns;
+  align?: SectionAlign;
   plans: PricingPlan[];
 };
 

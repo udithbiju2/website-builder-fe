@@ -124,6 +124,83 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
         </div>
       );
 
+    case "services-bento":
+      return (
+        <div className="grid h-full w-full grid-cols-5 items-stretch gap-1.5 p-2">
+          <div className="col-span-3 flex flex-col justify-between rounded-sm border border-brand/40 bg-white p-1.5 dark:bg-zinc-800">
+            <div className="h-1.5 w-1/2 rounded-xs bg-brand" />
+            <div className="h-1 w-full rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="h-1 w-3/4 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1">
+            <div className="flex-1 rounded-sm border border-zinc-200/80 bg-white p-1 dark:border-zinc-700/60 dark:bg-zinc-800" />
+            <div className="flex-1 rounded-sm border border-zinc-200/80 bg-white p-1 dark:border-zinc-700/60 dark:bg-zinc-800" />
+          </div>
+        </div>
+      );
+
+    case "services-split":
+      return (
+        <div className="grid h-full w-full grid-cols-5 items-center gap-2 p-2">
+          <div className="col-span-2 flex flex-col gap-1">
+            <div className="h-2 w-4/5 rounded-xs bg-zinc-600 dark:bg-zinc-200" />
+            <div className="h-1 w-full rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="mt-1 h-2 w-8 rounded-xs bg-brand" />
+          </div>
+          <div className="col-span-3 flex flex-col gap-1">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex items-center justify-between rounded-sm border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
+                <div className="h-1 w-1/2 rounded-full bg-zinc-400" />
+                <div className="size-1.5 rounded-full bg-brand" />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case "services-interactive":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1 p-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className={`flex items-center justify-between rounded-sm border p-1 ${i === 0 ? "border-brand bg-brand-soft/20 dark:bg-brand-soft/10" : "border-zinc-200/60 bg-white dark:border-zinc-700/50 dark:bg-zinc-800"}`}>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[7px] font-bold text-zinc-400">0{i + 1}</span>
+                <div className="h-1 w-14 rounded-full bg-zinc-500" />
+              </div>
+              <div className="size-1.5 rounded-full bg-brand" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "services-horizontal":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1.5 p-2">
+          {[0, 1].map((i) => (
+            <div key={i} className="grid grid-cols-4 items-center gap-1 rounded-sm border border-zinc-200/80 bg-white p-1 dark:border-zinc-700/60 dark:bg-zinc-800">
+              <div className="col-span-1 h-3.5 rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+              <div className="col-span-3 flex flex-col gap-0.5">
+                <div className="h-1 w-2/3 rounded-full bg-zinc-600 dark:bg-zinc-300" />
+                <div className="h-0.5 w-full rounded-full bg-zinc-300 dark:bg-zinc-600" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+
+    case "services-editorial":
+      return (
+        <div className="grid h-full w-full grid-cols-3 items-center gap-1.5 p-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-1 border-t-2 border-brand/60 pt-1">
+              <span className="text-[8px] font-black text-brand">0{i + 1}</span>
+              <div className="h-1 w-full rounded-full bg-zinc-500" />
+              <div className="h-0.5 w-3/4 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            </div>
+          ))}
+        </div>
+      );
+
     case "services-grid":
       return (
         <div className="grid h-full w-full grid-cols-3 items-center gap-1.5 p-2">
@@ -306,6 +383,93 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
         </div>
       );
 
+    case "pricing-cards":
+      return (
+        <div className="grid h-full w-full grid-cols-3 items-stretch gap-1 p-1.5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={`flex flex-col justify-between rounded-sm border p-1 ${
+                i === 1
+                  ? "border-zinc-800 bg-zinc-100 dark:border-zinc-200 dark:bg-zinc-800 shadow-xs"
+                  : "border-zinc-200/80 bg-white dark:border-zinc-700/60 dark:bg-zinc-900"
+              }`}
+            >
+              <div className="h-1 w-2/3 rounded-xs bg-zinc-400 dark:bg-zinc-400" />
+              <div className="h-2 w-1/2 rounded-xs bg-zinc-700 dark:bg-zinc-200 font-bold" />
+              <div className="flex flex-col gap-0.5">
+                <div className="h-0.5 w-full rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                <div className="h-0.5 w-4/5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+              </div>
+              <div className="h-1.5 w-full rounded-xs bg-zinc-700 dark:bg-zinc-300" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "pricing-minimal":
+      return (
+        <div className="grid h-full w-full grid-cols-3 items-stretch gap-1.5 p-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={`flex flex-col justify-between border-t-2 ${
+                i === 1 ? "border-zinc-800 dark:border-zinc-100" : "border-zinc-300 dark:border-zinc-600"
+              } pt-1`}
+            >
+              <span className="text-[7px] font-bold text-zinc-400">0{i + 1}</span>
+              <div className="h-1.5 w-3/4 rounded-xs bg-zinc-600 dark:bg-zinc-300" />
+              <div className="h-2 w-1/2 rounded-xs bg-zinc-800 dark:bg-zinc-100" />
+              <div className="h-1 w-full rounded-xs bg-zinc-400/40" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "pricing-spotlight":
+      return (
+        <div className="grid h-full w-full grid-cols-3 items-center gap-1 p-1.5">
+          <div className="flex flex-col gap-1 rounded-sm border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900">
+            <div className="h-1 w-2/3 rounded-xs bg-zinc-400" />
+            <div className="h-1.5 w-1/2 rounded-xs bg-zinc-500" />
+          </div>
+          <div className="flex scale-105 flex-col gap-1 rounded-sm border-2 border-zinc-800 bg-zinc-100 p-1.5 dark:border-zinc-100 dark:bg-zinc-800 shadow-xs z-10">
+            <div className="h-1 w-2/3 rounded-xs bg-zinc-700 dark:bg-zinc-200" />
+            <div className="h-2.5 w-3/4 rounded-xs bg-zinc-800 dark:bg-zinc-100" />
+            <div className="h-1.5 w-full rounded-xs bg-zinc-700 dark:bg-zinc-200" />
+          </div>
+          <div className="flex flex-col gap-1 rounded-sm border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900">
+            <div className="h-1 w-2/3 rounded-xs bg-zinc-400" />
+            <div className="h-1.5 w-1/2 rounded-xs bg-zinc-500" />
+          </div>
+        </div>
+      );
+
+    case "pricing-enterprise":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1.5 p-2">
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between rounded-sm border border-zinc-200 bg-white p-1.5 dark:border-zinc-700 dark:bg-zinc-800"
+            >
+              <div className="flex flex-col gap-0.5">
+                <div className="h-1.5 w-10 rounded-xs bg-zinc-600 dark:bg-zinc-300" />
+                <div className="h-1 w-14 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <div className="h-0.5 w-12 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+                <div className="h-0.5 w-10 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-6 rounded-xs bg-zinc-700 dark:bg-zinc-200" />
+                <div className="h-1.5 w-4 rounded-xs bg-zinc-700 dark:bg-zinc-300" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+
     case "pricing":
       return (
         <div className="grid h-full w-full grid-cols-2 items-center gap-2 p-2">
@@ -315,11 +479,11 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
             <div className="h-1 w-full rounded-full bg-zinc-300 dark:bg-zinc-600" />
             <div className="h-1 w-4/5 rounded-full bg-zinc-300 dark:bg-zinc-600" />
           </div>
-          <div className="flex flex-col gap-1 rounded-sm border border-brand bg-brand/5 p-1">
-            <div className="h-1.5 w-8 rounded-xs bg-brand" />
-            <div className="h-2.5 w-6 rounded-xs bg-brand" />
-            <div className="h-1 w-full rounded-full bg-brand/40" />
-            <div className="h-1 w-4/5 rounded-full bg-brand/40" />
+          <div className="flex flex-col gap-1 rounded-sm border border-zinc-800 bg-zinc-100 p-1 dark:border-zinc-200 dark:bg-zinc-800">
+            <div className="h-1.5 w-8 rounded-xs bg-zinc-800 dark:bg-zinc-200" />
+            <div className="h-2.5 w-6 rounded-xs bg-zinc-800 dark:bg-zinc-200" />
+            <div className="h-1 w-full rounded-full bg-zinc-400 dark:bg-zinc-500" />
+            <div className="h-1 w-4/5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
           </div>
         </div>
       );
