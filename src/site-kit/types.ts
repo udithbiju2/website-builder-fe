@@ -684,6 +684,87 @@ export type TeamData = {
   members: TeamMember[];
 };
 
+export const CAROUSEL_VARIANTS = [
+  "cards",
+  "hero-slider",
+  "showcase",
+  "minimal-editorial",
+  "image-gallery",
+  "image-strip",
+  "image-coverflow",
+] as const;
+export type CarouselVariant = (typeof CAROUSEL_VARIANTS)[number];
+
+export const CAROUSEL_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type CarouselCardStyle = (typeof CAROUSEL_CARD_STYLES)[number];
+
+export type CarouselSlide = {
+  title: string;
+  subtitle?: string;
+  description?: string;
+  caption?: string;
+  badge?: string;
+  image?: ImageRef;
+  button?: LinkRef;
+  secondaryButton?: LinkRef;
+};
+
+export type CarouselData = {
+  variant?: CarouselVariant;
+  eyebrow?: string;
+  heading?: string;
+  intro?: string;
+  badge?: string;
+  slides: CarouselSlide[];
+  autoPlay?: boolean;
+  interval?: number;
+  showArrows?: boolean;
+  showDots?: boolean;
+  showThumbnails?: boolean;
+  imageAspect?: "16:9" | "4:3" | "1:1" | "21:9" | "3:4";
+  columns?: GridColumns;
+  pauseOnHover?: boolean;
+  cardStyle?: CarouselCardStyle;
+  align?: SectionAlign;
+};
+
+export const MARQUEE_VARIANTS = [
+  "ticker-text",
+  "cards-stream",
+  "pill-badges",
+  "dual-directional",
+] as const;
+export type MarqueeVariant = (typeof MARQUEE_VARIANTS)[number];
+
+export type MarqueeItem = {
+  text: string;
+  badge?: string;
+  icon?: IconName;
+  link?: string;
+  subtext?: string;
+};
+
+export type MarqueeData = {
+  variant?: MarqueeVariant;
+  eyebrow?: string;
+  heading?: string;
+  intro?: string;
+  items: MarqueeItem[];
+  secondaryItems?: MarqueeItem[];
+  speed?: "slow" | "normal" | "fast";
+  direction?: "left" | "right";
+  pauseOnHover?: boolean;
+  gradientFades?: boolean;
+  fontSize?: "small" | "medium" | "large" | "huge";
+};
+
 export type SectionDataMap = {
   header: HeaderData;
   footer: FooterData;
@@ -702,6 +783,8 @@ export type SectionDataMap = {
   pricing: PricingData;
   media: MediaData;
   team: TeamData;
+  carousel: CarouselData;
+  marquee: MarqueeData;
 };
 
 export type SectionType = keyof SectionDataMap;

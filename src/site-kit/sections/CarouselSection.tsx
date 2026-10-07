@@ -1,0 +1,842 @@
+import { useEffect, useRef, useState } from "react";
+import { SectionHead, SectionShell, SiteImage, SiteLink } from "../primitives.tsx";
+import type {
+  CarouselCardStyle,
+  CarouselSlide,
+  CarouselVariant,
+  SectionOf,
+} from "../types.ts";
+
+function ChevronLeftIcon() {
+  return (
+    <svg className="wb-carousel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg className="wb-carousel-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
+function getCardStyleClass(cardStyle?: CarouselCardStyle): string {
+  switch (cardStyle) {
+    case "bordered":
+      return "wb-carousel-card-bordered";
+    case "elevated":
+      return "wb-carousel-card-elevated";
+    case "flat":
+      return "wb-carousel-card-flat";
+    case "glass":
+      return "wb-carousel-card-glass";
+    case "contrast":
+      return "wb-carousel-card-contrast";
+    case "default":
+    default:
+      return "wb-carousel-card-default";
+  }
+}
+
+/* =========================================================================
+   VARIANT 1: Multi-Card Slider
+   ========================================================================= */
+function CarouselCards({
+  slides,
+  cardStyle,
+  activeIndex,
+  onPrev,
+  onNext,
+  onSelect,
+  showArrows,
+  showDots,
+}: {
+  slides: CarouselSlide[];
+  cardStyle?: CarouselCardStyle;
+  activeIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelect: (index: number) => void;
+  showArrows: boolean;
+  showDots: boolean;
+}) {
+  const cardClass = getCardStyleClass(cardStyle);
+
+  return (
+    <div className="wb-carousel-cards-wrapper">
+      <div className="wb-carousel-cards-track" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+        {slides.map((slide, index) => (
+          <div key={index} className={`wb-carousel-slide-item ${index === activeIndex ? "wb-slide-active" : ""}`}>
+            <div className={`wb-carousel-card ${cardClass}`}>
+              {slide.image && (
+                <div className="wb-carousel-card-media">
+                  <SiteImage image={slide.image} className="wb-carousel-card-img" />
+                  {slide.badge && <span className="wb-carousel-card-badge">{slide.badge}</span>}
+                </div>
+              )}
+              <div className="wb-carousel-card-body">
+                {!slide.image && slide.badge && (
+                  <span className="wb-carousel-badge-inline">{slide.badge}</span>
+                )}
+                {slide.subtitle && <p className="wb-carousel-card-sub">{slide.subtitle}</p>}
+                <h3 className="wb-carousel-card-title">{slide.title}</h3>
+                {slide.description && <p className="wb-carousel-card-desc">{slide.description}</p>}
+                {(slide.button || slide.secondaryButton) && (
+                  <div className="wb-carousel-card-actions">
+                    {slide.button && <SiteLink link={slide.button} className="wb-btn wb-btn-primary" />}
+                    {slide.secondaryButton && <SiteLink link={slide.secondaryButton} className="wb-btn wb-btn-secondary" />}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Controls */}
+      <div className="wb-carousel-controls-bar">
+        {showDots && slides.length > 1 && (
+          <div className="wb-carousel-dots" role="tablist" aria-label="Slides">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`wb-carousel-dot ${i === activeIndex ? "wb-dot-active" : ""}`}
+                onClick={() => onSelect(i)}
+                aria-label={`Slide ${i + 1}`}
+                aria-selected={i === activeIndex}
+              />
+            ))}
+          </div>
+        )}
+
+        {showArrows && slides.length > 1 && (
+          <div className="wb-carousel-arrows">
+            <button
+              type="button"
+              className="wb-carousel-arrow-btn"
+              onClick={onPrev}
+              aria-label="Previous slide"
+            >
+              <ChevronLeftIcon />
+            </button>
+            <button
+              type="button"
+              className="wb-carousel-arrow-btn"
+              onClick={onNext}
+              aria-label="Next slide"
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   VARIANT 2: Hero Banner Slider
+   ========================================================================= */
+function CarouselHeroSlider({
+  slides,
+  activeIndex,
+  onPrev,
+  onNext,
+  onSelect,
+  showArrows,
+  showDots,
+}: {
+  slides: CarouselSlide[];
+  activeIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelect: (index: number) => void;
+  showArrows: boolean;
+  showDots: boolean;
+}) {
+  const current = slides[activeIndex] || slides[0];
+  if (!current) return null;
+
+  return (
+    <div className="wb-carousel-hero-container">
+      <div className="wb-carousel-hero-slide">
+        {current.image && (
+          <div className="wb-carousel-hero-bg">
+            <SiteImage image={current.image} className="wb-carousel-hero-img" />
+            <div className="wb-carousel-hero-overlay" />
+          </div>
+        )}
+
+        <div className="wb-carousel-hero-content">
+          {current.badge && (
+            <div className="wb-carousel-hero-badge-pill">
+              <span className="wb-carousel-pulse-dot" aria-hidden="true" />
+              <span>{current.badge}</span>
+            </div>
+          )}
+          {current.subtitle && <p className="wb-carousel-hero-sub">{current.subtitle}</p>}
+          <h2 className="wb-carousel-hero-title">{current.title}</h2>
+          {current.description && <p className="wb-carousel-hero-desc">{current.description}</p>}
+
+          {(current.button || current.secondaryButton) && (
+            <div className="wb-carousel-hero-actions">
+              {current.button && <SiteLink link={current.button} className="wb-btn wb-btn-primary wb-btn-lg" />}
+              {current.secondaryButton && <SiteLink link={current.secondaryButton} className="wb-btn wb-btn-secondary wb-btn-lg" />}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Controls */}
+      {slides.length > 1 && (
+        <div className="wb-carousel-hero-nav-bar">
+          {showDots && (
+            <div className="wb-carousel-hero-dots">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`wb-carousel-hero-dot ${i === activeIndex ? "wb-hero-dot-active" : ""}`}
+                  onClick={() => onSelect(i)}
+                  aria-label={`Slide ${i + 1}`}
+                >
+                  <span className="wb-hero-dot-bar" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {showArrows && (
+            <div className="wb-carousel-hero-arrows">
+              <button
+                type="button"
+                className="wb-carousel-hero-arrow-btn"
+                onClick={onPrev}
+                aria-label="Previous slide"
+              >
+                <ChevronLeftIcon />
+              </button>
+              <button
+                type="button"
+                className="wb-carousel-hero-arrow-btn"
+                onClick={onNext}
+                aria-label="Next slide"
+              >
+                <ChevronRightIcon />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================================
+   VARIANT 3: Showcase Focus
+   ========================================================================= */
+function CarouselShowcase({
+  slides,
+  cardStyle,
+  activeIndex,
+  onPrev,
+  onNext,
+  onSelect,
+}: {
+  slides: CarouselSlide[];
+  cardStyle?: CarouselCardStyle;
+  activeIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelect: (index: number) => void;
+}) {
+  const cardClass = getCardStyleClass(cardStyle);
+
+  return (
+    <div className="wb-carousel-showcase-container">
+      <div className="wb-carousel-showcase-stage">
+        {slides.map((slide, i) => {
+          const offset = i - activeIndex;
+          const isCenter = offset === 0;
+          const isLeft = offset === -1 || (activeIndex === 0 && i === slides.length - 1);
+          const isRight = offset === 1 || (activeIndex === slides.length - 1 && i === 0);
+
+          let positionClass = "wb-showcase-hidden";
+          if (isCenter) positionClass = "wb-showcase-center";
+          else if (isLeft) positionClass = "wb-showcase-left";
+          else if (isRight) positionClass = "wb-showcase-right";
+
+          return (
+            <div
+              key={i}
+              className={`wb-carousel-showcase-card ${positionClass} ${cardClass}`}
+              onClick={() => onSelect(i)}
+            >
+              {slide.image && (
+                <div className="wb-carousel-showcase-media">
+                  <SiteImage image={slide.image} className="wb-carousel-showcase-img" />
+                </div>
+              )}
+              <div className="wb-carousel-showcase-info">
+                {slide.badge && <span className="wb-carousel-badge-inline">{slide.badge}</span>}
+                <h3 className="wb-carousel-showcase-title">{slide.title}</h3>
+                {slide.description && <p className="wb-carousel-showcase-desc">{slide.description}</p>}
+                {isCenter && slide.button && (
+                  <div className="wb-carousel-showcase-btn">
+                    <SiteLink link={slide.button} className="wb-btn wb-btn-primary" />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="wb-carousel-showcase-nav">
+        <button type="button" className="wb-carousel-arrow-btn" onClick={onPrev} aria-label="Previous">
+          <ChevronLeftIcon />
+        </button>
+        <span className="wb-carousel-counter">
+          {String(activeIndex + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
+        </span>
+        <button type="button" className="wb-carousel-arrow-btn" onClick={onNext} aria-label="Next">
+          <ChevronRightIcon />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   VARIANT 4: Minimal Editorial Slide Deck
+   ========================================================================= */
+function CarouselMinimalEditorial({
+  slides,
+  activeIndex,
+  onPrev,
+  onNext,
+  onSelect,
+}: {
+  slides: CarouselSlide[];
+  activeIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelect: (index: number) => void;
+}) {
+  const current = slides[activeIndex] || slides[0];
+  if (!current) return null;
+
+  return (
+    <div className="wb-carousel-editorial-container">
+      <div className="wb-carousel-editorial-grid">
+        <div className="wb-carousel-editorial-left">
+          <div className="wb-carousel-editorial-header">
+            <span className="wb-carousel-editorial-num">
+              {String(activeIndex + 1).padStart(2, "0")} <span className="wb-muted">/ {String(slides.length).padStart(2, "0")}</span>
+            </span>
+            {current.badge && (
+              <span className="wb-carousel-editorial-tag">{current.badge}</span>
+            )}
+          </div>
+
+          <div className="wb-carousel-editorial-body">
+            {current.subtitle && <p className="wb-carousel-editorial-sub">{current.subtitle}</p>}
+            <h2 className="wb-carousel-editorial-title">{current.title}</h2>
+            {current.description && <p className="wb-carousel-editorial-desc">{current.description}</p>}
+
+            {(current.button || current.secondaryButton) && (
+              <div className="wb-carousel-editorial-actions">
+                {current.button && <SiteLink link={current.button} className="wb-btn wb-btn-primary" />}
+                {current.secondaryButton && <SiteLink link={current.secondaryButton} className="wb-btn wb-btn-secondary" />}
+              </div>
+            )}
+          </div>
+
+          <div className="wb-carousel-editorial-nav">
+            <div className="wb-carousel-editorial-dots">
+              {slides.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`wb-carousel-editorial-tab ${idx === activeIndex ? "wb-tab-active" : ""}`}
+                  onClick={() => onSelect(idx)}
+                >
+                  <span className="wb-tab-line" />
+                </button>
+              ))}
+            </div>
+
+            <div className="wb-carousel-arrows">
+              <button type="button" className="wb-carousel-arrow-btn" onClick={onPrev} aria-label="Previous">
+                <ChevronLeftIcon />
+              </button>
+              <button type="button" className="wb-carousel-arrow-btn" onClick={onNext} aria-label="Next">
+                <ChevronRightIcon />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="wb-carousel-editorial-right">
+          {current.image && (
+            <div className="wb-carousel-editorial-media">
+              <SiteImage image={current.image} className="wb-carousel-editorial-img" />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   VARIANT 5: Full Image Gallery Slider (with Thumbnails & Captions)
+   ========================================================================= */
+function CarouselImageGallery({
+  slides,
+  activeIndex,
+  onPrev,
+  onNext,
+  onSelect,
+  showArrows,
+  showDots,
+  showThumbnails,
+  aspect = "16:9",
+}: {
+  slides: CarouselSlide[];
+  activeIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelect: (index: number) => void;
+  showArrows: boolean;
+  showDots: boolean;
+  showThumbnails?: boolean;
+  aspect?: "16:9" | "4:3" | "1:1" | "21:9" | "3:4";
+}) {
+  const current = slides[activeIndex] || slides[0];
+  if (!current) return null;
+
+  const aspectClass = `wb-aspect-${aspect.replace(":", "-")}`;
+
+  return (
+    <div className="wb-carousel-gallery-container">
+      <div className={`wb-carousel-gallery-viewport ${aspectClass}`}>
+        {slides.map((slide, idx) => (
+          <div
+            key={idx}
+            className={`wb-carousel-gallery-slide ${idx === activeIndex ? "wb-gallery-slide-active" : ""}`}
+          >
+            {slide.image && (
+              <SiteImage image={slide.image} className="wb-carousel-gallery-img" />
+            )}
+            <div className="wb-carousel-gallery-overlay" />
+          </div>
+        ))}
+
+        {/* Floating caption card */}
+        {(current.title || current.caption || current.description || current.badge) && (
+          <div className="wb-carousel-gallery-caption">
+            <div className="wb-carousel-gallery-caption-head">
+              {current.badge && (
+                <span className="wb-carousel-gallery-badge">{current.badge}</span>
+              )}
+              <span className="wb-carousel-gallery-counter">
+                {String(activeIndex + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
+              </span>
+            </div>
+            {current.title && <h3 className="wb-carousel-gallery-title">{current.title}</h3>}
+            {(current.caption || current.description) && (
+              <p className="wb-carousel-gallery-desc">{current.caption || current.description}</p>
+            )}
+            {(current.button || current.secondaryButton) && (
+              <div className="wb-carousel-gallery-actions">
+                {current.button && <SiteLink link={current.button} className="wb-btn wb-btn-primary wb-btn-sm" />}
+                {current.secondaryButton && <SiteLink link={current.secondaryButton} className="wb-btn wb-btn-secondary wb-btn-sm" />}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Overlay Navigation Arrows */}
+        {showArrows && slides.length > 1 && (
+          <div className="wb-carousel-gallery-arrows">
+            <button
+              type="button"
+              className="wb-carousel-gallery-arrow-btn"
+              onClick={onPrev}
+              aria-label="Previous image"
+            >
+              <ChevronLeftIcon />
+            </button>
+            <button
+              type="button"
+              className="wb-carousel-gallery-arrow-btn"
+              onClick={onNext}
+              aria-label="Next image"
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
+        )}
+
+        {/* Dots Bar if enabled */}
+        {showDots && !showThumbnails && slides.length > 1 && (
+          <div className="wb-carousel-gallery-dots">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`wb-carousel-dot ${i === activeIndex ? "wb-dot-active" : ""}`}
+                onClick={() => onSelect(i)}
+                aria-label={`Image ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Thumbnail Strip */}
+      {showThumbnails && slides.length > 1 && (
+        <div className="wb-carousel-gallery-thumbs-strip" role="tablist" aria-label="Image Thumbnails">
+          {slides.map((slide, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`wb-carousel-thumb-btn ${i === activeIndex ? "wb-thumb-active" : ""}`}
+              onClick={() => onSelect(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              aria-selected={i === activeIndex}
+            >
+              {slide.image && (
+                <SiteImage image={slide.image} className="wb-carousel-thumb-img" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================================
+   VARIANT 6: Multi-Image Filmstrip Reel
+   ========================================================================= */
+function CarouselImageStrip({
+  slides,
+  columns = 3,
+  aspect = "4:3",
+  activeIndex,
+  onPrev,
+  onNext,
+  onSelect,
+  showArrows,
+  showDots,
+}: {
+  slides: CarouselSlide[];
+  columns?: number;
+  aspect?: "16:9" | "4:3" | "1:1" | "21:9" | "3:4";
+  activeIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelect: (index: number) => void;
+  showArrows: boolean;
+  showDots: boolean;
+}) {
+  const aspectClass = `wb-aspect-${aspect.replace(":", "-")}`;
+  const maxIndex = Math.max(0, slides.length - columns);
+  const safeIndex = Math.min(activeIndex, maxIndex);
+  const slideWidthPct = 100 / columns;
+
+  return (
+    <div className="wb-carousel-strip-wrapper">
+      <div className="wb-carousel-strip-track-container">
+        <div
+          className="wb-carousel-strip-track"
+          style={{ transform: `translateX(-${safeIndex * slideWidthPct}%)` }}
+        >
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className={`wb-carousel-strip-item ${index === activeIndex ? "wb-strip-active" : ""}`}
+              style={{ width: `${slideWidthPct}%` }}
+              onClick={() => onSelect(index)}
+            >
+              <div className="wb-carousel-strip-card">
+                <div className={`wb-carousel-strip-media ${aspectClass}`}>
+                  {slide.image && (
+                    <SiteImage image={slide.image} className="wb-carousel-strip-img" />
+                  )}
+                  {slide.badge && (
+                    <span className="wb-carousel-strip-badge">{slide.badge}</span>
+                  )}
+                  <div className="wb-carousel-strip-overlay" />
+                </div>
+                <div className="wb-carousel-strip-content">
+                  {slide.subtitle && <p className="wb-carousel-strip-sub">{slide.subtitle}</p>}
+                  <h4 className="wb-carousel-strip-title">{slide.title}</h4>
+                  {(slide.caption || slide.description) && (
+                    <p className="wb-carousel-strip-desc">{slide.caption || slide.description}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="wb-carousel-controls-bar">
+        {showDots && slides.length > columns && (
+          <div className="wb-carousel-dots">
+            {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`wb-carousel-dot ${i === safeIndex ? "wb-dot-active" : ""}`}
+                onClick={() => onSelect(i)}
+                aria-label={`Position ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
+        {showArrows && slides.length > columns && (
+          <div className="wb-carousel-arrows">
+            <button
+              type="button"
+              className="wb-carousel-arrow-btn"
+              onClick={onPrev}
+              aria-label="Previous images"
+            >
+              <ChevronLeftIcon />
+            </button>
+            <button
+              type="button"
+              className="wb-carousel-arrow-btn"
+              onClick={onNext}
+              aria-label="Next images"
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   VARIANT 7: 3D Coverflow Visual Image Reel
+   ========================================================================= */
+function CarouselImageCoverflow({
+  slides,
+  aspect = "16:9",
+  activeIndex,
+  onPrev,
+  onNext,
+  onSelect,
+}: {
+  slides: CarouselSlide[];
+  aspect?: "16:9" | "4:3" | "1:1" | "21:9" | "3:4";
+  activeIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelect: (index: number) => void;
+}) {
+  const aspectClass = `wb-aspect-${aspect.replace(":", "-")}`;
+
+  return (
+    <div className="wb-carousel-coverflow-container">
+      <div className="wb-carousel-coverflow-stage">
+        {slides.map((slide, i) => {
+          const offset = i - activeIndex;
+          const isCenter = offset === 0;
+          const isLeft = offset === -1 || (activeIndex === 0 && i === slides.length - 1);
+          const isRight = offset === 1 || (activeIndex === slides.length - 1 && i === 0);
+
+          let positionClass = "wb-coverflow-hidden";
+          if (isCenter) positionClass = "wb-coverflow-center";
+          else if (isLeft) positionClass = "wb-coverflow-left";
+          else if (isRight) positionClass = "wb-coverflow-right";
+
+          return (
+            <div
+              key={i}
+              className={`wb-carousel-coverflow-card ${positionClass}`}
+              onClick={() => onSelect(i)}
+            >
+              <div className={`wb-carousel-coverflow-media ${aspectClass}`}>
+                {slide.image && (
+                  <SiteImage image={slide.image} className="wb-carousel-coverflow-img" />
+                )}
+                <div className="wb-carousel-coverflow-gloss" />
+                {slide.badge && <span className="wb-carousel-coverflow-badge">{slide.badge}</span>}
+              </div>
+              <div className="wb-carousel-coverflow-meta">
+                <h4 className="wb-carousel-coverflow-title">{slide.title}</h4>
+                {(slide.caption || slide.subtitle) && (
+                  <p className="wb-carousel-coverflow-sub">{slide.caption || slide.subtitle}</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="wb-carousel-coverflow-nav">
+        <button type="button" className="wb-carousel-arrow-btn" onClick={onPrev} aria-label="Previous">
+          <ChevronLeftIcon />
+        </button>
+        <span className="wb-carousel-counter">
+          {String(activeIndex + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
+        </span>
+        <button type="button" className="wb-carousel-arrow-btn" onClick={onNext} aria-label="Next">
+          <ChevronRightIcon />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   MAIN CAROUSEL COMPONENT
+   ========================================================================= */
+export default function CarouselSection({ section }: { section: SectionOf<"carousel"> }) {
+  const { data } = section;
+  const variant: CarouselVariant = data.variant || "cards";
+  const slides = data.slides && data.slides.length > 0 ? data.slides : [];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const autoPlay = data.autoPlay ?? false;
+  const intervalSeconds = Math.max(2, data.interval || 5);
+  const showArrows = data.showArrows ?? true;
+  const showDots = data.showDots ?? true;
+  const showThumbnails = data.showThumbnails ?? true;
+  const imageAspect = data.imageAspect || "16:9";
+  const columns = Number(data.columns) || 3;
+
+  const nextSlide = () => {
+    setActiveIndex((prev) => (prev + 1) % Math.max(1, slides.length));
+  };
+
+  const prevSlide = () => {
+    setActiveIndex((prev) => (prev - 1 + slides.length) % Math.max(1, slides.length));
+  };
+
+  useEffect(() => {
+    if (!autoPlay || isPaused || slides.length <= 1) return;
+    timerRef.current = setInterval(nextSlide, intervalSeconds * 1000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [autoPlay, isPaused, intervalSeconds, slides.length]);
+
+  if (slides.length === 0) return null;
+
+  return (
+    <SectionShell
+      sectionId={section.id}
+      settings={section.settings}
+      className={`wb-carousel wb-carousel-variant-${variant}`}
+      label={data.heading || "Carousel"}
+    >
+      <div
+        className="wb-carousel-container"
+        onMouseEnter={() => data.pauseOnHover && setIsPaused(true)}
+        onMouseLeave={() => data.pauseOnHover && setIsPaused(false)}
+      >
+        {(data.heading || data.intro || data.eyebrow) && variant !== "hero-slider" && (
+          <div className={`wb-carousel-header-wrapper wb-align-${data.align || "left"}`}>
+            {data.eyebrow && <span className="wb-carousel-eyebrow">{data.eyebrow}</span>}
+            {data.heading && <SectionHead heading={data.heading} intro={data.intro} />}
+            {data.badge && (
+              <div className="wb-carousel-badge-pill">
+                <span className="wb-carousel-pulse-dot" aria-hidden="true" />
+                <span>{data.badge}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {variant === "hero-slider" ? (
+          <CarouselHeroSlider
+            slides={slides}
+            activeIndex={activeIndex}
+            onPrev={prevSlide}
+            onNext={nextSlide}
+            onSelect={setActiveIndex}
+            showArrows={showArrows}
+            showDots={showDots}
+          />
+        ) : variant === "showcase" ? (
+          <CarouselShowcase
+            slides={slides}
+            cardStyle={data.cardStyle}
+            activeIndex={activeIndex}
+            onPrev={prevSlide}
+            onNext={nextSlide}
+            onSelect={setActiveIndex}
+          />
+        ) : variant === "minimal-editorial" ? (
+          <CarouselMinimalEditorial
+            slides={slides}
+            activeIndex={activeIndex}
+            onPrev={prevSlide}
+            onNext={nextSlide}
+            onSelect={setActiveIndex}
+          />
+        ) : variant === "image-gallery" ? (
+          <CarouselImageGallery
+            slides={slides}
+            activeIndex={activeIndex}
+            onPrev={prevSlide}
+            onNext={nextSlide}
+            onSelect={setActiveIndex}
+            showArrows={showArrows}
+            showDots={showDots}
+            showThumbnails={showThumbnails}
+            aspect={imageAspect}
+          />
+        ) : variant === "image-strip" ? (
+          <CarouselImageStrip
+            slides={slides}
+            columns={columns}
+            aspect={imageAspect}
+            activeIndex={activeIndex}
+            onPrev={prevSlide}
+            onNext={nextSlide}
+            onSelect={setActiveIndex}
+            showArrows={showArrows}
+            showDots={showDots}
+          />
+        ) : variant === "image-coverflow" ? (
+          <CarouselImageCoverflow
+            slides={slides}
+            aspect={imageAspect}
+            activeIndex={activeIndex}
+            onPrev={prevSlide}
+            onNext={nextSlide}
+            onSelect={setActiveIndex}
+          />
+        ) : (
+          <CarouselCards
+            slides={slides}
+            cardStyle={data.cardStyle}
+            activeIndex={activeIndex}
+            onPrev={prevSlide}
+            onNext={nextSlide}
+            onSelect={setActiveIndex}
+            showArrows={showArrows}
+            showDots={showDots}
+          />
+        )}
+      </div>
+    </SectionShell>
+  );
+}

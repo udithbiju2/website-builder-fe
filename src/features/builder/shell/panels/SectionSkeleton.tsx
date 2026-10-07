@@ -807,6 +807,171 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
         </div>
       );
 
+    case "carousel-cards":
+    case "carousel":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1.5 p-2">
+          <div className="flex items-center gap-1.5">
+            <div className="size-3 shrink-0 rounded-full border border-zinc-300 dark:border-zinc-600" />
+            <div className="flex flex-1 flex-col gap-0.5 rounded-xs border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="h-5 w-full rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-1 w-3/4 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+            </div>
+            <div className="size-3 shrink-0 rounded-full border border-zinc-300 dark:border-zinc-600" />
+          </div>
+          <div className="flex justify-center gap-1">
+            <div className="h-1 w-3 rounded-full bg-brand" />
+            <div className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+          </div>
+        </div>
+      );
+
+    case "carousel-hero":
+      return (
+        <div className="relative flex h-full w-full flex-col justify-end overflow-hidden rounded-xs bg-zinc-900 p-2 text-white">
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+          <div className="relative z-10 flex flex-col gap-1">
+            <div className="h-1 w-8 rounded-full bg-brand" />
+            <div className="h-2 w-24 rounded-xs bg-white" />
+            <div className="h-1 w-32 rounded-full bg-zinc-300" />
+            <div className="mt-1 flex items-center justify-between">
+              <div className="h-2 w-8 rounded-xs bg-brand" />
+              <div className="flex gap-0.5">
+                <div className="h-0.5 w-2 rounded-full bg-white" />
+                <div className="h-0.5 w-1 rounded-full bg-white/40" />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "carousel-showcase":
+      return (
+        <div className="flex h-full w-full items-center justify-center gap-1 p-2">
+          <div className="h-8 w-6 rounded-xs bg-zinc-200 opacity-40 dark:bg-zinc-700" />
+          <div className="z-10 flex h-11 w-14 flex-col gap-0.5 rounded-xs border border-zinc-300 bg-white p-1 shadow-sm dark:border-zinc-600 dark:bg-zinc-800">
+            <div className="h-5 w-full rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-1 w-3/4 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+          </div>
+          <div className="h-8 w-6 rounded-xs bg-zinc-200 opacity-40 dark:bg-zinc-700" />
+        </div>
+      );
+
+    case "carousel-editorial":
+      return (
+        <div className="grid h-full w-full grid-cols-2 items-center gap-2 p-2">
+          <div className="flex flex-col gap-1">
+            <div className="h-1 w-4 rounded-full bg-brand" />
+            <div className="h-2 w-14 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+            <div className="h-1 w-full rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="mt-1 flex gap-1">
+              <div className="h-0.5 w-3 rounded-full bg-brand" />
+              <div className="h-0.5 w-3 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            </div>
+          </div>
+          <div className="h-10 w-full rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+        </div>
+      );
+
+    case "carousel-image-gallery":
+      return (
+        <div className="flex h-full w-full flex-col justify-between p-1.5">
+          <div className="relative flex h-8 w-full items-end justify-between rounded-xs bg-zinc-300 p-1 dark:bg-zinc-700">
+            <div className="flex flex-col gap-0.5">
+              <div className="h-1 w-10 rounded-full bg-white/90" />
+              <div className="h-0.5 w-16 rounded-full bg-white/60" />
+            </div>
+            <div className="size-2 rounded-full bg-white/40" />
+          </div>
+          <div className="flex gap-1 pt-0.5">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className={`h-2 flex-1 rounded-xs ${
+                  i === 0 ? "border border-brand bg-zinc-400 dark:bg-zinc-500" : "bg-zinc-200 dark:bg-zinc-800"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      );
+
+    case "carousel-image-strip":
+      return (
+        <div className="flex h-full w-full items-center gap-1.5 overflow-hidden p-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-1 flex-col gap-1">
+              <div className="h-8 w-full rounded-xs bg-zinc-300 dark:bg-zinc-700" />
+              <div className="h-0.5 w-3/4 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "carousel-image-coverflow":
+      return (
+        <div className="flex h-full w-full items-center justify-center gap-1 p-1.5">
+          <div className="h-8 w-7 -rotate-6 rounded-xs bg-zinc-300 opacity-50 dark:bg-zinc-700" />
+          <div className="z-10 h-10 w-12 rounded-xs border border-zinc-400 bg-zinc-200 shadow-sm dark:border-zinc-500 dark:bg-zinc-600" />
+          <div className="h-8 w-7 rotate-6 rounded-xs bg-zinc-300 opacity-50 dark:bg-zinc-700" />
+        </div>
+      );
+
+    case "marquee-ticker":
+    case "marquee":
+      return (
+        <div className="flex h-full w-full items-center overflow-hidden border-y border-zinc-200 px-1 dark:border-zinc-700">
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <div className="h-2 w-12 rounded-xs bg-zinc-900 dark:bg-zinc-100" />
+            <div className="size-1 rounded-full bg-brand" />
+            <div className="h-2 w-16 rounded-xs bg-zinc-900 dark:bg-zinc-100" />
+            <div className="size-1 rounded-full bg-brand" />
+            <div className="h-2 w-10 rounded-xs bg-zinc-900 dark:bg-zinc-100" />
+          </div>
+        </div>
+      );
+
+    case "marquee-cards":
+      return (
+        <div className="flex h-full w-full items-center gap-1.5 overflow-hidden p-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex shrink-0 items-center gap-1 rounded-xs border border-zinc-200 bg-white p-1 shadow-2xs dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="size-2 rounded-xs bg-brand/50" />
+              <div className="h-1 w-8 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "marquee-pills":
+      return (
+        <div className="flex h-full w-full items-center gap-1 overflow-hidden p-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex shrink-0 items-center gap-0.5 rounded-full border border-brand/30 bg-brand/10 px-1.5 py-0.5">
+              <div className="size-1 rounded-full bg-brand" />
+              <div className="h-0.5 w-6 rounded-full bg-zinc-600 dark:bg-zinc-300" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "marquee-dual":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1 overflow-hidden p-2">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <div className="h-1 w-10 rounded-full bg-brand/80" />
+            <div className="h-1 w-8 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+            <div className="h-1 w-12 rounded-full bg-brand/80" />
+          </div>
+          <div className="flex items-center gap-1.5 whitespace-nowrap pl-4">
+            <div className="h-1 w-8 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+            <div className="h-1 w-12 rounded-full bg-brand/80" />
+            <div className="h-1 w-10 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+          </div>
+        </div>
+      );
+
     default:
       return (
         <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2">

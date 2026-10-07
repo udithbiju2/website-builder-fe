@@ -45,6 +45,7 @@ export const SITE_CSS = `
 .wb-site h3 { font-size: 19px; font-weight: 600; }
 
 .wb-container { width: 100%; max-width: var(--wb-container); margin: 0 auto; padding: 0 24px; }
+.wb-container-full { width: 100%; max-width: 100%; margin: 0; padding: 0; }
 .wb-section { padding: var(--wb-section-y) 0; }
 .wb-bg-surface { background: var(--wb-surface); }
 .wb-bg-primary { background: var(--wb-primary); color: var(--wb-on-primary); }
@@ -4078,6 +4079,1052 @@ details[open] > summary .wb-faq-plus {
   }
   .wb-team-editorial-col-num { display: none; }
   .wb-team-glass-card { min-height: 360px; }
+}
+
+/* =========================================================================
+   CAROUSEL SECTION
+   ========================================================================= */
+.wb-carousel { position: relative; overflow: hidden; }
+.wb-carousel-container { position: relative; width: 100%; }
+.wb-carousel-header-wrapper { display: flex; flex-direction: column; margin-bottom: 32px; }
+.wb-carousel-header-wrapper.wb-align-center { align-items: center; text-align: center; }
+.wb-carousel-header-wrapper.wb-align-left { align-items: flex-start; text-align: left; }
+.wb-carousel-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--wb-primary);
+  margin-bottom: 8px;
+}
+.wb-carousel-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--wb-primary) 8%, var(--wb-surface));
+  border: 1px solid color-mix(in srgb, var(--wb-primary) 22%, transparent);
+  color: var(--wb-primary);
+}
+.wb-carousel-badge-inline {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--wb-primary) 10%, transparent);
+  color: var(--wb-primary);
+  width: fit-content;
+}
+.wb-carousel-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--wb-primary);
+  animation: wb-carousel-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes wb-carousel-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+}
+
+/* Multi-Cards Slider Track */
+.wb-carousel-cards-wrapper { position: relative; overflow: hidden; }
+.wb-carousel-cards-track {
+  display: flex;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.wb-carousel-slide-item {
+  min-width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.wb-carousel-card {
+  border-radius: var(--wb-radius, 18px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.wb-carousel-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--wb-text) 6%, var(--wb-surface));
+}
+.wb-carousel-card-img { width: 100%; height: 100%; object-fit: cover; }
+.wb-carousel-card-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+.wb-carousel-card-body {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wb-carousel-card-sub { font-size: 14px; font-weight: 600; color: var(--wb-primary); margin: 0; }
+.wb-carousel-card-title { font-size: 24px; font-weight: 700; line-height: 1.25; margin: 0; }
+.wb-carousel-card-desc { font-size: 15px; line-height: 1.6; color: var(--wb-muted); margin: 0; }
+.wb-carousel-card-actions { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+
+/* Carousel Card Styles */
+.wb-carousel-card-default {
+  background: var(--wb-surface);
+  border: 1px solid color-mix(in srgb, var(--wb-text) 9%, transparent);
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+}
+.wb-carousel-card-bordered {
+  background: var(--wb-surface);
+  border: 1.5px solid color-mix(in srgb, var(--wb-primary) 30%, transparent);
+}
+.wb-carousel-card-elevated {
+  background: var(--wb-surface);
+  border: 1px solid color-mix(in srgb, var(--wb-text) 7%, transparent);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.1);
+}
+.wb-carousel-card-flat {
+  background: color-mix(in srgb, var(--wb-text) 3.5%, var(--wb-surface));
+  border: 1px solid transparent;
+}
+.wb-carousel-card-glass {
+  background: color-mix(in srgb, var(--wb-surface) 75%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--wb-text) 12%, transparent);
+}
+.wb-carousel-card-contrast {
+  background: var(--wb-text);
+  color: var(--wb-background);
+}
+.wb-carousel-card-contrast .wb-carousel-card-title { color: var(--wb-background); }
+.wb-carousel-card-contrast .wb-carousel-card-desc { color: color-mix(in srgb, var(--wb-background) 75%, transparent); }
+
+/* Navigation Controls Bar */
+.wb-carousel-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 16px;
+}
+.wb-carousel-dots { display: flex; align-items: center; gap: 8px; }
+.wb-carousel-dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--wb-text) 22%, transparent);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.wb-carousel-dot.wb-dot-active {
+  width: 26px;
+  background: var(--wb-primary);
+}
+.wb-carousel-arrows { display: flex; align-items: center; gap: 8px; }
+.wb-carousel-arrow-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: var(--wb-surface);
+  border: 1px solid color-mix(in srgb, var(--wb-text) 12%, transparent);
+  color: var(--wb-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.wb-carousel-arrow-btn:hover {
+  background: var(--wb-text);
+  color: var(--wb-background);
+  border-color: var(--wb-text);
+  transform: scale(1.05);
+}
+.wb-carousel-nav-icon { width: 18px; height: 18px; }
+
+/* Hero Slider Variant */
+.wb-carousel-hero-container {
+  position: relative;
+  border-radius: var(--wb-radius, 24px);
+  overflow: hidden;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  color: #fff;
+  box-shadow: 0 16px 48px -12px rgba(0, 0, 0, 0.2);
+}
+.wb-carousel-hero-slide { position: relative; width: 100%; height: 100%; }
+.wb-carousel-hero-bg { position: absolute; inset: 0; z-index: 1; }
+.wb-carousel-hero-img { width: 100%; height: 100%; object-fit: cover; }
+.wb-carousel-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.5) 45%, rgba(0, 0, 0, 0.88) 100%);
+}
+.wb-carousel-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 56px 48px;
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.wb-carousel-hero-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  width: fit-content;
+}
+.wb-carousel-hero-sub { font-size: 15px; font-weight: 600; color: color-mix(in srgb, #fff 85%, var(--wb-primary)); margin: 0; }
+.wb-carousel-hero-title {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800;
+  line-height: 1.12;
+  color: #fff;
+  margin: 0;
+}
+.wb-carousel-hero-desc { font-size: 16.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.85); margin: 0; }
+.wb-carousel-hero-actions { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.wb-carousel-hero-nav-bar {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.wb-carousel-hero-dots { display: flex; align-items: center; gap: 6px; }
+.wb-carousel-hero-dot {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+}
+.wb-hero-dot-bar {
+  display: block;
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  transition: all 0.3s ease;
+}
+.wb-carousel-hero-dot.wb-hero-dot-active .wb-hero-dot-bar {
+  width: 28px;
+  background: #fff;
+}
+.wb-carousel-hero-arrows { display: flex; align-items: center; gap: 6px; }
+.wb-carousel-hero-arrow-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.wb-carousel-hero-arrow-btn:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* Showcase 3D Perspective Variant */
+.wb-carousel-showcase-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.wb-carousel-showcase-stage {
+  perspective: 1200px;
+  position: relative;
+  min-height: 440px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wb-carousel-showcase-card {
+  position: absolute;
+  width: min(480px, 85vw);
+  border-radius: var(--wb-radius, 20px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.wb-showcase-center {
+  z-index: 3;
+  transform: scale(1) translateZ(0);
+  opacity: 1;
+  box-shadow: 0 24px 52px -12px rgba(0, 0, 0, 0.22);
+}
+.wb-showcase-left {
+  z-index: 2;
+  transform: translateX(-48%) scale(0.86) rotateY(8deg);
+  opacity: 0.65;
+  filter: blur(0.5px);
+}
+.wb-showcase-right {
+  z-index: 2;
+  transform: translateX(48%) scale(0.86) rotateY(-8deg);
+  opacity: 0.65;
+  filter: blur(0.5px);
+}
+.wb-showcase-hidden {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.7);
+}
+.wb-carousel-showcase-media { aspect-ratio: 16 / 9; overflow: hidden; }
+.wb-carousel-showcase-img { width: 100%; height: 100%; object-fit: cover; }
+.wb-carousel-showcase-info { padding: 22px; display: flex; flex-direction: column; gap: 8px; }
+.wb-carousel-showcase-title { font-size: 20px; font-weight: 700; margin: 0; }
+.wb-carousel-showcase-desc { font-size: 14px; line-height: 1.5; color: var(--wb-muted); margin: 0; }
+.wb-carousel-showcase-btn { margin-top: 10px; }
+.wb-carousel-showcase-nav { display: flex; align-items: center; gap: 16px; }
+.wb-carousel-counter { font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600; color: var(--wb-muted); }
+
+/* Minimal Editorial Slide Deck */
+.wb-carousel-editorial-container { width: 100%; }
+.wb-carousel-editorial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.wb-carousel-editorial-left { display: flex; flex-direction: column; gap: 20px; }
+.wb-carousel-editorial-header { display: flex; align-items: center; gap: 14px; }
+.wb-carousel-editorial-num { font-family: ui-monospace, monospace; font-size: 15px; font-weight: 700; color: var(--wb-primary); }
+.wb-carousel-editorial-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--wb-primary) 10%, transparent);
+  color: var(--wb-primary);
+}
+.wb-carousel-editorial-body { display: flex; flex-direction: column; gap: 12px; }
+.wb-carousel-editorial-sub { font-size: 15px; font-weight: 600; color: var(--wb-primary); margin: 0; }
+.wb-carousel-editorial-title { font-size: clamp(28px, 4vw, 38px); font-weight: 800; line-height: 1.2; margin: 0; }
+.wb-carousel-editorial-desc { font-size: 16px; line-height: 1.65; color: var(--wb-muted); margin: 0; }
+.wb-carousel-editorial-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.wb-carousel-editorial-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; gap: 16px; }
+.wb-carousel-editorial-dots { display: flex; align-items: center; gap: 8px; flex: 1; }
+.wb-carousel-editorial-tab {
+  flex: 1;
+  max-width: 60px;
+  height: 24px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.wb-tab-line {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--wb-text) 18%, transparent);
+  transition: all 0.3s ease;
+}
+.wb-carousel-editorial-tab.wb-tab-active .wb-tab-line {
+  background: var(--wb-primary);
+  height: 4px;
+}
+.wb-carousel-editorial-right { border-radius: var(--wb-radius, 20px); overflow: hidden; aspect-ratio: 4 / 3; }
+.wb-carousel-editorial-img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Aspect ratio helper utilities */
+.wb-aspect-16-9 { aspect-ratio: 16 / 9; }
+.wb-aspect-4-3 { aspect-ratio: 4 / 3; }
+.wb-aspect-1-1 { aspect-ratio: 1 / 1; }
+.wb-aspect-21-9 { aspect-ratio: 21 / 9; }
+.wb-aspect-3-4 { aspect-ratio: 3 / 4; }
+
+/* =========================================================================
+   VARIANT 5: IMAGE GALLERY CAROUSEL
+   ========================================================================= */
+.wb-carousel-gallery-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.wb-carousel-gallery-viewport {
+  position: relative;
+  width: 100%;
+  border-radius: var(--wb-radius, 20px);
+  overflow: hidden;
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+}
+.wb-carousel-gallery-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(1.03);
+}
+.wb-carousel-gallery-slide.wb-gallery-slide-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  z-index: 1;
+}
+.wb-carousel-gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+}
+.wb-carousel-gallery-viewport:hover .wb-carousel-gallery-img {
+  transform: scale(1.04);
+}
+.wb-carousel-gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 40%, rgba(0, 0, 0, 0.05) 100%);
+  pointer-events: none;
+}
+.wb-carousel-gallery-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: clamp(20px, 3vw, 32px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 680px;
+}
+.wb-carousel-gallery-caption-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wb-carousel-gallery-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--wb-primary);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+.wb-carousel-gallery-counter {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--wb-font-mono, monospace);
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  padding: 3px 9px;
+  border-radius: 9999px;
+}
+.wb-carousel-gallery-title {
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.25;
+}
+.wb-carousel-gallery-desc {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+.wb-carousel-gallery-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.wb-carousel-gallery-arrows {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 4;
+  pointer-events: none;
+}
+.wb-carousel-gallery-arrow-btn {
+  pointer-events: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.wb-carousel-gallery-arrow-btn:hover {
+  background: var(--wb-primary);
+  border-color: var(--wb-primary);
+  transform: scale(1.08);
+}
+.wb-carousel-gallery-dots {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 4;
+}
+.wb-carousel-gallery-thumbs-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 2px;
+  scrollbar-width: none;
+}
+.wb-carousel-gallery-thumbs-strip::-webkit-scrollbar { display: none; }
+.wb-carousel-thumb-btn {
+  flex: 0 0 76px;
+  height: 52px;
+  border-radius: var(--wb-radius-sm, 10px);
+  overflow: hidden;
+  border: 2px solid transparent;
+  padding: 0;
+  background: var(--wb-surface);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.25s ease;
+}
+.wb-carousel-thumb-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+.wb-carousel-thumb-btn.wb-thumb-active {
+  opacity: 1;
+  border-color: var(--wb-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--wb-primary) 30%, transparent);
+}
+.wb-carousel-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =========================================================================
+   VARIANT 6: IMAGE STRIP CAROUSEL
+   ========================================================================= */
+.wb-carousel-strip-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.wb-carousel-strip-track-container {
+  overflow: hidden;
+  width: 100%;
+}
+.wb-carousel-strip-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+.wb-carousel-strip-item {
+  flex-shrink: 0;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+.wb-carousel-strip-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.wb-carousel-strip-card:hover {
+  transform: translateY(-4px);
+}
+.wb-carousel-strip-media {
+  position: relative;
+  border-radius: var(--wb-radius, 16px);
+  overflow: hidden;
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+}
+.wb-carousel-strip-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.wb-carousel-strip-card:hover .wb-carousel-strip-img {
+  transform: scale(1.06);
+}
+.wb-carousel-strip-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 4px 9px;
+  border-radius: 9999px;
+  z-index: 2;
+}
+.wb-carousel-strip-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 60%);
+  pointer-events: none;
+}
+.wb-carousel-strip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wb-carousel-strip-sub {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--wb-primary);
+  margin: 0;
+}
+.wb-carousel-strip-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--wb-text);
+  margin: 0;
+  line-height: 1.3;
+}
+.wb-carousel-strip-desc {
+  font-size: 13.5px;
+  color: var(--wb-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* =========================================================================
+   VARIANT 7: COVERFLOW 3D IMAGE REEL
+   ========================================================================= */
+.wb-carousel-coverflow-container {
+  position: relative;
+  width: 100%;
+  perspective: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  overflow: hidden;
+  padding: 24px 0;
+}
+.wb-carousel-coverflow-stage {
+  position: relative;
+  height: 380px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wb-carousel-coverflow-card {
+  position: absolute;
+  width: min(480px, 75vw);
+  border-radius: var(--wb-radius, 20px);
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.25);
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+}
+.wb-carousel-coverflow-card.wb-coverflow-center {
+  transform: translate3d(0, 0, 0) scale(1.05);
+  z-index: 5;
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--wb-primary) 50%, var(--wb-border));
+}
+.wb-carousel-coverflow-card.wb-coverflow-left {
+  transform: translate3d(-55%, 0, -100px) rotateY(25deg) scale(0.85);
+  z-index: 3;
+  opacity: 0.6;
+}
+.wb-carousel-coverflow-card.wb-coverflow-right {
+  transform: translate3d(55%, 0, -100px) rotateY(-25deg) scale(0.85);
+  z-index: 3;
+  opacity: 0.6;
+}
+.wb-carousel-coverflow-card.wb-coverflow-hidden {
+  transform: translate3d(0, 0, -200px) scale(0.6);
+  opacity: 0;
+  pointer-events: none;
+}
+.wb-carousel-coverflow-media {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.wb-carousel-coverflow-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wb-carousel-coverflow-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--wb-primary);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  z-index: 2;
+}
+.wb-carousel-coverflow-meta {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wb-carousel-coverflow-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+.wb-carousel-coverflow-sub {
+  font-size: 13.5px;
+  color: var(--wb-muted);
+  margin: 0;
+}
+.wb-carousel-coverflow-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 6;
+}
+
+/* =========================================================================
+   MARQUEE SECTION
+   ========================================================================= */
+.wb-section.wb-marquee {
+  position: relative;
+  overflow: hidden;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 32px 0 !important;
+}
+.wb-section.wb-marquee > .wb-container,
+.wb-section.wb-marquee > .wb-container-full {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Header if specified */
+.wb-marquee-header-wrapper {
+  max-width: 1200px;
+  width: calc(100% - 48px);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 24px;
+  margin-bottom: 28px;
+}
+.wb-marquee-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--wb-primary);
+  margin-bottom: 8px;
+}
+
+/* Hard reset for inherited global .wb-icon styling inside Marquee */
+.wb-marquee .wb-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+.wb-marquee .wb-icon svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+}
+
+.wb-marquee-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+  width: 100%;
+}
+.wb-marquee-track-wrapper {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  user-select: none;
+}
+.wb-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: max-content;
+  will-change: transform;
+}
+.wb-marquee-item-wrapper {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@keyframes wb-marquee-scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes wb-marquee-scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.wb-marquee-dir-left .wb-marquee-track {
+  animation: wb-marquee-scroll-left var(--wb-marquee-dur, 22s) linear infinite;
+}
+.wb-marquee-dir-right .wb-marquee-track {
+  animation: wb-marquee-scroll-right var(--wb-marquee-dur, 22s) linear infinite;
+}
+
+.wb-marquee-speed-slow { --wb-marquee-dur: 42s; }
+.wb-marquee-speed-normal { --wb-marquee-dur: 24s; }
+.wb-marquee-speed-fast { --wb-marquee-dur: 14s; }
+
+.wb-marquee-pause-hover:hover .wb-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Edge Masking Fades */
+.wb-marquee-fade-left {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: clamp(48px, 10vw, 160px);
+  background: linear-gradient(90deg, var(--wb-bg, #ffffff) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 5;
+}
+.wb-marquee-fade-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: clamp(48px, 10vw, 160px);
+  background: linear-gradient(270deg, var(--wb-bg, #ffffff) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Text Ticker Item */
+.wb-marquee-text-block {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  white-space: nowrap;
+}
+.wb-marquee-text-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wb-primary);
+  flex-shrink: 0;
+}
+.wb-marquee-text { font-weight: 800; color: var(--wb-text); }
+.wb-marquee-font-small .wb-marquee-text { font-size: 18px; }
+.wb-marquee-font-medium .wb-marquee-text { font-size: 28px; }
+.wb-marquee-font-large .wb-marquee-text { font-size: 42px; letter-spacing: -0.02em; }
+.wb-marquee-font-huge .wb-marquee-text { font-size: 60px; letter-spacing: -0.03em; }
+
+.wb-marquee-text-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--wb-primary) 12%, transparent);
+  color: var(--wb-primary);
+  border: 1px solid color-mix(in srgb, var(--wb-primary) 24%, transparent);
+  line-height: 1;
+}
+.wb-marquee-separator-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--wb-primary);
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+/* Cards Stream Item */
+.wb-marquee-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-radius: var(--wb-radius, 14px);
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  box-shadow: 0 3px 12px -3px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.wb-marquee-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--wb-primary) 40%, var(--wb-border));
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.09);
+}
+.wb-marquee-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--wb-primary) 12%, transparent);
+  color: var(--wb-primary);
+  flex-shrink: 0;
+}
+.wb-marquee-card-icon .wb-icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+.wb-marquee-card-content { display: flex; flex-direction: column; gap: 3px; }
+.wb-marquee-card-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--wb-primary);
+  line-height: 1;
+}
+.wb-marquee-card-title { font-size: 14.5px; font-weight: 700; color: var(--wb-text); margin: 0; line-height: 1.25; }
+.wb-marquee-card-sub { font-size: 12px; color: var(--wb-muted); margin: 0; line-height: 1.25; }
+
+/* Pill Badges Item (Pixel-Perfect 2026 Layout) */
+.wb-marquee-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 9999px;
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  color: var(--wb-text);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  cursor: default;
+  flex-shrink: 0;
+}
+.wb-marquee-pill:hover {
+  border-color: color-mix(in srgb, var(--wb-primary) 40%, var(--wb-border));
+  background: color-mix(in srgb, var(--wb-primary) 4%, var(--wb-surface));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.08);
+}
+.wb-marquee-pill-icon {
+  width: 17px;
+  height: 17px;
+  min-width: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wb-primary);
+  flex-shrink: 0;
+  line-height: 1;
+  margin: 0;
+}
+.wb-marquee-pill-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--wb-text);
+  letter-spacing: -0.01em;
+}
+.wb-marquee-pill-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--wb-primary) 12%, transparent);
+  color: var(--wb-primary);
+  border: 1px solid color-mix(in srgb, var(--wb-primary) 22%, transparent);
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 @container wb-site (min-width: 901px) {

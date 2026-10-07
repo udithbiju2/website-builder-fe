@@ -80,6 +80,8 @@ const baseComponents: { [T in SectionType]: ComponentConfig<SectionProps<T>> } =
   pricing: sectionComponent("pricing"),
   media: sectionComponent("media"),
   team: sectionComponent("team"),
+  carousel: sectionComponent("carousel"),
+  marquee: sectionComponent("marquee"),
 };
 
 const presetComponents = Object.fromEntries(

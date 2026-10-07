@@ -20,7 +20,9 @@ export type SectionCategory =
   | "Content"
   | "Media"
   | "Pricing"
-  | "Team";
+  | "Team"
+  | "Carousel"
+  | "Marquee";
 
 export type SectionDefinition<T extends SectionType> = {
   type: T;
@@ -381,6 +383,66 @@ export const SECTION_DEFINITIONS: { [T in SectionType]: SectionDefinition<T> } =
           { name: "Team member", role: "Role" },
           { name: "Team member", role: "Role" },
           { name: "Team member", role: "Role" },
+        ],
+      }),
+    },
+    carousel: {
+      type: "carousel",
+      label: "Carousel / Slider",
+      category: "Carousel",
+      description: "Interactive slide deck, multi-card slider, or full-width hero banner.",
+      createData: () => ({
+        variant: "cards",
+        heading: "Featured Highlights",
+        intro: "Browse our latest solutions, client stories, and capabilities.",
+        autoPlay: false,
+        interval: 5,
+        showArrows: true,
+        showDots: true,
+        pauseOnHover: true,
+        slides: [
+          {
+            title: "Next-Gen Cloud Architecture",
+            subtitle: "Infrastructure",
+            description: "Ultra-low latency microservices engineered for 99.999% uptime and elastic scalability.",
+            badge: "NEW RELEASE",
+            button: { label: "Learn more", href: "/services" },
+          },
+          {
+            title: "AI-Powered Automation",
+            subtitle: "Intelligence",
+            description: "Empower your operations with frontier machine learning pipelines and real-time inference.",
+            badge: "ENTERPRISE",
+            button: { label: "Explore AI", href: "/services" },
+          },
+          {
+            title: "Design System Engineering",
+            subtitle: "User Experience",
+            description: "Pixel-perfect tokenized component libraries that bridge design and engineering seamlessly.",
+            badge: "FEATURED",
+            button: { label: "View Showcase", href: "/portfolio" },
+          },
+        ],
+      }),
+    },
+    marquee: {
+      type: "marquee",
+      label: "Marquee / Ticker",
+      category: "Marquee",
+      description: "Smooth continuous scrolling ticker for headlines, badges, or capability streams.",
+      createData: () => ({
+        variant: "ticker-text",
+        speed: "normal",
+        direction: "left",
+        pauseOnHover: true,
+        gradientFades: true,
+        fontSize: "medium",
+        items: [
+          { text: "GLOBAL CLOUD SCALE" },
+          { text: "ENTERPRISE SECURITY", badge: "SOC2 TYPE II" },
+          { text: "AI & ML INTEGRATION" },
+          { text: "99.99% SLA UPTIME", badge: "GUARANTEED" },
+          { text: "24/7 DEDICATED TRIAGE" },
         ],
       }),
     },
@@ -2762,5 +2824,454 @@ export const SECTION_PRESETS: SectionPreset[] = [
     category: "Team",
     description: "Classic 3 people cards with role and photo.",
     create: () => createSection("team"),
+  },
+  {
+    key: "carousel-cards",
+    type: "carousel",
+    label: "Carousel · Multi-Cards Slider",
+    category: "Carousel",
+    description: "Interactive slider with card elevation, dot indicators, and chevron navigation.",
+    create: () =>
+      createSection("carousel", {
+        data: {
+          variant: "cards",
+          eyebrow: "OUR CAPABILITIES",
+          heading: "Engineered for excellence.",
+          intro: "Explore what makes our platform and services the industry benchmark.",
+          badge: "Interactive Slider",
+          autoPlay: false,
+          interval: 5,
+          showArrows: true,
+          showDots: true,
+          slides: [
+            {
+              title: "Autonomous Agentic Pipelines",
+              subtitle: "Artificial Intelligence",
+              description: "Self-healing workflows that execute complex tasks reliably in enterprise environments.",
+              badge: "ENTERPRISE",
+              button: { label: "Explore Platform", href: "/services" },
+            },
+            {
+              title: "Microsecond Edge Computing",
+              subtitle: "Infrastructure",
+              description: "Deploy globally distributed logic within 50ms of your end users with zero cold starts.",
+              badge: "INFRASTRUCTURE",
+              button: { label: "View Architecture", href: "/services" },
+            },
+            {
+              title: "Fluid Design Systems",
+              subtitle: "User Interface",
+              description: "Harmonious token architecture supporting dynamic dark modes and micro-interactions.",
+              badge: "DESIGN",
+              button: { label: "Design Guide", href: "/portfolio" },
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "carousel-hero",
+    type: "carousel",
+    label: "Carousel · Cinematic Hero Slider",
+    category: "Carousel",
+    description: "Full-width hero banner slider with rich dark overlays and call-to-actions.",
+    create: () =>
+      createSection("carousel", {
+        data: {
+          variant: "hero-slider",
+          autoPlay: true,
+          interval: 6,
+          showArrows: true,
+          showDots: true,
+          pauseOnHover: true,
+          slides: [
+            {
+              title: "Crafting digital experiences that transform industries.",
+              subtitle: "Global Product Studio",
+              description: "We partner with visionary founders and global enterprises to design, build, and scale world-class software.",
+              badge: "2026 BENCHMARK",
+              button: { label: "Start a Project", href: "/contact" },
+              secondaryButton: { label: "Our Portfolio", href: "/portfolio" },
+            },
+            {
+              title: "High-throughput cloud systems built for resilience.",
+              subtitle: "Infrastructure Excellence",
+              description: "Architecting cloud foundations that withstand mission-critical scale with zero downtime.",
+              badge: "CLOUD PLATFORMS",
+              button: { label: "Explore Solutions", href: "/services" },
+              secondaryButton: { label: "Read Case Studies", href: "/portfolio" },
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "carousel-showcase",
+    type: "carousel",
+    label: "Carousel · 3D Showcase Focus",
+    category: "Carousel",
+    description: "Perspective 3D active focus card showcase with counter and navigation.",
+    create: () =>
+      createSection("carousel", {
+        data: {
+          variant: "showcase",
+          eyebrow: "FEATURED WORK",
+          heading: "Spotlight on Innovation",
+          intro: "Click or swipe through our marquee case studies and products.",
+          slides: [
+            {
+              title: "Aether AI Analytics",
+              badge: "FINTECH",
+              description: "Real-time semantic risk analysis for institutional portfolio managers.",
+              button: { label: "Case Study", href: "/portfolio" },
+            },
+            {
+              title: "Vanguard Design System",
+              badge: "DESIGN SYSTEM",
+              description: "140+ accessible UI components powering 8 product verticals.",
+              button: { label: "View System", href: "/portfolio" },
+            },
+            {
+              title: "Krypton Cloud Engine",
+              badge: "INFRASTRUCTURE",
+              description: "Distributed message broker handling 40M requests/sec.",
+              button: { label: "Deep Dive", href: "/portfolio" },
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "carousel-editorial",
+    type: "carousel",
+    label: "Carousel · Minimal Editorial Slide Deck",
+    category: "Carousel",
+    description: "Swiss split editorial slide deck with active slide lines and prominent typography.",
+    create: () =>
+      createSection("carousel", {
+        data: {
+          variant: "minimal-editorial",
+          eyebrow: "STRATEGIC PILLARS",
+          slides: [
+            {
+              title: "Precision in every interaction and pixel.",
+              subtitle: "Pillar 01 — Quality",
+              badge: "CRAFT",
+              description: "We don't settle for minimum viable. We build software that feels intuitive, robust, and delightful.",
+              button: { label: "Our Philosophy", href: "/about" },
+            },
+            {
+              title: "Speed without sacrificing architectural integrity.",
+              subtitle: "Pillar 02 — Velocity",
+              badge: "EXECUTION",
+              description: "Continuous deployment and automated testing pipelines to ship value rapidly and safely.",
+              button: { label: "Our Process", href: "/about" },
+            },
+            {
+              title: "Long-term partnership and dedicated ownership.",
+              subtitle: "Pillar 03 — Stewardship",
+              badge: "PARTNERSHIP",
+              description: "We work alongside your leadership team as embedded architects, not disconnected vendors.",
+              button: { label: "Contact Partners", href: "/contact" },
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "carousel-image-gallery",
+    type: "carousel",
+    label: "Images Carousel · Full Visual Gallery",
+    category: "Carousel",
+    description: "Cinematic full-frame photo showcase with thumbnail navigation bar and overlay captions.",
+    create: () =>
+      createSection("carousel", {
+        data: {
+          variant: "image-gallery",
+          eyebrow: "VISUAL PORTFOLIO",
+          heading: "Captured in Precision",
+          intro: "Explore our latest flagship spatial architecture and product releases.",
+          imageAspect: "16:9",
+          showThumbnails: true,
+          showArrows: true,
+          showDots: false,
+          autoPlay: true,
+          interval: 6,
+          slides: [
+            {
+              title: "Nordic Minimalist Headquarters",
+              caption: "Architectural design with floor-to-ceiling glass and sustainably harvested Scandinavian timber.",
+              badge: "ARCHITECTURE",
+              image: {
+                url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&auto=format&fit=crop&q=80",
+                alt: "Modern minimalist workspace",
+              },
+              button: { label: "View Case Study", href: "/work" },
+            },
+            {
+              title: "Next-Gen Quantum Hardware Lab",
+              caption: "Sub-Kelvin cryogenic compute testing facilities operating at high coherence thresholds.",
+              badge: "DEEP TECH",
+              image: {
+                url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1600&auto=format&fit=crop&q=80",
+                alt: "Quantum hardware laboratory",
+              },
+              button: { label: "Lab Overview", href: "/work" },
+            },
+            {
+              title: "Spatial Interactive Experiences",
+              caption: "Zero-latency multi-user interactive canvas designed for precision engineering teams.",
+              badge: "INTERFACE",
+              image: {
+                url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&auto=format&fit=crop&q=80",
+                alt: "Cybernetic high-tech display",
+              },
+              button: { label: "Explore Interface", href: "/work" },
+            },
+            {
+              title: "Sustainable Urban Ecosystems",
+              caption: "Carbon-negative commercial campus powered by geothermal and photovoltaic arrays.",
+              badge: "ENERGY",
+              image: {
+                url: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=1600&auto=format&fit=crop&q=80",
+                alt: "Green modern architecture",
+              },
+              button: { label: "Sustainability Report", href: "/work" },
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "carousel-image-strip",
+    type: "carousel",
+    label: "Images Carousel · Multi-Image Filmstrip",
+    category: "Carousel",
+    description: "Continuous multi-column photography filmstrip reel for project works and showcases.",
+    create: () =>
+      createSection("carousel", {
+        data: {
+          variant: "image-strip",
+          eyebrow: "FEATURED WORK",
+          heading: "Crafted for global visionaries",
+          columns: 3,
+          imageAspect: "4:3",
+          showArrows: true,
+          showDots: true,
+          slides: [
+            {
+              title: "Autonomous Fleet OS",
+              subtitle: "01 / Mobility",
+              caption: "Real-time edge compute telemetry and mission control.",
+              badge: "AUTONOMOUS",
+              image: {
+                url: "https://images.unsplash.com/photo-1508974239320-0a029497e820?w=1000&auto=format&fit=crop&q=80",
+                alt: "Autonomous tech system",
+              },
+            },
+            {
+              title: "Fintech Core Engine",
+              subtitle: "02 / Platform",
+              caption: "High-frequency global settlement ledger processing 100k TPS.",
+              badge: "FINANCE",
+              image: {
+                url: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1000&auto=format&fit=crop&q=80",
+                alt: "Fintech analytics",
+              },
+            },
+            {
+              title: "Biotech Genomics Suite",
+              subtitle: "03 / Research",
+              caption: "AI-accelerated protein folding simulations.",
+              badge: "GENOMICS",
+              image: {
+                url: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=1000&auto=format&fit=crop&q=80",
+                alt: "Biotech research suite",
+              },
+            },
+            {
+              title: "Satellite Orbit Mesh",
+              subtitle: "04 / Aerospace",
+              caption: "Laser inter-satellite communication constellations.",
+              badge: "AEROSPACE",
+              image: {
+                url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1000&auto=format&fit=crop&q=80",
+                alt: "Satellite orbit network",
+              },
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "carousel-image-coverflow",
+    type: "carousel",
+    label: "Images Carousel · 3D Coverflow Reel",
+    category: "Carousel",
+    description: "3D perspective coverflow deck focusing on high-impact visual artwork and photography.",
+    create: () =>
+      createSection("carousel", {
+        data: {
+          variant: "image-coverflow",
+          eyebrow: "GALLERY PERSPECTIVE",
+          heading: "Spatial 3D Gallery",
+          imageAspect: "16:9",
+          slides: [
+            {
+              title: "Spatial Compute Studio",
+              subtitle: "Tokyo, Japan",
+              badge: "STUDIO",
+              image: {
+                url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&auto=format&fit=crop&q=80",
+                alt: "Atmospheric landscape and studio",
+              },
+            },
+            {
+              title: "Modernist Monolith",
+              subtitle: "Reykjavik, Iceland",
+              badge: "ARCHITECTURE",
+              image: {
+                url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80",
+                alt: "Modernist architecture",
+              },
+            },
+            {
+              title: "Design Laboratory",
+              subtitle: "Zurich, Switzerland",
+              badge: "RESEARCH",
+              image: {
+                url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&auto=format&fit=crop&q=80",
+                alt: "Design laboratory",
+              },
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "marquee-ticker",
+    type: "marquee",
+    label: "Marquee · Bold Infinite Ticker",
+    category: "Marquee",
+    description: "Continuous typographic scroll with star separators and speed controls.",
+    create: () =>
+      createSection("marquee", {
+        data: {
+          variant: "ticker-text",
+          speed: "normal",
+          direction: "left",
+          pauseOnHover: true,
+          gradientFades: true,
+          fontSize: "large",
+          items: [
+            { text: "GLOBAL RESILIENCE", badge: "99.999%" },
+            { text: "ENTERPRISE SECURITY", badge: "SOC2" },
+            { text: "AI & ML PLATFORMS" },
+            { text: "ZERO COLD STARTS", badge: "EDGE" },
+            { text: "24/7 DEDICATED SUPPORT" },
+          ],
+        },
+      }),
+  },
+  {
+    key: "marquee-cards",
+    type: "marquee",
+    label: "Marquee · Streaming Feature Cards",
+    category: "Marquee",
+    description: "Streaming continuous stream of feature cards and capability pills.",
+    create: () =>
+      createSection("marquee", {
+        data: {
+          variant: "cards-stream",
+          eyebrow: "LIVE CAPABILITIES",
+          heading: "Continuously streaming infrastructure",
+          speed: "normal",
+          direction: "left",
+          pauseOnHover: true,
+          gradientFades: true,
+          items: [
+            {
+              text: "Cloud Automation",
+              subtext: "Self-healing Kubernetes clusters",
+              badge: "INFRA",
+              icon: "cloud",
+            },
+            {
+              text: "Frontier AI Models",
+              subtext: "Low-latency streaming inferences",
+              badge: "INTELLIGENCE",
+              icon: "sparkles",
+            },
+            {
+              text: "Design Token System",
+              subtext: "Unified multi-platform consistency",
+              badge: "UX",
+              icon: "tools",
+            },
+            {
+              text: "High-Throughput APIs",
+              subtext: "< 5ms response time globally",
+              badge: "SCALE",
+              icon: "bolt",
+            },
+          ],
+        },
+      }),
+  },
+  {
+    key: "marquee-pills",
+    type: "marquee",
+    label: "Marquee · Glowing Capability Badges",
+    category: "Marquee",
+    description: "Streaming badge pills for tech stack, certifications, and capabilities.",
+    create: () =>
+      createSection("marquee", {
+        data: {
+          variant: "pill-badges",
+          speed: "slow",
+          direction: "left",
+          pauseOnHover: true,
+          gradientFades: true,
+          items: [
+            { text: "TypeScript / Node.js", icon: "code" },
+            { text: "React & Next.js", icon: "layers" },
+            { text: "Kubernetes & Docker", icon: "cloud" },
+            { text: "PostgreSQL & Redis", icon: "box" },
+            { text: "GraphQL & REST", icon: "cloud" },
+            { text: "Tailwind & Design Tokens", icon: "tools" },
+            { text: "SOC2 & GDPR Compliant", badge: "CERTIFIED", icon: "shield" },
+          ],
+        },
+      }),
+  },
+  {
+    key: "marquee-dual",
+    type: "marquee",
+    label: "Marquee · Dual Opposite Streams",
+    category: "Marquee",
+    description: "Two stacked opposite-direction streaming tracks for dynamic layered movement.",
+    create: () =>
+      createSection("marquee", {
+        data: {
+          variant: "dual-directional",
+          speed: "normal",
+          direction: "left",
+          pauseOnHover: true,
+          gradientFades: true,
+          fontSize: "medium",
+          items: [
+            { text: "PRECISION CRAFT", badge: "DESIGN" },
+            { text: "ZERO DOWNTIME", badge: "RELIABILITY" },
+            { text: "INSTANT SCALING", badge: "CLOUD" },
+            { text: "WORLD-CLASS TALENT", badge: "TEAM" },
+          ],
+          secondaryItems: [
+            { text: "AI & ML WORKFLOWS", badge: "AUTOMATION" },
+            { text: "GLOBAL NETWORK", badge: "EDGE" },
+            { text: "CLIENT-FIRST PHILOSOPHY", badge: "TRUST" },
+            { text: "CONTINUOUS INNOVATION", badge: "FUTURE" },
+          ],
+        },
+      }),
   },
 ];

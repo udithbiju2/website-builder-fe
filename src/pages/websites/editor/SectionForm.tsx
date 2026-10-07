@@ -1,4 +1,8 @@
 import type {
+  CarouselCardStyle,
+  CarouselData,
+  CarouselSlide,
+  CarouselVariant,
   ContactCardStyle,
   ContactChannel,
   ContactData,
@@ -18,6 +22,9 @@ import type {
   HeroData,
   IconName,
   LogosData,
+  MarqueeData,
+  MarqueeItem,
+  MarqueeVariant,
   MediaData,
   PricingCardStyle,
   PricingData,
@@ -2610,6 +2617,431 @@ function TeamForm({ data, onChange }: DataFormProps<TeamData>) {
   );
 }
 
+const CAROUSEL_VARIANT_OPTIONS: { value: CarouselVariant; label: string }[] = [
+  { value: "image-gallery", label: "Images Carousel · Full Visual Gallery" },
+  { value: "image-strip", label: "Images Carousel · Multi-Image Filmstrip" },
+  { value: "image-coverflow", label: "Images Carousel · 3D Coverflow Reel" },
+  { value: "cards", label: "Multi-Cards Interactive Slider" },
+  { value: "hero-slider", label: "Cinematic Hero Banner Slider" },
+  { value: "showcase", label: "3D Perspective Focus Showcase" },
+  { value: "minimal-editorial", label: "Minimal Editorial Slide Deck" },
+];
+
+const CAROUSEL_CARD_STYLE_OPTIONS: { value: CarouselCardStyle; label: string }[] = [
+  { value: "default", label: "Default (Soft Tone & Clean Border)" },
+  { value: "bordered", label: "Bordered (Crisp Accent Line)" },
+  { value: "elevated", label: "Elevated (Subtle Depth Shadow)" },
+  { value: "flat", label: "Flat (Modern Minimalist)" },
+  { value: "glass", label: "Frosted Glass" },
+  { value: "contrast", label: "High Contrast" },
+];
+
+function CarouselForm({ data, onChange }: DataFormProps<CarouselData>) {
+  const currentVariant = data.variant || "cards";
+  const isImageVariant =
+    currentVariant === "image-gallery" ||
+    currentVariant === "image-strip" ||
+    currentVariant === "image-coverflow";
+
+  return (
+    <>
+      <FormGroup title="Layout & Styling">
+        <SelectField
+          label="Layout Variant"
+          value={currentVariant}
+          onChange={(variant) =>
+            onChange({ ...data, variant: variant as CarouselVariant })
+          }
+          options={CAROUSEL_VARIANT_OPTIONS}
+        />
+        {isImageVariant && (
+          <SelectField
+            label="Image Aspect Ratio"
+            value={data.imageAspect || "16:9"}
+            onChange={(aspect) =>
+              onChange({
+                ...data,
+                imageAspect: aspect as "16:9" | "4:3" | "1:1" | "21:9" | "3:4",
+              })
+            }
+            options={[
+              { value: "16:9", label: "16:9 (Landscape Cinematic)" },
+              { value: "4:3", label: "4:3 (Standard Visual)" },
+              { value: "1:1", label: "1:1 (Square)" },
+              { value: "21:9", label: "21:9 (Ultrawide Banner)" },
+              { value: "3:4", label: "3:4 (Portrait)" },
+            ]}
+          />
+        )}
+        {currentVariant === "image-strip" && (
+          <SelectField
+            label="Visible Columns (Desktop)"
+            value={String(data.columns || 3)}
+            onChange={(val) =>
+              onChange({ ...data, columns: parseInt(val, 10) as GridColumns })
+            }
+            options={[
+              { value: "2", label: "2 Columns (Large Showcase)" },
+              { value: "3", label: "3 Columns (Balanced Filmstrip)" },
+              { value: "4", label: "4 Columns (Compact Grid Reel)" },
+            ]}
+          />
+        )}
+        {!isImageVariant && (
+          <SelectField
+            label="Card Styling"
+            value={data.cardStyle || "default"}
+            onChange={(cardStyle) =>
+              onChange({ ...data, cardStyle: cardStyle as CarouselCardStyle })
+            }
+            options={CAROUSEL_CARD_STYLE_OPTIONS}
+          />
+        )}
+        <SelectField
+          label="Header Alignment"
+          value={data.align || "left"}
+          onChange={(align) => onChange({ ...data, align: align as SectionAlign })}
+          options={ALIGN_OPTIONS}
+        />
+      </FormGroup>
+
+      {currentVariant !== "hero-slider" && (
+        <FormGroup title="Header & Meta">
+          <TextField
+            label="Eyebrow / Badge"
+            value={data.eyebrow || ""}
+            onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+            maxLength={80}
+            placeholder="e.g. VISUAL GALLERY"
+          />
+          <TextField
+            label="Heading"
+            value={data.heading || ""}
+            onChange={(heading) => onChange({ ...data, heading })}
+            maxLength={200}
+          />
+          <TextAreaField
+            label="Intro / Subheading"
+            value={data.intro || ""}
+            onChange={(intro) => onChange({ ...data, intro })}
+            maxLength={500}
+          />
+          <TextField
+            label="Status / Counter Badge"
+            value={data.badge || ""}
+            onChange={(badge) => onChange({ ...data, badge })}
+            maxLength={80}
+            placeholder="e.g. Interactive Showcase"
+          />
+        </FormGroup>
+      )}
+
+      <FormGroup title="Playback & Controls">
+        <CheckboxField
+          label="Auto-play slides"
+          checked={data.autoPlay ?? false}
+          onChange={(autoPlay) => onChange({ ...data, autoPlay })}
+          hint="Automatically transitions through slides continuously."
+        />
+        {data.autoPlay && (
+          <TextField
+            label="Slide Interval (seconds)"
+            type="number"
+            value={String(data.interval || 5)}
+            onChange={(val) => {
+              const num = parseInt(val, 10);
+              onChange({ ...data, interval: isNaN(num) ? 5 : Math.max(2, Math.min(30, num)) });
+            }}
+          />
+        )}
+        <CheckboxField
+          label="Pause auto-play on mouse hover"
+          checked={data.pauseOnHover ?? true}
+          onChange={(pauseOnHover) => onChange({ ...data, pauseOnHover })}
+        />
+        <CheckboxField
+          label="Show navigation arrows"
+          checked={data.showArrows ?? true}
+          onChange={(showArrows) => onChange({ ...data, showArrows })}
+        />
+        <CheckboxField
+          label="Show pagination dots / progress bar"
+          checked={data.showDots ?? true}
+          onChange={(showDots) => onChange({ ...data, showDots })}
+        />
+        {currentVariant === "image-gallery" && (
+          <CheckboxField
+            label="Show bottom thumbnail strip"
+            checked={data.showThumbnails ?? true}
+            onChange={(showThumbnails) => onChange({ ...data, showThumbnails })}
+          />
+        )}
+      </FormGroup>
+
+      <FormGroup title="Slides & Imagery">
+        <ItemList<CarouselSlide>
+          label="Slides"
+          items={data.slides}
+          max={12}
+          onChange={(slides) => onChange({ ...data, slides })}
+          create={() => ({
+            title: "New Highlight Image",
+            subtitle: "Category",
+            caption: "Detailed visual caption and snapshot description.",
+            badge: "FEATURED",
+            image: {
+              url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&auto=format&fit=crop&q=80",
+              alt: "Visual showcase slide",
+            },
+          })}
+          itemTitle={(slide) => slide.title || "Slide"}
+          addLabel="Add Slide / Image"
+          renderItem={(slide, update) => (
+            <>
+              <ImageField
+                label="Slide Image / Photography"
+                value={slide.image}
+                onChange={(image) => update({ ...slide, image })}
+                optional
+              />
+              <TextField
+                label="Slide Title / Headline"
+                value={slide.title}
+                onChange={(title) => update({ ...slide, title })}
+                maxLength={120}
+                required
+              />
+              <TextField
+                label="Subtitle / Category"
+                value={slide.subtitle || ""}
+                onChange={(subtitle) => update({ ...slide, subtitle })}
+                maxLength={120}
+                placeholder="e.g. Architectural Design"
+              />
+              <TextField
+                label="Badge / Tag"
+                value={slide.badge || ""}
+                onChange={(badge) => update({ ...slide, badge })}
+                maxLength={60}
+                placeholder="e.g. 2026 ARCHIVE"
+              />
+              <TextAreaField
+                label="Caption / Description"
+                value={slide.caption || slide.description || ""}
+                onChange={(text) => update({ ...slide, caption: text, description: text })}
+                maxLength={600}
+                rows={2}
+              />
+              <OptionalLinkField
+                label="Primary Button / Action"
+                value={slide.button}
+                onChange={(button) => update({ ...slide, button })}
+                fallback={{ label: "View Details", href: "/work" }}
+              />
+              <OptionalLinkField
+                label="Secondary Button"
+                value={slide.secondaryButton}
+                onChange={(secondaryButton) => update({ ...slide, secondaryButton })}
+                fallback={{ label: "Explore", href: "/contact" }}
+              />
+            </>
+          )}
+        />
+      </FormGroup>
+    </>
+  );
+}
+
+const MARQUEE_VARIANT_OPTIONS: { value: MarqueeVariant; label: string }[] = [
+  { value: "ticker-text", label: "Bold Infinite Typographic Ticker" },
+  { value: "cards-stream", label: "Continuous Feature Cards Stream" },
+  { value: "pill-badges", label: "Glowing Capability Badges / Tech Stream" },
+  { value: "dual-directional", label: "Dual Opposite Streaming Tracks" },
+];
+
+function MarqueeForm({ data, onChange }: DataFormProps<MarqueeData>) {
+  const currentVariant = data.variant || "ticker-text";
+
+  return (
+    <>
+      <FormGroup title="Layout & Styling">
+        <SelectField
+          label="Marquee Style"
+          value={currentVariant}
+          onChange={(variant) =>
+            onChange({ ...data, variant: variant as MarqueeVariant })
+          }
+          options={MARQUEE_VARIANT_OPTIONS}
+        />
+        <SelectField
+          label="Scroll Speed"
+          value={data.speed || "normal"}
+          onChange={(speed) =>
+            onChange({ ...data, speed: speed as "slow" | "normal" | "fast" })
+          }
+          options={[
+            { value: "slow", label: "Gentle (Slow / Relaxed)" },
+            { value: "normal", label: "Normal (Standard Flow)" },
+            { value: "fast", label: "Dynamic (Fast Pace)" },
+          ]}
+        />
+        <SelectField
+          label="Primary Direction"
+          value={data.direction || "left"}
+          onChange={(direction) =>
+            onChange({ ...data, direction: direction as "left" | "right" })
+          }
+          options={[
+            { value: "left", label: "Leftward (Standard ←)" },
+            { value: "right", label: "Rightward (Reverse →)" },
+          ]}
+        />
+        {currentVariant === "ticker-text" && (
+          <SelectField
+            label="Typography Size"
+            value={data.fontSize || "medium"}
+            onChange={(fontSize) =>
+              onChange({
+                ...data,
+                fontSize: fontSize as "small" | "medium" | "large" | "huge",
+              })
+            }
+            options={[
+              { value: "small", label: "Small (18px)" },
+              { value: "medium", label: "Medium (28px - Standard)" },
+              { value: "large", label: "Large (42px - Impact)" },
+              { value: "huge", label: "Huge (60px - Marquee Headline)" },
+            ]}
+          />
+        )}
+        <CheckboxField
+          label="Pause scrolling on hover"
+          checked={data.pauseOnHover ?? true}
+          onChange={(pauseOnHover) => onChange({ ...data, pauseOnHover })}
+        />
+        <CheckboxField
+          label="Soft edge gradient fade masks"
+          checked={data.gradientFades ?? true}
+          onChange={(gradientFades) => onChange({ ...data, gradientFades })}
+          hint="Creates a seamless fade transition on the left and right screen borders."
+        />
+      </FormGroup>
+
+      <FormGroup title="Optional Header">
+        <TextField
+          label="Eyebrow"
+          value={data.eyebrow || ""}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. LIVE NETWORK ACTIVITY"
+        />
+        <TextField
+          label="Heading"
+          value={data.heading || ""}
+          onChange={(heading) => onChange({ ...data, heading })}
+          maxLength={200}
+        />
+        <TextAreaField
+          label="Intro"
+          value={data.intro || ""}
+          onChange={(intro) => onChange({ ...data, intro })}
+          maxLength={500}
+        />
+      </FormGroup>
+
+      <FormGroup title="Streaming Items (Track 1)">
+        <ItemList<MarqueeItem>
+          label="Marquee Items"
+          items={data.items}
+          max={24}
+          onChange={(items) => onChange({ ...data, items })}
+          create={() => ({
+            text: "ENTERPRISE QUALITY",
+            badge: "99.99%",
+            icon: "bolt",
+          })}
+          itemTitle={(item) => item.text || "Item"}
+          addLabel="Add Marquee Item"
+          renderItem={(item, update) => (
+            <>
+              <TextField
+                label="Primary Text"
+                value={item.text}
+                onChange={(text) => update({ ...item, text })}
+                maxLength={120}
+                required
+              />
+              <TextField
+                label="Badge / Tag"
+                value={item.badge || ""}
+                onChange={(badge) => update({ ...item, badge })}
+                maxLength={60}
+                placeholder="e.g. NEW or 99.9%"
+              />
+              {currentVariant === "cards-stream" && (
+                <TextField
+                  label="Subtext / Description"
+                  value={item.subtext || ""}
+                  onChange={(subtext) => update({ ...item, subtext })}
+                  maxLength={120}
+                  placeholder="e.g. High-throughput edge cluster"
+                />
+              )}
+              <SelectField
+                label="Icon"
+                value={item.icon || ""}
+                onChange={(icon) => update({ ...item, icon: (icon as IconName) || undefined })}
+                options={ICON_OPTIONS}
+              />
+            </>
+          )}
+        />
+      </FormGroup>
+
+      {currentVariant === "dual-directional" && (
+        <FormGroup title="Opposing Track Items (Track 2)">
+          <ItemList<MarqueeItem>
+            label="Secondary Stream Items"
+            items={data.secondaryItems || []}
+            max={24}
+            onChange={(secondaryItems) => onChange({ ...data, secondaryItems })}
+            create={() => ({
+              text: "GLOBAL CAPABILITY",
+              badge: "CLOUD",
+              icon: "cloud",
+            })}
+            itemTitle={(item) => item.text || "Item"}
+            addLabel="Add Secondary Item"
+            renderItem={(item, update) => (
+              <>
+                <TextField
+                  label="Primary Text"
+                  value={item.text}
+                  onChange={(text) => update({ ...item, text })}
+                  maxLength={120}
+                  required
+                />
+                <TextField
+                  label="Badge / Tag"
+                  value={item.badge || ""}
+                  onChange={(badge) => update({ ...item, badge })}
+                  maxLength={60}
+                />
+                <SelectField
+                  label="Icon"
+                  value={item.icon || ""}
+                  onChange={(icon) => update({ ...item, icon: (icon as IconName) || undefined })}
+                  options={ICON_OPTIONS}
+                />
+              </>
+            )}
+          />
+        </FormGroup>
+      )}
+    </>
+  );
+}
+
 type SettingsFormProps = {
   settings: SectionSettings;
   onChange: (settings: SectionSettings) => void;
@@ -2910,6 +3342,20 @@ function DataForm({
     case "team":
       return (
         <TeamForm
+          data={section.data}
+          onChange={(data) => onChange({ ...section, data })}
+        />
+      );
+    case "carousel":
+      return (
+        <CarouselForm
+          data={section.data}
+          onChange={(data) => onChange({ ...section, data })}
+        />
+      );
+    case "marquee":
+      return (
+        <MarqueeForm
           data={section.data}
           onChange={(data) => onChange({ ...section, data })}
         />

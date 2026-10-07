@@ -364,9 +364,10 @@ type SectionShellProps = {
   className?: string;
   label?: string;
   children: ReactNode;
+  fullWidth?: boolean;
 };
 
-export function SectionShell({ sectionId, settings, className, label, children }: SectionShellProps) {
+export function SectionShell({ sectionId, settings, className, label, children, fullWidth }: SectionShellProps) {
   const customColors = settings.customColors;
   const customStyle: CSSProperties = {
     ...sectionFontStyle(settings.font),
@@ -397,7 +398,7 @@ export function SectionShell({ sectionId, settings, className, label, children }
       aria-label={label}
       style={Object.keys(customStyle).length > 0 ? customStyle : undefined}
     >
-      <div className="wb-container">{children}</div>
+      <div className={fullWidth ? "wb-container-full" : "wb-container"}>{children}</div>
     </section>
   );
 }
