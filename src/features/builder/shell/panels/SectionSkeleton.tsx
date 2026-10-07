@@ -412,6 +412,79 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
         </div>
       );
 
+    case "contact-split":
+      return (
+        <div className="grid h-full w-full grid-cols-2 items-center gap-2 p-2">
+          <div className="flex flex-col gap-1">
+            <div className="h-1 w-6 rounded-full bg-brand/80" />
+            <div className="h-2 w-12 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+            <div className="h-1 w-14 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="mt-0.5 flex items-center gap-1">
+              <div className="size-1 rounded-full bg-emerald-500" />
+              <div className="h-0.5 w-10 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-0.5 rounded-sm border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
+            <div className="h-1 w-8 rounded-xs bg-zinc-300 dark:bg-zinc-600" />
+            <div className="h-1.5 w-full rounded-xs bg-zinc-100 dark:bg-zinc-700" />
+            <div className="h-1.5 w-full rounded-xs bg-zinc-100 dark:bg-zinc-700" />
+            <div className="mt-0.5 h-1.5 w-6 self-end rounded-xs bg-brand" />
+          </div>
+        </div>
+      );
+
+    case "contact-hub":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1 p-2">
+          <div className="flex flex-col items-center gap-0.5">
+            <div className="h-1.5 w-12 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+            <div className="h-0.5 w-16 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex flex-col gap-0.5 rounded-xs border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
+                <div className="size-1.5 rounded-full bg-brand/60" />
+                <div className="h-1 w-6 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+                <div className="h-0.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-600" />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case "contact-editorial":
+      return (
+        <div className="grid h-full w-full grid-cols-2 items-center gap-2 p-2">
+          <div className="flex flex-col gap-1 border-r border-zinc-200 pr-2 dark:border-zinc-700">
+            <div className="h-1 w-6 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="h-2.5 w-10 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+            <div className="h-1 w-12 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+          </div>
+          <div className="flex flex-col gap-1 pl-1">
+            <div className="h-1.5 w-full border-b border-zinc-200 bg-transparent dark:border-zinc-700" />
+            <div className="h-1.5 w-full border-b border-zinc-200 bg-transparent dark:border-zinc-700" />
+            <div className="h-1.5 w-8 rounded-xs bg-zinc-900 dark:bg-zinc-100" />
+          </div>
+        </div>
+      );
+
+    case "contact-glass":
+      return (
+        <div className="flex h-full w-full items-center justify-center p-2">
+          <div className="flex w-full items-center justify-between gap-1.5 rounded-sm border border-zinc-300/80 bg-zinc-100/70 p-1.5 shadow-xs dark:border-zinc-700/80 dark:bg-zinc-800/70">
+            <div className="flex flex-col gap-0.5">
+              <div className="h-1 w-5 rounded-full bg-brand/70" />
+              <div className="h-2 w-10 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+              <div className="h-1 w-12 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            </div>
+            <div className="flex h-6 w-10 flex-col gap-0.5 rounded-xs bg-white p-0.5 dark:bg-zinc-900">
+              <div className="h-1 w-full rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+              <div className="mt-auto h-1.5 w-5 self-end rounded-xs bg-brand" />
+            </div>
+          </div>
+        </div>
+      );
+
     case "contact-form":
       return (
         <div className="grid h-full w-full grid-cols-2 items-center gap-2 p-2">
@@ -649,6 +722,75 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
               <div className="ml-0.5 size-0 border-y-[2.5px] border-y-transparent border-l-4 border-l-white" />
             </div>
           </div>
+        </div>
+      );
+
+    case "team-cards":
+      return (
+        <div className="grid h-full w-full grid-cols-3 items-center gap-1.5 p-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-1 rounded-xs border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="h-6 w-full rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-1 w-3/4 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+              <div className="h-0.5 w-1/2 rounded-full bg-brand/70" />
+              <div className="mt-auto flex justify-between">
+                <div className="size-1.5 rounded-xs bg-zinc-300 dark:bg-zinc-600" />
+                <div className="size-1.5 rounded-xs bg-zinc-300 dark:bg-zinc-600" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+
+    case "team-spotlight":
+      return (
+        <div className="grid h-full w-full grid-cols-5 items-center gap-1.5 p-2">
+          <div className="col-span-2 flex flex-col gap-1 rounded-xs border border-zinc-200 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-800">
+            <div className="h-8 w-full rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-1.5 w-3/4 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+            <div className="h-0.5 w-1/2 rounded-full bg-brand/80" />
+          </div>
+          <div className="col-span-3 flex flex-col gap-1">
+            {[0, 1].map((i) => (
+              <div key={i} className="flex items-center gap-1 rounded-xs border border-zinc-200 bg-white p-0.5 dark:border-zinc-700 dark:bg-zinc-800">
+                <div className="size-4 shrink-0 rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                  <div className="h-1 w-10 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+                  <div className="h-0.5 w-6 rounded-full bg-brand/60" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case "team-editorial":
+      return (
+        <div className="flex h-full w-full flex-col justify-center gap-1 p-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-1.5 border-b border-zinc-200 pb-0.5 dark:border-zinc-700">
+              <div className="h-1 w-2 font-mono text-[6px] text-zinc-400">0{i + 1}</div>
+              <div className="size-2.5 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+              <div className="h-1 w-10 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+              <div className="h-0.5 w-8 rounded-full bg-brand/70" />
+              <div className="ml-auto h-0.5 w-2 rounded-xs bg-zinc-400" />
+            </div>
+          ))}
+        </div>
+      );
+
+    case "team-glass":
+      return (
+        <div className="grid h-full w-full grid-cols-3 items-center gap-1.5 p-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="relative flex h-12 flex-col justify-end overflow-hidden rounded-xs bg-zinc-800 p-0.5">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="relative z-10 flex flex-col gap-0.5 rounded-[2px] bg-black/40 p-0.5 backdrop-blur-[2px]">
+                <div className="h-1 w-full rounded-xs bg-white" />
+                <div className="h-0.5 w-2/3 rounded-full bg-brand/80" />
+              </div>
+            </div>
+          ))}
         </div>
       );
 

@@ -1,5 +1,8 @@
 import type {
+  ContactCardStyle,
+  ContactChannel,
   ContactData,
+  ContactVariant,
   CtaCardStyle,
   CtaData,
   CtaVariant,
@@ -30,8 +33,11 @@ import type {
   ServicesVariant,
   SplitData,
   StatsData,
+  TeamCardStyle,
   TeamData,
   TeamMember,
+  TeamSocialLink,
+  TeamVariant,
   TestimonialsData,
   TextData,
 } from "../../../site-kit/index.ts";
@@ -1722,10 +1728,60 @@ function CtaForm({ data, onChange }: DataFormProps<CtaData>) {
   );
 }
 
+const CONTACT_VARIANT_OPTIONS: { value: ContactVariant; label: string }[] = [
+  { value: "split-form", label: "Split Screen Form & Direct Links (Default)" },
+  { value: "cards-hub", label: "Multi-Channel Direct Hub Cards" },
+  { value: "minimal-editorial", label: "Minimal Architectural Editorial" },
+  { value: "floating-glass", label: "Floating Glass Framed Card" },
+];
+
+const CONTACT_CARD_STYLE_OPTIONS: { value: ContactCardStyle; label: string }[] = [
+  { value: "default", label: "Default (Soft Tone & Clean Border)" },
+  { value: "bordered", label: "Bordered (Crisp Accent Line)" },
+  { value: "elevated", label: "Elevated (Subtle Depth Shadow)" },
+  { value: "flat", label: "Flat (Modern Minimalist)" },
+  { value: "glass", label: "Frosted Glass" },
+  { value: "contrast", label: "High Contrast" },
+];
+
 function ContactForm({ data, onChange }: DataFormProps<ContactData>) {
+  const currentVariant = data.variant || "split-form";
+
   return (
     <>
-      <FormGroup title="Content">
+      <FormGroup title="Layout & Styling">
+        <SelectField
+          label="Layout Variant"
+          value={currentVariant}
+          onChange={(variant) =>
+            onChange({ ...data, variant: variant as ContactVariant })
+          }
+          options={CONTACT_VARIANT_OPTIONS}
+        />
+        <SelectField
+          label="Card Styling"
+          value={data.cardStyle || "default"}
+          onChange={(cardStyle) =>
+            onChange({ ...data, cardStyle: cardStyle as ContactCardStyle })
+          }
+          options={CONTACT_CARD_STYLE_OPTIONS}
+        />
+        <SelectField
+          label="Header Alignment"
+          value={data.align || "left"}
+          onChange={(align) => onChange({ ...data, align: align as SectionAlign })}
+          options={ALIGN_OPTIONS}
+        />
+      </FormGroup>
+
+      <FormGroup title="Header & Meta">
+        <TextField
+          label="Eyebrow / Badge"
+          value={data.eyebrow || ""}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. GET IN TOUCH • FAST RESPONSE"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -1734,50 +1790,143 @@ function ContactForm({ data, onChange }: DataFormProps<ContactData>) {
           required
         />
         <TextAreaField
-          label="Text"
+          label="Subheading / Text"
           value={data.text}
           onChange={(text) => onChange({ ...data, text })}
           maxLength={500}
         />
-      </FormGroup>
-      <FormGroup title="Contact details">
         <TextField
-          label="Email"
+          label="Response Time Badge"
+          value={data.responseTime || ""}
+          onChange={(responseTime) => onChange({ ...data, responseTime })}
+          maxLength={60}
+          placeholder="e.g. Average response time: < 2 hours"
+        />
+        <TextField
+          label="Office / Working Hours"
+          value={data.officeHours || ""}
+          onChange={(officeHours) => onChange({ ...data, officeHours })}
+          maxLength={100}
+          placeholder="e.g. Mon – Fri: 9:00 AM – 6:00 PM EST"
+        />
+      </FormGroup>
+
+      <FormGroup title="Direct Contact Details">
+        <TextField
+          label="Primary Email"
           type="email"
           value={data.email}
           onChange={(email) => onChange({ ...data, email })}
           maxLength={255}
         />
         <TextField
-          label="Phone"
+          label="Primary Phone"
           type="tel"
           value={data.phone}
           onChange={(phone) => onChange({ ...data, phone })}
           maxLength={32}
         />
         <TextAreaField
-          label="Address"
+          label="Physical Address / Location"
           value={data.address}
           onChange={(address) => onChange({ ...data, address })}
           maxLength={500}
           rows={2}
         />
       </FormGroup>
-      <FormGroup title="Form">
+
+      <FormGroup title="Direct Communication Channels">
+        <ItemList<ContactChannel>
+          label="Direct Channels / Hubs"
+          items={data.channels || []}
+          max={6}
+          onChange={(channels) => onChange({ ...data, channels })}
+          create={() => ({
+            label: "Support Desk",
+            value: "help@example.com",
+            description: "Direct assistance for active clients.",
+            icon: "mail",
+          })}
+          itemTitle={(item) => item.label || "Channel"}
+          addLabel="Add Direct Channel"
+          renderItem={(channel, onChannelChange) => (
+            <>
+              <TextField
+                label="Channel Label / Department"
+                value={channel.label}
+                onChange={(label) => onChannelChange({ ...channel, label })}
+                maxLength={60}
+                required
+              />
+              <TextField
+                label="Value / Email / Phone / URL"
+                value={channel.value}
+                onChange={(value) => onChannelChange({ ...channel, value })}
+                maxLength={255}
+                placeholder="e.g. hello@company.com or +1 (555) 000-0000"
+                required
+              />
+              <TextField
+                label="Description / Context"
+                value={channel.description || ""}
+                onChange={(description) =>
+                  onChannelChange({ ...channel, description })
+                }
+                maxLength={140}
+                placeholder="e.g. Inquiries and client onboarding"
+              />
+              <SelectField
+                label="Icon"
+                value={channel.icon || "mail"}
+                onChange={(icon) =>
+                  onChannelChange({
+                    ...channel,
+                    icon: (icon as "mail" | "phone" | "chat" | "user") || undefined,
+                  })
+                }
+                options={[
+                  { value: "mail", label: "Mail / Email" },
+                  { value: "phone", label: "Phone" },
+                  { value: "chat", label: "Chat / Messaging" },
+                  { value: "user", label: "Support / Agent" },
+                ]}
+              />
+            </>
+          )}
+        />
+      </FormGroup>
+
+      <FormGroup title="Interactive Inquiry Form">
         <CheckboxField
           label="Show enquiry form"
           checked={data.showForm}
           onChange={(showForm) => onChange({ ...data, showForm })}
-          hint="Form submissions are switched on when the site is published."
+          hint="Allows visitors to submit direct project inquiries online."
         />
         {data.showForm && (
-          <TextField
-            label="Button text"
-            value={data.submitLabel}
-            onChange={(submitLabel) => onChange({ ...data, submitLabel })}
-            maxLength={40}
-            required
-          />
+          <>
+            <TextField
+              label="Form Header / Title"
+              value={data.formHeading || ""}
+              onChange={(formHeading) => onChange({ ...data, formHeading })}
+              maxLength={100}
+              placeholder="e.g. Send us a message"
+            />
+            <TextField
+              label="Submit Button Label"
+              value={data.submitLabel || "Send Message"}
+              onChange={(submitLabel) => onChange({ ...data, submitLabel })}
+              maxLength={40}
+              required
+            />
+            <StringList
+              label="Service Interest Tags (Clickable Inquiry Options)"
+              items={data.serviceOptions || []}
+              max={8}
+              onChange={(serviceOptions) => onChange({ ...data, serviceOptions })}
+              addLabel="Add Service Tag"
+            />
+          </>
         )}
       </FormGroup>
     </>
@@ -2261,10 +2410,71 @@ function MediaForm({ data, onChange }: DataFormProps<MediaData>) {
   );
 }
 
+const TEAM_VARIANT_OPTIONS: { value: TeamVariant; label: string }[] = [
+  { value: "grid-cards", label: "Executive Cards Grid (Default)" },
+  { value: "spotlight-featured", label: "Leader Spotlight + Roster Grid" },
+  { value: "minimal-editorial", label: "Swiss Architectural Line Roster" },
+  { value: "glass-overlay", label: "Cinematic Glass Hover Overlay" },
+];
+
+const TEAM_CARD_STYLE_OPTIONS: { value: TeamCardStyle; label: string }[] = [
+  { value: "default", label: "Default (Soft Tone & Clean Border)" },
+  { value: "bordered", label: "Bordered (Crisp Accent Line)" },
+  { value: "elevated", label: "Elevated (Subtle Depth Shadow)" },
+  { value: "flat", label: "Flat (Modern Minimalist)" },
+  { value: "glass", label: "Frosted Glass" },
+  { value: "contrast", label: "High Contrast" },
+];
+
+const TEAM_SOCIAL_PLATFORM_OPTIONS: {
+  value: "linkedin" | "twitter" | "github" | "email" | "link";
+  label: string;
+}[] = [
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "twitter", label: "X / Twitter" },
+  { value: "github", label: "GitHub" },
+  { value: "email", label: "Email (mailto:)" },
+  { value: "link", label: "Custom Link" },
+];
+
 function TeamForm({ data, onChange }: DataFormProps<TeamData>) {
+  const currentVariant = data.variant || "grid-cards";
+
   return (
     <>
-      <FormGroup title="Content">
+      <FormGroup title="Layout & Styling">
+        <SelectField
+          label="Layout Variant"
+          value={currentVariant}
+          onChange={(variant) =>
+            onChange({ ...data, variant: variant as TeamVariant })
+          }
+          options={TEAM_VARIANT_OPTIONS}
+        />
+        <SelectField
+          label="Card Styling"
+          value={data.cardStyle || "default"}
+          onChange={(cardStyle) =>
+            onChange({ ...data, cardStyle: cardStyle as TeamCardStyle })
+          }
+          options={TEAM_CARD_STYLE_OPTIONS}
+        />
+        <SelectField
+          label="Header Alignment"
+          value={data.align || "center"}
+          onChange={(align) => onChange({ ...data, align: align as SectionAlign })}
+          options={ALIGN_OPTIONS}
+        />
+      </FormGroup>
+
+      <FormGroup title="Header & Meta">
+        <TextField
+          label="Eyebrow / Badge"
+          value={data.eyebrow || ""}
+          onChange={(eyebrow) => onChange({ ...data, eyebrow })}
+          maxLength={80}
+          placeholder="e.g. OUR PEOPLE • WORLD-CLASS LEADERSHIP"
+        />
         <TextField
           label="Heading"
           value={data.heading}
@@ -2278,50 +2488,119 @@ function TeamForm({ data, onChange }: DataFormProps<TeamData>) {
           onChange={(intro) => onChange({ ...data, intro })}
           maxLength={500}
         />
-        <ColumnsFields data={data} onChange={onChange} />
+        <TextField
+          label="Status / Counter Badge"
+          value={data.badge || ""}
+          onChange={(badge) => onChange({ ...data, badge })}
+          maxLength={80}
+          placeholder="e.g. 40+ Specialists Worldwide"
+        />
+        {currentVariant !== "spotlight-featured" && currentVariant !== "minimal-editorial" && (
+          <ColumnsFields data={data} onChange={onChange} />
+        )}
       </FormGroup>
-      <FormGroup title="People">
+
+      <FormGroup title="Team Members">
         <ItemList<TeamMember>
           label="Members"
           items={data.members}
           max={24}
           onChange={(members) => onChange({ ...data, members })}
-          create={() => ({ name: "New member", role: "Role" })}
-          itemTitle={(member) => member.name}
-          addLabel="Add person"
+          create={() => ({
+            name: "Jane Doe",
+            role: "Principal Architect",
+            department: "Engineering",
+            bio: "Leads distributed systems engineering and AI platform infrastructure.",
+          })}
+          itemTitle={(member) => member.name || "Member"}
+          addLabel="Add Team Member"
           renderItem={(member, update) => (
             <>
               <TextField
-                label="Name"
+                label="Full Name"
                 value={member.name}
                 onChange={(name) => update({ ...member, name })}
                 maxLength={120}
                 required
               />
               <TextField
-                label="Role"
+                label="Role / Title"
                 value={member.role}
                 onChange={(role) => update({ ...member, role })}
                 maxLength={120}
+                placeholder="e.g. Chief Executive Officer"
+              />
+              <TextField
+                label="Department / Focus"
+                value={member.department || ""}
+                onChange={(department) => update({ ...member, department })}
+                maxLength={80}
+                placeholder="e.g. Leadership, Design, Engineering"
+              />
+              <TextField
+                label="Location / Base"
+                value={member.location || ""}
+                onChange={(location) => update({ ...member, location })}
+                maxLength={100}
+                placeholder="e.g. San Francisco, CA or London, UK"
               />
               <TextAreaField
-                label="Short bio"
+                label="Short Bio / Description"
                 value={member.bio}
                 onChange={(bio) => update({ ...member, bio })}
                 maxLength={600}
                 rows={2}
               />
               <ImageField
-                label="Photo"
+                label="Portrait Photo"
                 value={member.photo}
                 onChange={(photo) => update({ ...member, photo })}
                 optional
               />
+              <StringList
+                label="Skills / Highlights / Credentials"
+                items={member.tags || []}
+                max={5}
+                onChange={(tags) => update({ ...member, tags })}
+                addLabel="Add Highlight Tag"
+              />
               <OptionalLinkField
-                label="Link"
+                label="Primary Profile Link"
                 value={member.link}
                 onChange={(link) => update({ ...member, link })}
-                fallback={{ label: "LinkedIn", href: "https://linkedin.com/" }}
+                fallback={{ label: "View Profile", href: "https://linkedin.com/" }}
+              />
+              <ItemList<TeamSocialLink>
+                label="Social & Direct Channels"
+                items={member.socialLinks || []}
+                max={5}
+                onChange={(socialLinks) => update({ ...member, socialLinks })}
+                create={() => ({ platform: "linkedin", url: "https://linkedin.com/" })}
+                itemTitle={(item) => item.platform}
+                addLabel="Add Social Link"
+                renderItem={(social, updateSocial) => (
+                  <>
+                    <SelectField
+                      label="Platform"
+                      value={social.platform}
+                      onChange={(platform) =>
+                        updateSocial({
+                          ...social,
+                          platform: platform as TeamSocialLink["platform"],
+                        })
+                      }
+                      options={TEAM_SOCIAL_PLATFORM_OPTIONS}
+                    />
+                    <TextField
+                      label="Profile URL / Link"
+                      value={social.url}
+                      onChange={(url) => updateSocial({ ...social, url })}
+                      maxLength={255}
+                      placeholder="https://..."
+                      required
+                    />
+                  </>
+                )}
               />
             </>
           )}

@@ -494,14 +494,48 @@ export type CtaData = {
   align?: SectionAlign;
 };
 
+export const CONTACT_VARIANTS = [
+  "split-form",
+  "cards-hub",
+  "minimal-editorial",
+  "floating-glass",
+] as const;
+export type ContactVariant = (typeof CONTACT_VARIANTS)[number];
+
+export const CONTACT_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type ContactCardStyle = (typeof CONTACT_CARD_STYLES)[number];
+
+export type ContactChannel = {
+  label: string;
+  value: string;
+  description?: string;
+  icon?: "mail" | "phone" | "chat" | "user";
+};
+
 export type ContactData = {
+  variant?: ContactVariant;
+  eyebrow?: string;
   heading: string;
   text?: string;
   email?: string;
   phone?: string;
   address?: string;
+  officeHours?: string;
+  responseTime?: string;
   showForm: boolean;
   submitLabel: string;
+  formHeading?: string;
+  serviceOptions?: string[];
+  channels?: ContactChannel[];
+  cardStyle?: ContactCardStyle;
+  align?: SectionAlign;
 };
 
 export type TextData = {
@@ -600,17 +634,51 @@ export type MediaData = {
   width: "contained" | "wide";
 };
 
+export const TEAM_VARIANTS = [
+  "grid-cards",
+  "spotlight-featured",
+  "minimal-editorial",
+  "glass-overlay",
+] as const;
+export type TeamVariant = (typeof TEAM_VARIANTS)[number];
+
+export const TEAM_CARD_STYLES = [
+  "default",
+  "bordered",
+  "flat",
+  "glass",
+  "elevated",
+  "contrast",
+] as const;
+export type TeamCardStyle = (typeof TEAM_CARD_STYLES)[number];
+
+export type TeamSocialPlatform = "linkedin" | "twitter" | "github" | "email" | "link";
+
+export type TeamSocialLink = {
+  platform: TeamSocialPlatform;
+  url: string;
+};
+
 export type TeamMember = {
   name: string;
   role?: string;
+  department?: string;
   bio?: string;
+  location?: string;
   photo?: ImageRef;
+  tags?: string[];
   link?: LinkRef;
+  socialLinks?: TeamSocialLink[];
 };
 
 export type TeamData = {
+  variant?: TeamVariant;
+  eyebrow?: string;
+  badge?: string;
   heading: string;
   intro?: string;
+  cardStyle?: TeamCardStyle;
+  align?: SectionAlign;
   columns: GridColumns;
   mobileColumns: GridColumns;
   members: TeamMember[];
