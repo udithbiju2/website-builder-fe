@@ -2,9 +2,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
+  Eye,
+  History,
   Loader2,
   RotateCcw,
   Sparkles,
+  Undo2,
   Wand2,
   X,
 } from "lucide-react";
@@ -19,7 +22,7 @@ import { websitesApi } from "../../../api/websites.ts";
 import type { AiSuggestion } from "../schema/editor-document.ts";
 import { useEditor } from "../editor-context.ts";
 import { itemAsSection, sectionToItem } from "../puck/adapter.ts";
-import { insertSections, replaceSection, selectSection, useBuilderPuck } from "../puck/puck-api.ts";
+import { selectSection, useBuilderPuck } from "../puck/puck-api.ts";
 import { itemTitle } from "./panels/LayersPanel.tsx";
 import { ToolButton } from "./ui.tsx";
 
@@ -337,6 +340,14 @@ export default function AiDrawer() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<AiSuggestion | null>(null);
+  const [originalCanvasContent, setOriginalCanvasContent] = useState<typeof allItems | null>(null);
+  const [previewCanvasContent, setPreviewCanvasContent] = useState<typeof allItems | null>(null);
+  const [previewMode, setPreviewMode] = useState<"ai" | "original">("ai");
+  const [historySnapshot, setHistorySnapshot] = useState<{
+    content: typeof allItems;
+    summary: string;
+    timestamp: string;
+  } | null>(null);
   const promptId = useId();
   const promptRef = useRef<HTMLTextAreaElement>(null);
 
@@ -345,6 +356,22 @@ export default function AiDrawer() {
       setTimeout(() => promptRef.current?.focus(), 50);
     }
   }, [aiOpen]);
+
+  // Clean up and restore original canvas if drawer is closed without accepting
+  useEffect(() => {
+    return () => {
+      if (originalCanvasContent) {
+        dispatch({
+          type: "setData",
+          data: (previous) => ({
+            ...previous,
+            root: previous.root ?? { props: {} },
+            content: originalCanvasContent,
+          }),
+        });
+      }
+    };
+  }, [originalCanvasContent, dispatch]);
 
   if (!aiOpen) return null;
 
@@ -362,22 +389,90 @@ export default function AiDrawer() {
       ? SECTION_TYPE_PROMPTS[activeType]
       : DEFAULT_PAGE_PROMPTS;
 
-  const handleGenerate = async () => {
-    if (!prompt.trim() || loading) return;
+  const VIBE_PRESETS = isSectionScope
+    ? [
+        { label: "🚀 Modern SaaS", prompt: "Transform into modern high-converting SaaS style with punchy copy and high-contrast CTA" },
+        { label: "🔮 Cyberpunk Glow", prompt: "Give this section a futuristic cyberpunk dark mode with vibrant neon glow and glassmorphism styling" },
+        { label: "🌿 Clean Luxury Editorial", prompt: "Redesign with elegant luxury minimalist layout, elegant typography, and calm spacing" },
+        { label: "🖼️ Full Cover Stock Image", prompt: "Add a full cover high-resolution background image with dark overlay and crisp white text" },
+      ]
+    : [
+        { label: "🚀 Modern AI SaaS", prompt: "Generate a complete modern AI SaaS landing page with dark mode, high-converting hero, features, and pricing" },
+        { label: "💎 Luxury Agency", prompt: "Generate a high-end design agency landing page with proof, showcase carousel, and client testimonials" },
+        { label: "☕ Artisan Boutique", prompt: "Generate a warm boutique artisan bakery landing page with rich menus and contact cards" },
+        { label: "🏢 Enterprise Platform", prompt: "Generate a high-trust enterprise B2B platform page with stats, security badges, and tiered plans" },
+      ];
+
+  const handleGenerate = async (customPrompt?: string) => {
+    const textToRun = (typeof customPrompt === "string" ? customPrompt : prompt).trim();
+    if (!textToRun || loading) return;
+
+    if (customPrompt) {
+      setPrompt(customPrompt);
+    }
 
     setLoading(true);
-    setSuggestion(null);
 
     try {
       const result = await websitesApi.generateAiSuggestion(website.id, {
-        prompt: prompt.trim(),
+        prompt: textToRun,
         scope: isSectionScope ? "section" : "page",
         sectionId: currentSection?.id,
         currentSection: currentSection ?? undefined,
         currentSections,
       });
 
+      // Save original baseline before previewing
+      const baseline = originalCanvasContent ?? structuredClone(allItems);
+      setOriginalCanvasContent(baseline);
+
+      // Compute preview items
+      let nextItems: typeof allItems = [];
+      const isAddScope =
+        (result.target as Record<string, unknown>).scope === "section_add" ||
+        (result.before.length === 0 && result.after.length === 1);
+
+      if (isAddScope) {
+        const rawSection = result.after[0];
+        if (rawSection) {
+          const normalized = normalizeSection(rawSection as Section);
+          const insertIdx = selectedIndex !== null ? selectedIndex + 1 : baseline.length;
+          nextItems = [
+            ...baseline.slice(0, insertIdx),
+            sectionToItem(normalized),
+            ...baseline.slice(insertIdx),
+          ];
+        }
+      } else if (result.target.scope === "section") {
+        const rawSection = result.after[0];
+        if (rawSection) {
+          const normalized = normalizeSection(rawSection as Section);
+          const foundIdx = baseline.findIndex((it) => it.props.id === normalized.id);
+          const targetIdx = foundIdx !== -1 ? foundIdx : selectedIndex;
+          if (targetIdx !== null && targetIdx !== -1 && targetIdx < baseline.length) {
+            nextItems = baseline.map((it, idx) => (idx === targetIdx ? sectionToItem(normalized) : it));
+          } else {
+            nextItems = [...baseline, sectionToItem(normalized)];
+          }
+        }
+      } else {
+        const validSections = result.after.map((s: unknown) => normalizeSection(s as Section));
+        nextItems = validSections.map(sectionToItem);
+      }
+
+      setPreviewCanvasContent(nextItems);
+      setPreviewMode("ai");
       setSuggestion(result);
+
+      // Immediately render live preview onto canvas!
+      dispatch({
+        type: "setData",
+        data: (previous) => ({
+          ...previous,
+          root: previous.root ?? { props: {} },
+          content: nextItems,
+        }),
+      });
     } catch (err: unknown) {
       const errorMsg =
         err instanceof Error ? err.message : "Failed to generate AI changes.";
@@ -387,58 +482,78 @@ export default function AiDrawer() {
     }
   };
 
-  const handleApply = () => {
-    if (!suggestion) return;
-
-    try {
-      const isAddScope =
-        (suggestion.target as Record<string, unknown>).scope === "section_add" ||
-        (suggestion.before.length === 0 && suggestion.after.length === 1);
-
-      if (isAddScope) {
-        const rawSection = suggestion.after[0];
-        if (rawSection) {
-          const normalized = normalizeSection(rawSection as Section);
-          const insertIdx = selectedIndex !== null ? selectedIndex + 1 : allItems.length;
-          insertSections(dispatch, [normalized], insertIdx);
-          notify(`Added new ${SECTION_DEFINITIONS[normalized.type]?.label || normalized.type} section!`, "success");
-        }
-      } else if (suggestion.target.scope === "section") {
-        const rawSection = suggestion.after[0];
-        if (rawSection) {
-          const normalized = normalizeSection(rawSection as Section);
-          // Find target item index in Puck content
-          const foundIdx = allItems.findIndex((it) => it.props.id === normalized.id);
-          const targetIdx = foundIdx !== -1 ? foundIdx : selectedIndex;
-          if (targetIdx !== null && targetIdx !== -1) {
-            replaceSection(dispatch, targetIdx, normalized);
-            notify(`Applied AI changes to ${SECTION_DEFINITIONS[normalized.type]?.label || normalized.type}!`, "success");
-          } else {
-            insertSections(dispatch, [normalized], allItems.length);
-            notify(`Added ${SECTION_DEFINITIONS[normalized.type]?.label || normalized.type}!`, "success");
-          }
-        }
-      } else {
-        // Whole page replacement: normalize each section
-        const validSections = suggestion.after.map((s) => normalizeSection(s as Section));
-        const newItems = validSections.map(sectionToItem);
-        dispatch({
-          type: "setData",
-          data: (previous) => ({
-            ...previous,
-            root: previous.root ?? { props: {} },
-            content: newItems,
-          }),
-        });
-        notify("Updated page layout with AI successfully!", "success");
-      }
-
-      setSuggestion(null);
-    } catch (err: unknown) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Failed to apply AI changes.";
-      notify(errorMsg, "danger");
+  const handleTogglePreview = (mode: "ai" | "original") => {
+    setPreviewMode(mode);
+    const targetItems = mode === "ai" ? previewCanvasContent : originalCanvasContent;
+    if (targetItems) {
+      dispatch({
+        type: "setData",
+        data: (previous) => ({
+          ...previous,
+          root: previous.root ?? { props: {} },
+          content: targetItems,
+        }),
+      });
     }
+  };
+
+  const handleAccept = () => {
+    if (!previewCanvasContent || !originalCanvasContent) return;
+
+    // Commit preview content as the permanent canvas state
+    dispatch({
+      type: "setData",
+      data: (previous) => ({
+        ...previous,
+        root: previous.root ?? { props: {} },
+        content: previewCanvasContent,
+      }),
+    });
+
+    // Save baseline to rollback history
+    setHistorySnapshot({
+      content: originalCanvasContent,
+      summary: suggestion?.summary || "AI Changes",
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    });
+
+    notify("AI changes accepted and saved!", "success");
+
+    setSuggestion(null);
+    setOriginalCanvasContent(null);
+    setPreviewCanvasContent(null);
+  };
+
+  const handleReject = () => {
+    if (originalCanvasContent) {
+      // Revert canvas to original
+      dispatch({
+        type: "setData",
+        data: (previous) => ({
+          ...previous,
+          root: previous.root ?? { props: {} },
+          content: originalCanvasContent,
+        }),
+      });
+      notify("AI changes discarded — restored original canvas.");
+    }
+    setSuggestion(null);
+    setOriginalCanvasContent(null);
+    setPreviewCanvasContent(null);
+  };
+
+  const handleRollback = () => {
+    if (!historySnapshot) return;
+    dispatch({
+      type: "setData",
+      data: (previous) => ({
+        ...previous,
+        root: previous.root ?? { props: {} },
+        content: historySnapshot.content,
+      }),
+    });
+    notify("Reverted to previous version!", "success");
+    setHistorySnapshot(null);
   };
 
   return (
@@ -468,7 +583,12 @@ export default function AiDrawer() {
         <ToolButton
           label="Close AI assistant"
           size="sm"
-          onClick={() => setAiOpen(false)}
+          onClick={() => {
+            if (originalCanvasContent) {
+              handleReject();
+            }
+            setAiOpen(false);
+          }}
         >
           <X className="size-4" aria-hidden />
         </ToolButton>
@@ -498,6 +618,47 @@ export default function AiDrawer() {
               ? `AI will edit the selected ${activeType ? SECTION_DEFINITIONS[activeType]?.label || activeType : "component"}. (Tip: To add a new section instead, simply type "add hero", "add pricing", etc.)`
               : "Generate or improve page sections tailored to your prompt."}
           </p>
+        </div>
+
+        {/* 1-Click Rollback History Banner */}
+        {historySnapshot && !suggestion && (
+          <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-ed-xs text-amber-900 dark:text-amber-200">
+            <div className="flex items-center gap-2 truncate">
+              <History className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+              <span className="truncate">Saved checkpoint ({historySnapshot.timestamp})</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleRollback}
+              className="flex items-center gap-1 rounded-lg bg-amber-500/20 px-2 py-1 text-[11px] font-semibold text-amber-700 hover:bg-amber-500/30 dark:text-amber-300 transition-colors shrink-0 ml-2 cursor-pointer"
+            >
+              <Undo2 className="size-3" />
+              Rollback
+            </button>
+          </div>
+        )}
+
+        {/* Quick Style & Vibe Switcher (Framer/Wix Studio Vibe) */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-ed-faint">
+              1-Click Style & Vibe
+            </span>
+            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Instant</span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            {VIBE_PRESETS.map((vibe) => (
+              <button
+                key={vibe.label}
+                type="button"
+                disabled={loading}
+                onClick={() => handleGenerate(vibe.prompt)}
+                className="flex items-center gap-1.5 rounded-xl border border-ed-border/70 bg-ed-panel px-2.5 py-2 text-left text-ed-xs text-ed-text hover:border-purple-500/50 hover:bg-purple-500/5 hover:text-purple-600 dark:hover:text-purple-400 transition-all group shadow-2xs cursor-pointer"
+              >
+                <span className="truncate font-medium">{vibe.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Prompt Input Box */}
@@ -538,9 +699,9 @@ export default function AiDrawer() {
 
           <button
             type="button"
-            onClick={handleGenerate}
+            onClick={() => handleGenerate()}
             disabled={!prompt.trim() || loading}
-            className="flex h-9 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-medium text-white shadow-sm hover:from-purple-500 hover:to-indigo-500 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none transition-all text-ed-xs"
+            className="flex h-9 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-medium text-white shadow-sm hover:from-purple-500 hover:to-indigo-500 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none transition-all text-ed-xs cursor-pointer"
           >
             {loading ? (
               <>
@@ -571,7 +732,7 @@ export default function AiDrawer() {
                   setPrompt(text);
                   promptRef.current?.focus();
                 }}
-                className="group flex items-center justify-between rounded-xl border border-ed-border/70 bg-ed-panel px-3 py-2 text-left text-ed-xs text-ed-text hover:border-purple-500/40 hover:bg-purple-500/5 transition-all"
+                className="group flex items-center justify-between rounded-xl border border-ed-border/70 bg-ed-panel px-3 py-2 text-left text-ed-xs text-ed-text hover:border-purple-500/40 hover:bg-purple-500/5 transition-all cursor-pointer"
               >
                 <span className="truncate">{text}</span>
                 <ArrowRight className="size-3 text-ed-faint opacity-0 group-hover:opacity-100 group-hover:text-purple-600 transition-all shrink-0 ml-2" />
@@ -580,24 +741,69 @@ export default function AiDrawer() {
           </div>
         </div>
 
-        {/* Suggestion Preview & Diff Card */}
+        {/* Suggestion Live Preview & Decision Controller */}
         {suggestion && (
           <section
             aria-label="Suggested change"
-            className="flex flex-col gap-3 rounded-2xl border border-purple-500/30 bg-purple-500/5 p-3.5 shadow-sm dark:bg-purple-950/20"
+            className="flex flex-col gap-3.5 rounded-2xl border-2 border-purple-500/40 bg-gradient-to-b from-purple-500/10 via-purple-500/5 to-transparent p-3.5 shadow-lg dark:border-purple-500/30 dark:from-purple-950/40 animate-in fade-in slide-in-from-bottom-2 duration-200"
           >
-            <div className="flex items-start gap-2">
-              <span className="grid size-5 place-items-center rounded-full bg-purple-600 text-white shrink-0 mt-0.5">
-                <Check className="size-3" />
+            {/* Live Indicator Header */}
+            <div className="flex items-center justify-between border-b border-purple-500/20 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="relative flex size-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
+                  Live Preview on Canvas
+                </span>
+              </div>
+              <span className="rounded-md bg-purple-500/15 px-2 py-0.5 text-[10px] font-semibold text-purple-600 dark:text-purple-300">
+                {previewMode === "ai" ? "Viewing AI" : "Viewing Original"}
+              </span>
+            </div>
+
+            {/* Summary */}
+            <div className="flex items-start gap-2 pt-0.5">
+              <span className="grid size-5 place-items-center rounded-full bg-purple-600 text-white shrink-0 mt-0.5 shadow-xs">
+                <Sparkles className="size-3" />
               </span>
               <div className="min-w-0 flex-1">
                 <h3 className="text-ed-xs font-semibold text-ed-text">
-                  AI Proposal Ready
+                  AI Proposal Generated
                 </h3>
                 <p className="mt-0.5 text-ed-xs text-ed-muted leading-relaxed">
                   {suggestion.summary}
                 </p>
               </div>
+            </div>
+
+            {/* Live Preview Toggle Controller */}
+            <div className="flex items-center gap-1 rounded-xl bg-ed-subtle p-1 border border-ed-border">
+              <button
+                type="button"
+                onClick={() => handleTogglePreview("ai")}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-ed-xs font-semibold transition-all cursor-pointer ${
+                  previewMode === "ai"
+                    ? "bg-purple-600 text-white shadow-xs"
+                    : "text-ed-muted hover:text-ed-text hover:bg-ed-panel"
+                }`}
+              >
+                <Eye className="size-3.5" />
+                <span>AI Preview</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTogglePreview("original")}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-ed-xs font-semibold transition-all cursor-pointer ${
+                  previewMode === "original"
+                    ? "bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-900 shadow-xs"
+                    : "text-ed-muted hover:text-ed-text hover:bg-ed-panel"
+                }`}
+              >
+                <Undo2 className="size-3.5" />
+                <span>Previous / Original</span>
+              </button>
             </div>
 
             {/* Visual Diff Columns */}
@@ -606,35 +812,40 @@ export default function AiDrawer() {
               <DiffColumn title="AI Output" sections={suggestion.after} isAfter />
             </div>
 
-            {/* Actions */}
-            <div className="flex gap-2 pt-1">
-              <button
-                type="button"
-                onClick={handleApply}
-                className="flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-xl bg-purple-600 text-ed-xs font-medium text-white shadow-sm hover:bg-purple-500 active:scale-[0.98] transition-all"
-              >
-                <Check className="size-3.5" />
-                Apply Changes
-              </button>
+            {/* Primary Actions: Accept / Reject / Retry */}
+            <div className="flex flex-col gap-2 pt-1">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleAccept}
+                  className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-ed-xs font-bold text-white shadow-sm hover:bg-emerald-500 active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  <Check className="size-4" />
+                  Accept Changes
+                </button>
 
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={loading}
-                title="Regenerate with current prompt"
-                className="flex h-8.5 items-center gap-1.5 rounded-xl border border-ed-border bg-ed-panel px-3 text-ed-xs font-medium text-ed-text hover:bg-ed-hover transition-all"
-              >
-                <RotateCcw className="size-3.5" />
-                Retry
-              </button>
+                <button
+                  type="button"
+                  onClick={handleReject}
+                  className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 text-ed-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white transition-all cursor-pointer shadow-xs"
+                >
+                  <X className="size-4" />
+                  Reject
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setSuggestion(null)}
-                className="h-8.5 rounded-xl px-2.5 text-ed-xs text-ed-muted hover:bg-ed-hover hover:text-ed-text transition-all"
-              >
-                Discard
-              </button>
+              <div className="flex items-center justify-between pt-1 text-[11px] text-ed-muted border-t border-ed-border/50">
+                <button
+                  type="button"
+                  onClick={() => handleGenerate()}
+                  disabled={loading}
+                  className="flex items-center gap-1 hover:text-purple-600 transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="size-3" />
+                  Regenerate
+                </button>
+                <span className="text-[10.5px]">Click Accept to make permanent</span>
+              </div>
             </div>
           </section>
         )}
