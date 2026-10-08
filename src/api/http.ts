@@ -103,7 +103,7 @@ function refreshSession(): Promise<void> {
 
 type RequestOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+async function sendWithRefresh(path: string, options: RequestOptions): Promise<Response> {
   const { body, ...rest } = options;
   const init: RequestInit = {
     ...rest,
@@ -113,7 +113,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   const startedAt = Date.now();
   const response = await send(path, init);
   if (response.status !== 401 || SKIP_REFRESH_PATHS.has(path.split("?")[0])) {
-    return parse<T>(response);
+    return response;
   }
 
   // A refresh that finished after this request was sent already rotated the cookies.
@@ -126,5 +126,37 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     }
   }
 
-  return parse<T>(await send(path, init));
+  return send(path, init);
+}
+
+export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return parse<T>(await sendWithRefresh(path, options));
+}
+
+/** Streams a newline-delimited JSON response, calling `onEvent` for each line as it arrives. */
+export async function requestNdjson<E>(
+  path: string,
+  options: RequestOptions,
+  onEvent: (event: E) => void,
+): Promise<void> {
+  const headers = new Headers(options.headers);
+  headers.set("Accept", "application/x-ndjson");
+  const response = await sendWithRefresh(path, { ...options, headers });
+  if (!response.ok || !response.body) {
+    await parse<unknown>(response);
+    throw new ApiError(response.status, {});
+  }
+
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (value) buffer += value;
+    const lines = buffer.split("\n");
+    buffer = done ? "" : (lines.pop() ?? "");
+    for (const line of lines) {
+      if (line.trim()) onEvent(JSON.parse(line) as E);
+    }
+    if (done) return;
+  }
 }

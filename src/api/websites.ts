@@ -1,5 +1,25 @@
 import type { FooterData, HeaderData, Section, ThemeSettings } from "../site-kit/index.ts";
-import { request } from "./http.ts";
+import type { AiSuggestion } from "../features/builder/schema/editor-document.ts";
+import { ApiError, request, requestNdjson } from "./http.ts";
+
+export type AiGenerateInput = {
+  prompt: string;
+  scope: "section" | "page";
+  sectionId?: string;
+  currentSection?: Section;
+  currentSections?: Section[];
+  /** Page open in the editor; lets the AI see and update its SEO. */
+  pageId?: string;
+  history?: Array<{ role: "user" | "assistant"; content: string }>;
+};
+
+/** A section position in the AI's planned layout; `pending` sections are still being generated. */
+export type AiLayoutSlot = { id: string; type: string; status: "existing" | "pending" | "updating" };
+
+type AiStreamEvent =
+  | { type: "plan"; layout: AiLayoutSlot[] }
+  | { type: "result"; suggestion: AiSuggestion }
+  | { type: "error"; error: { code: string; message: string } };
 
 export type BuilderType = "MANUAL" | "AI";
 export type WebsiteStatus = "DRAFT" | "PUBLISHED" | "UNPUBLISHED";
@@ -249,21 +269,19 @@ export const websitesApi = {
   versions: (id: string) =>
     request<{ versions: WebsiteVersion[] }>(`${BASE}/${id}/versions`).then((data) => data.versions),
 
-  generateAiSuggestion: (
+  /** Reports the planned layout via `onPlan` before content is generated, then resolves with the suggestion. */
+  generateAiSuggestionStream: async (
     id: string,
-    input: {
-      prompt: string;
-      scope: "section" | "page";
-      sectionId?: string;
-      currentSection?: Section;
-      currentSections?: Section[];
-      /** Page open in the editor; lets the AI see and update its SEO. */
-      pageId?: string;
-      history?: Array<{ role: "user" | "assistant"; content: string }>;
-    },
-  ) =>
-    request<{ suggestion: any }>(`${BASE}/${id}/ai/generate`, {
-      method: "POST",
-      body: input,
-    }).then((data) => data.suggestion),
+    input: AiGenerateInput,
+    onPlan: (layout: AiLayoutSlot[]) => void,
+  ): Promise<AiSuggestion> => {
+    let suggestion: AiSuggestion | null = null;
+    await requestNdjson<AiStreamEvent>(`${BASE}/${id}/ai/generate`, { method: "POST", body: input }, (event) => {
+      if (event.type === "plan") onPlan(event.layout);
+      else if (event.type === "result") suggestion = event.suggestion;
+      else throw new ApiError(502, { error: event.error });
+    });
+    if (!suggestion) throw new ApiError(502, { error: { message: "AI response ended unexpectedly. Please try again." } });
+    return suggestion;
+  },
 };

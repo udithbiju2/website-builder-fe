@@ -5176,6 +5176,81 @@ details[open] > summary .wb-faq-plus {
   .wb-drawer-body { padding: 18px 16px 28px; }
 }
 
+/* =========================================================================
+   CUSTOM SECTION (AI-composed block layouts)
+   ========================================================================= */
+.wb-section.wb-custom-wide > .wb-container { max-width: min(1400px, 100%); }
+.wb-custom-root { display: flex; flex-direction: column; gap: 32px; }
+.wb-custom-align-center .wb-custom-root { align-items: center; text-align: center; }
+
+.wb-cb-stack { display: flex; flex-direction: column; min-width: 0; }
+.wb-cb-stack.wb-cb-align-start { align-items: flex-start; }
+.wb-cb-stack.wb-cb-align-center { align-items: center; text-align: center; }
+.wb-cb-stack.wb-cb-align-end { align-items: flex-end; text-align: right; }
+.wb-cb-stack.wb-cb-row { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.wb-cb-row.wb-cb-align-start { justify-content: flex-start; }
+.wb-cb-row.wb-cb-align-center { justify-content: center; }
+.wb-cb-row.wb-cb-align-end { justify-content: flex-end; }
+.wb-cb-gap-sm { gap: 8px; }
+.wb-cb-gap-md { gap: 16px; }
+.wb-cb-gap-lg { gap: 32px; }
+
+.wb-cb-grid { display: grid; width: 100%; grid-template-columns: repeat(var(--wb-cb-cols, 2), minmax(0, 1fr)); }
+.wb-cb-valign-start { align-items: start; }
+.wb-cb-valign-center { align-items: center; }
+
+.wb-cb-card {
+  display: flex; flex-direction: column; gap: 14px; min-width: 0;
+  padding: 28px; border-radius: var(--wb-radius);
+  background: var(--wb-bg); color: var(--wb-text); border: 1px solid var(--wb-border);
+}
+.wb-site.wb-cards-shadow .wb-cb-card { box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08); }
+.wb-cb-card-muted { background: var(--wb-surface); }
+.wb-bg-surface .wb-cb-card-muted { background: var(--wb-bg); }
+.wb-cb-card-primary { background: var(--wb-primary); color: var(--wb-on-primary); border-color: transparent; }
+.wb-cb-card-primary .wb-muted, .wb-cb-card-primary .wb-cb-badge { color: inherit; }
+.wb-cb-card-primary .wb-btn-primary { background: var(--wb-on-primary); color: var(--wb-primary); border-color: var(--wb-on-primary); }
+.wb-cb-card-glass {
+  background: color-mix(in srgb, var(--wb-bg) 55%, transparent);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.18);
+}
+
+.wb-cb-heading { max-width: 22ch; }
+.wb-cb-align-center > .wb-cb-heading, .wb-custom-align-center .wb-cb-heading { margin-inline: auto; }
+.wb-cb-text { max-width: 65ch; }
+.wb-cb-text-sm { font-size: 14px; }
+.wb-cb-text-md { font-size: 16px; }
+.wb-cb-text-lg { font-size: 19px; }
+.wb-cb-badge {
+  display: inline-flex; align-items: center; width: fit-content;
+  padding: 4px 12px; border-radius: 9999px;
+  font-size: 13px; font-weight: 600; line-height: 1.4;
+  color: var(--wb-primary); background: color-mix(in srgb, var(--wb-primary) 12%, transparent);
+}
+.wb-cb-image { width: 100%; border-radius: var(--wb-radius); object-fit: cover; }
+.wb-cb-aspect-square { aspect-ratio: 1 / 1; }
+.wb-cb-aspect-video { aspect-ratio: 16 / 9; }
+.wb-cb-aspect-portrait { aspect-ratio: 3 / 4; }
+.wb-cb-icon .wb-icon { margin-bottom: 0; }
+.wb-cb-list { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.wb-cb-list li { position: relative; padding-left: 26px; }
+.wb-cb-list li::before {
+  content: "✓"; position: absolute; left: 0; top: 0;
+  font-weight: 700; color: var(--wb-primary);
+}
+.wb-cb-card-primary .wb-cb-list li::before { color: inherit; }
+
+@container wb-site (max-width: 900px) {
+  .wb-cb-grid { grid-template-columns: repeat(var(--wb-cb-cols-tablet, 2), minmax(0, 1fr)); }
+}
+@container wb-site (max-width: 600px) {
+  .wb-cb-grid { grid-template-columns: minmax(0, 1fr); }
+  .wb-cb-gap-lg { gap: 24px; }
+  .wb-cb-card { padding: 22px; }
+  .wb-cb-row > .wb-btn { flex: 1 1 100%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wb-site *, .wb-site *::before, .wb-site *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }

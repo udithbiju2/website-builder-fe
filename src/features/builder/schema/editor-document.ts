@@ -81,8 +81,15 @@ export const aiSuggestionSchema = z.object({
   id: z.string().min(1),
   prompt: z.string().min(1).max(2000),
   summary: z.string().max(500),
+  chatReply: z.string().optional(),
   target: z.discriminatedUnion("scope", [
-    z.object({ scope: z.literal("page") }),
+    z.object({ scope: z.literal("chat") }),
+    z.object({
+      scope: z.literal("page"),
+      /** True when the whole page was regenerated rather than patched. */
+      rebuild: z.boolean().optional(),
+      focusSectionId: z.string().optional(),
+    }),
     z.object({ scope: z.literal("section"), sectionId: z.string().min(1) }),
   ]),
   before: z.array(sectionEnvelopeSchema).max(60),

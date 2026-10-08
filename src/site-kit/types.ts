@@ -765,6 +765,30 @@ export type MarqueeData = {
   fontSize?: "small" | "medium" | "large" | "huge";
 };
 
+export type CustomGap = "sm" | "md" | "lg";
+export type CustomAlign = "start" | "center" | "end";
+export type CustomCardTone = "default" | "muted" | "primary" | "glass";
+export type CustomImageAspect = "auto" | "square" | "video" | "portrait";
+
+/** One node of an AI-composed layout; the server enforces depth and size limits. */
+export type CustomBlock =
+  | { type: "stack"; direction?: "column" | "row"; gap?: CustomGap; align?: CustomAlign; children: CustomBlock[] }
+  | { type: "grid"; columns: GridColumns; gap?: CustomGap; align?: "start" | "center"; children: CustomBlock[] }
+  | { type: "card"; tone?: CustomCardTone; children: CustomBlock[] }
+  | { type: "heading"; text: string; level?: 1 | 2 | 3 }
+  | { type: "text"; text: string; size?: "sm" | "md" | "lg"; muted?: boolean }
+  | { type: "badge"; text: string }
+  | { type: "button"; label: string; href: string; tone?: "primary" | "secondary" }
+  | { type: "image"; url: string; alt: string; aspect?: CustomImageAspect }
+  | { type: "icon"; name: IconName }
+  | { type: "list"; items: string[] };
+
+export type CustomData = {
+  width?: "contained" | "wide";
+  align?: "start" | "center";
+  blocks: CustomBlock[];
+};
+
 export type SectionDataMap = {
   header: HeaderData;
   footer: FooterData;
@@ -785,6 +809,7 @@ export type SectionDataMap = {
   team: TeamData;
   carousel: CarouselData;
   marquee: MarqueeData;
+  custom: CustomData;
 };
 
 export type SectionType = keyof SectionDataMap;

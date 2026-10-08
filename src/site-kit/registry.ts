@@ -446,6 +446,57 @@ export const SECTION_DEFINITIONS: { [T in SectionType]: SectionDefinition<T> } =
         ],
       }),
     },
+    custom: {
+      type: "custom",
+      label: "Custom Layout",
+      category: "Content",
+      description: "Free-form layout built from blocks. The AI Copilot uses it for designs no preset covers.",
+      createData: () => ({
+        width: "contained",
+        align: "start",
+        blocks: [
+          {
+            type: "grid",
+            columns: 2,
+            align: "center",
+            children: [
+              {
+                type: "stack",
+                gap: "md",
+                children: [
+                  { type: "badge", text: "Custom layout" },
+                  { type: "heading", text: "Build any layout you can describe", level: 2 },
+                  {
+                    type: "text",
+                    text: "Ask the AI Copilot for a design and it composes it from these blocks.",
+                    size: "lg",
+                    muted: true,
+                  },
+                  {
+                    type: "stack",
+                    direction: "row",
+                    gap: "sm",
+                    children: [
+                      { type: "button", label: "Get started", href: "/contact", tone: "primary" },
+                      { type: "button", label: "Learn more", href: "#", tone: "secondary" },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "card",
+                tone: "muted",
+                children: [
+                  { type: "icon", name: "sparkles" },
+                  { type: "heading", text: "Why it works", level: 3 },
+                  { type: "list", items: ["Follows your theme", "Fully responsive", "Editable text and links"] },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    },
   };
 
 export const SECTION_TYPES = Object.keys(SECTION_DEFINITIONS) as SectionType[];
