@@ -37,7 +37,7 @@ type TopBarProps = {
 };
 
 export default function TopBar({ backTo, onPublish }: TopBarProps) {
-  const { website, page, role, device, setDevice, autosave } = useEditor();
+  const { website, page, role, device, setDevice, autosave, aiLock } = useEditor();
   const history = useBuilderPuck((state) => state.history);
 
   async function openPreview() {
@@ -85,10 +85,10 @@ export default function TopBar({ backTo, onPublish }: TopBarProps) {
       <AutosaveIndicator autosave={autosave} />
 
       <div className="mx-auto flex items-center gap-1">
-        <ToolButton label="Undo" shortcut="⌘Z" onClick={history.back} disabled={!history.hasPast}>
+        <ToolButton label="Undo" shortcut="⌘Z" onClick={history.back} disabled={!history.hasPast || aiLock !== null}>
           <Undo2 className="size-4" aria-hidden />
         </ToolButton>
-        <ToolButton label="Redo" shortcut="⇧⌘Z" onClick={history.forward} disabled={!history.hasFuture}>
+        <ToolButton label="Redo" shortcut="⇧⌘Z" onClick={history.forward} disabled={!history.hasFuture || aiLock !== null}>
           <Redo2 className="size-4" aria-hidden />
         </ToolButton>
         <span className="mx-1 h-5 w-px bg-ed-border" aria-hidden />
@@ -131,7 +131,8 @@ export default function TopBar({ backTo, onPublish }: TopBarProps) {
       <button
         type="button"
         onClick={onPublish}
-        disabled={autosave.status === "conflict"}
+        disabled={autosave.status === "conflict" || aiLock !== null}
+        title={aiLock ? "Apply or discard the AI changes before publishing" : undefined}
         className="inline-flex h-8 items-center rounded-ed bg-ed-accent px-3 text-ed-sm font-medium text-white shadow-ed-xs hover:bg-ed-accent-hover disabled:opacity-50"
       >
         Publish

@@ -20,7 +20,7 @@ import {
 } from "../../../site-kit/index.ts";
 import { websitesApi, type AiLayoutSlot } from "../../../api/websites.ts";
 import type { AiSuggestion } from "../schema/editor-document.ts";
-import { useEditor } from "../editor-context.ts";
+import { useEditor, type AiLock } from "../editor-context.ts";
 import { aiPlaceholderItem, itemAsSection, sectionToItem } from "../puck/adapter.ts";
 import { selectSection, useBuilderPuck } from "../puck/puck-api.ts";
 import { scrollCanvasToSection } from "./AiBuilderCanvasOverlay.tsx";
@@ -367,7 +367,7 @@ const sessionsStorageKey = (websiteId: string | undefined) => `ai_chat_sessions_
 const sameContent = (a: Section[], b: Section[]) => JSON.stringify(a) === JSON.stringify(b);
 
 export default function AiDrawer() {
-  const { aiOpen, setAiOpen, website, notify, setAiBuilding } = useEditor();
+  const { aiOpen, setAiOpen, website, notify, setAiBuilding, setAiLock } = useEditor();
   const dispatch = useBuilderPuck((state) => state.dispatch);
   const selectedIndex = useBuilderPuck(
     (state) => state.appState.ui.itemSelector?.index ?? null,
@@ -403,6 +403,7 @@ export default function AiDrawer() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [rollbackRequest, setRollbackRequest] = useState<ChatMessage | null>(null);
+  const [closeRequested, setCloseRequested] = useState(false);
 
   const hasLiveRollback = chatMessages.some((m) => rollbackRemainingMs(m, Date.now()) > 0);
   const now = useNow(hasLiveRollback);
@@ -449,6 +450,13 @@ export default function AiDrawer() {
       }
     };
   }, [dispatch, setAiBuilding]);
+
+  const aiLock: AiLock = loading ? "building" : previewCanvasContent ? "reviewing" : null;
+  useEffect(() => {
+    setAiLock(aiLock);
+  }, [aiLock, setAiLock]);
+  // Declared after the restore-on-unmount effect so the canvas is restored before editing unlocks.
+  useEffect(() => () => setAiLock(null), [setAiLock]);
 
   if (!aiOpen) return null;
 
@@ -579,7 +587,8 @@ export default function AiDrawer() {
     setChatMessages(nextMessages);
     setLoading(true);
 
-    const baseline = structuredClone(allItems);
+    // Regenerating during review must start from the original page, not the unapplied preview.
+    const baseline = structuredClone(originalCanvasContent ?? allItems);
     setOriginalCanvasContent(baseline);
 
     setAiBuilding({
@@ -867,6 +876,10 @@ export default function AiDrawer() {
   /** Asks first when the canvas was edited after accepting, since rollback would discard those edits. */
   const handleRollback = (message: ChatMessage) => {
     if (!message.rollback) return;
+    if (aiLock) {
+      notify("Apply or discard the current AI changes before rolling back.", "danger");
+      return;
+    }
     if (sameContent(allItems.map(itemAsSection), message.rollback.after)) {
       applyRollback(message);
     } else {
@@ -874,12 +887,22 @@ export default function AiDrawer() {
     }
   };
 
+  /** Closing discards an unapplied preview, so ask first; nothing can close mid-generation. */
+  const requestClose = () => {
+    if (aiLock === "building") return;
+    if (aiLock === "reviewing") {
+      setCloseRequested(true);
+      return;
+    }
+    setAiOpen(false);
+  };
+
   const isNewChat = chatMessages.length === 0;
 
   return (
     <aside
       aria-label="AI Copilot"
-      onKeyDown={(event) => event.key === "Escape" && setAiOpen(false)}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
       className="z-(--z-ed-panel) flex h-full min-h-0 w-96 shrink-0 flex-col border-l border-ed-border bg-ed-panel overflow-hidden transition-all duration-150 shadow-sm select-none"
     >
       {/* Header */}
@@ -895,20 +918,12 @@ export default function AiDrawer() {
           <ToolButton
             label="New chat thread (Reset context)"
             size="sm"
+            disabled={aiLock === "building"}
             onClick={handleNewChat}
           >
             <MessageSquarePlus className="size-3.5" aria-hidden />
           </ToolButton>
-          <ToolButton
-            label="Close AI assistant"
-            size="sm"
-            onClick={() => {
-              if (originalCanvasContent) {
-                handleReject();
-              }
-              setAiOpen(false);
-            }}
-          >
+          <ToolButton label="Close AI assistant" size="sm" disabled={aiLock === "building"} onClick={requestClose}>
             <X className="size-3.5" aria-hidden />
           </ToolButton>
         </div>
@@ -970,7 +985,7 @@ export default function AiDrawer() {
               value={prompt}
               maxLength={2000}
               rows={3}
-              disabled={loading}
+              disabled={aiLock !== null}
               onChange={(event) => setPrompt(event.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -995,7 +1010,7 @@ export default function AiDrawer() {
                 <span className="text-[10px] text-ed-faint font-mono">{prompt.length}/2000</span>
                 <button
                   type="button"
-                  disabled={!prompt.trim() || loading}
+                  disabled={!prompt.trim() || aiLock !== null}
                   onClick={() => handleGenerate()}
                   className="grid size-7 place-items-center rounded-full bg-brand text-white shadow-xs hover:bg-brand-hover active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                 >
@@ -1216,7 +1231,7 @@ export default function AiDrawer() {
               value={prompt}
               maxLength={2000}
               rows={2}
-              disabled={loading}
+              disabled={aiLock !== null}
               onChange={(event) => setPrompt(event.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -1225,9 +1240,11 @@ export default function AiDrawer() {
                 }
               }}
               placeholder={
-                isSectionScope
-                  ? `Describe changes to ${activeType || "section"}...`
-                  : "Ask anything, describe your next section goal..."
+                aiLock === "reviewing"
+                  ? "Accept or reject the AI changes to continue..."
+                  : isSectionScope
+                    ? `Describe changes to ${activeType || "section"}...`
+                    : "Ask anything, describe your next section goal..."
               }
               className="w-full resize-none bg-transparent text-ed-xs text-ed-text placeholder:text-ed-muted/60 focus:outline-none leading-relaxed max-h-32"
             />
@@ -1241,7 +1258,7 @@ export default function AiDrawer() {
                 <span className="text-[10px] text-ed-faint font-mono">{prompt.length}/2000</span>
                 <button
                   type="button"
-                  disabled={!prompt.trim() || loading}
+                  disabled={!prompt.trim() || aiLock !== null}
                   onClick={() => handleGenerate()}
                   className="grid size-6.5 place-items-center rounded-full bg-brand text-white shadow-xs hover:bg-brand-hover active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                 >
@@ -1256,6 +1273,49 @@ export default function AiDrawer() {
           </div>
         </div>
       )}
+
+      {aiLock === "reviewing" && (
+        <div
+          role="region"
+          aria-label="AI changes preview"
+          className="fixed bottom-16 left-1/2 z-(--z-ed-toast) flex -translate-x-1/2 items-center gap-3 rounded-full border border-ed-border bg-ed-panel py-1.5 pl-4 pr-1.5 shadow-ed-pop animate-in fade-in slide-in-from-bottom-2 duration-200"
+        >
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+          </span>
+          <span className="text-ed-xs font-medium text-ed-text">Previewing AI changes</span>
+          <button
+            type="button"
+            onClick={handleReject}
+            className="h-7 rounded-full px-3 text-ed-xs font-medium text-ed-muted hover:bg-ed-hover hover:text-ed-text"
+          >
+            Discard
+          </button>
+          <button
+            type="button"
+            onClick={handleAccept}
+            className="flex h-7 items-center gap-1 rounded-full bg-emerald-600 px-3 text-ed-xs font-semibold text-white hover:bg-emerald-500"
+          >
+            <Check className="size-3.5" aria-hidden /> Apply
+          </button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        isOpen={closeRequested}
+        title="Discard AI changes?"
+        confirmLabel="Discard & close"
+        tone="warning"
+        onConfirm={() => {
+          setCloseRequested(false);
+          handleReject();
+          setAiOpen(false);
+        }}
+        onCancel={() => setCloseRequested(false)}
+      >
+        The AI changes on the canvas haven&apos;t been applied yet. Closing the assistant discards them.
+      </ConfirmDialog>
 
       <ConfirmDialog
         isOpen={rollbackRequest !== null}
