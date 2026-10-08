@@ -143,15 +143,13 @@ export default function MyWebsitesPage() {
           {!hasFilters && (
             <Link
               to="/websites/new"
-              className="grid min-h-60 place-items-center rounded-xl border border-dashed border-line-strong bg-surface p-6 text-center transition-colors hover:border-brand hover:bg-brand-soft/40"
+              className="group flex min-h-60 flex-col items-center justify-center rounded-xl border-2 border-dashed border-line-strong bg-surface p-6 text-center transition-colors hover:border-line-strong hover:bg-canvas/50"
             >
-              <span>
-                <span className="mx-auto grid size-11 place-items-center rounded-full bg-brand-soft text-brand">
-                  <Plus className="size-5" aria-hidden />
-                </span>
-                <span className="mt-3 block font-medium text-ink">Create a new website</span>
-                <span className="mt-1 block text-sm text-ink-body">Manual builder or AI builder</span>
+              <span className="grid size-11 place-items-center rounded-xl border border-line bg-canvas text-ink-muted transition-transform group-hover:scale-105 group-hover:text-ink">
+                <Plus className="size-5" aria-hidden />
               </span>
+              <span className="mt-3 block font-medium text-ink">Create a new website</span>
+              <span className="mt-1 block text-sm text-ink-muted">Manual builder or AI builder</span>
             </Link>
           )}
         </div>

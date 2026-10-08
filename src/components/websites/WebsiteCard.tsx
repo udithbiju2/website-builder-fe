@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { Button } from "@heroui/react";
 import { buttonVariants } from "@heroui/styles";
 import { Eye, Globe, Pencil, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { WebsiteSummary } from "../../api/websites.ts";
+import { websitesApi, type WebsiteDetail, type WebsiteSummary } from "../../api/websites.ts";
 import { formatDate } from "../admin/client-labels.tsx";
+import SiteThumbnail from "./SiteThumbnail.tsx";
 import { BUILDER_LABELS, WebsiteStatusChip } from "./website-labels.tsx";
 
 export default function WebsiteCard({
@@ -13,17 +15,59 @@ export default function WebsiteCard({
   website: WebsiteSummary;
   onDelete?: (website: WebsiteSummary) => void;
 }) {
+  const [detail, setDetail] = useState<WebsiteDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    websitesApi
+      .get(website.id)
+      .then((data) => {
+        if (!cancelled) {
+          setDetail(data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [website.id]);
+
+  const siteData = detail
+    ? {
+        theme: detail.draft.theme,
+        header: detail.draft.header,
+        footer: detail.draft.footer,
+        pages: detail.draft.pages,
+      }
+    : null;
+
+  const hasSections = Boolean(
+    detail?.draft?.pages?.some((page) => page.sections && page.sections.length > 0),
+  );
+
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition-all duration-200 hover:border-brand/40 hover:shadow-md">
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-2xs transition-all duration-200 hover:border-line-strong hover:shadow-md">
+      {/* Thumbnail / Preview */}
       <Link
         to={`/websites/${website.id}`}
-        className="grid aspect-video place-items-center border-b border-line bg-canvas transition-colors group-hover:bg-brand-soft/30"
+        className="relative aspect-video w-full overflow-hidden border-b border-line bg-canvas transition-colors"
       >
-        <span className="grid size-14 place-items-center rounded-xl bg-surface text-2xl font-semibold text-brand shadow-sm transition-transform group-hover:scale-105">
-          {website.name.charAt(0).toUpperCase()}
-        </span>
+        {!loading && hasSections && siteData ? (
+          <SiteThumbnail site={siteData} className="size-full" />
+        ) : (
+          <div className="grid size-full place-items-center bg-canvas">
+            <span className="grid size-12 place-items-center rounded-xl bg-surface text-xl font-semibold text-ink-muted shadow-2xs transition-transform group-hover:scale-105">
+              {website.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
       </Link>
 
+      {/* Card Info & Actions */}
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-3">
           <Link
@@ -34,20 +78,22 @@ export default function WebsiteCard({
           </Link>
           <WebsiteStatusChip website={website} />
         </div>
+
         <p className="mt-1 flex items-center gap-1.5 truncate font-mono text-xs text-ink-muted">
           <Globe className="size-3.5 shrink-0" aria-hidden />
           {website.subdomain}
         </p>
+
         <p className="mt-2 text-xs text-ink-muted">
           {BUILDER_LABELS[website.builderType]} · {website.pageCount}{" "}
           {website.pageCount === 1 ? "page" : "pages"} · Updated{" "}
           {formatDate(website.updatedAt)}
         </p>
 
-        <div className="mt-4 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-2 pt-3 border-t border-line/60">
           <Link
             to={`/websites/${website.id}`}
-            className={buttonVariants({ size: "sm", variant: "primary" })}
+            className={buttonVariants({ size: "sm", variant: "secondary" })}
           >
             Dashboard
           </Link>
@@ -55,14 +101,15 @@ export default function WebsiteCard({
             to={`/websites/${website.id}/edit`}
             className={buttonVariants({ size: "sm", variant: "outline" })}
           >
-            <Pencil className="size-4" aria-hidden /> Edit
+            <Pencil className="size-3.5" aria-hidden /> Edit
           </Link>
           <Link
             to={`/websites/${website.id}/preview`}
             className={buttonVariants({ size: "sm", variant: "outline" })}
             title="Full Preview"
+            aria-label="Full Preview"
           >
-            <Eye className="size-4" aria-hidden />
+            <Eye className="size-3.5" aria-hidden />
           </Link>
           {onDelete && (
             <Button
@@ -72,7 +119,7 @@ export default function WebsiteCard({
               onPress={() => onDelete(website)}
               className="ml-auto text-ink-muted transition-colors hover:border-ed-danger/40 hover:bg-ed-danger-soft hover:text-ed-danger focus-visible:text-ed-danger"
             >
-              <Trash2 className="size-4" aria-hidden />
+              <Trash2 className="size-3.5" aria-hidden />
             </Button>
           )}
         </div>
@@ -80,3 +127,4 @@ export default function WebsiteCard({
     </article>
   );
 }
+
