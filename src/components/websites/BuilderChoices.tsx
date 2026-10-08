@@ -14,12 +14,15 @@ export default function BuilderChoices() {
         <p className="mt-1 text-sm text-ink-body">Pick a template and edit every section yourself.</p>
         <p className="mt-3 text-sm font-medium text-brand">Start building →</p>
       </Link>
-      <div aria-disabled="true" className="rounded-lg border border-line p-5 text-left opacity-70">
+      <Link
+        to="/websites/new?builder=ai"
+        className="rounded-lg border border-line p-5 text-left transition-colors hover:border-brand hover:bg-brand-soft/40"
+      >
         <AiSparklesIcon className="size-6" variant="glossy" glow aria-hidden />
         <p className="mt-3 font-medium text-ink">AI builder</p>
         <p className="mt-1 text-sm text-ink-body">Describe your business and get a ready-to-edit first draft.</p>
-        <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-muted">Coming soon</p>
-      </div>
+        <p className="mt-3 text-sm font-medium text-brand">Describe it →</p>
+      </Link>
     </div>
   );
 }

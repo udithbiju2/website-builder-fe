@@ -5,6 +5,18 @@ export type BuilderType = "MANUAL" | "AI";
 export type WebsiteStatus = "DRAFT" | "PUBLISHED" | "UNPUBLISHED";
 export type PageType = "HOME" | "ABOUT" | "SERVICES" | "CONTACT" | "BLOG" | "LANDING" | "CUSTOM";
 
+export type GenerationStatus = "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED";
+
+export type WebsiteGeneration = {
+  status: GenerationStatus;
+  step: string | null;
+  progress: number;
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+};
+
 export type WebsiteSummary = {
   id: string;
   clientId: string;
@@ -14,6 +26,8 @@ export type WebsiteSummary = {
   status: WebsiteStatus;
   subdomain: string;
   pageCount: number;
+  /** Set when the draft was (or is being) built by AI. */
+  generationStatus: GenerationStatus | null;
   hasUnpublishedChanges: boolean;
   publishedAt: string | null;
   createdAt: string;
@@ -51,6 +65,7 @@ export type WebsiteDetail = WebsiteSummary & {
     pages: WebsitePage[];
     draftUpdatedAt: string;
   };
+  generation: WebsiteGeneration | null;
 };
 
 export type WebsiteTemplate = {
@@ -102,6 +117,21 @@ export type CreateWebsiteInput = {
   description?: string;
   contactEmail?: string;
   contactPhone?: string;
+};
+
+export const GENERATION_TONES = ["professional", "friendly", "luxury", "playful", "bold", "minimal"] as const;
+export type GenerationTone = (typeof GENERATION_TONES)[number];
+export const MAX_GENERATED_PAGES = 8;
+export const MAX_BRIEF_IMAGES = 12;
+
+export type CreateAiWebsiteInput = Omit<CreateWebsiteInput, "templateKey"> & {
+  prompt: string;
+  /** Page names in nav order; the first becomes the home page. */
+  pages: string[];
+  tone?: GenerationTone;
+  /** Media library image ids the AI may place in sections. */
+  mediaIds?: string[];
+  logoMediaId?: string;
 };
 
 /** Pages without an id, or with an id the website doesn't own, are created as new pages. */
@@ -188,6 +218,21 @@ export const websitesApi = {
   create: (input: CreateWebsiteInput) =>
     request<WebsiteResponse>(BASE, { method: "POST", body: input }).then((data) => data.website),
 
+  /** Creates the website and queues the AI build; poll `generation` until it finishes. */
+  createWithAi: (input: CreateAiWebsiteInput) =>
+    request<WebsiteResponse>(`${BASE}/ai`, { method: "POST", body: input }).then((data) => data.website),
+
+  generation: (id: string) =>
+    request<{ generation: WebsiteGeneration }>(`${BASE}/${id}/generation`).then((data) => data.generation),
+
+  retryGeneration: (id: string) =>
+    request<{ generation: WebsiteGeneration }>(`${BASE}/${id}/generation/retry`, { method: "POST" }).then(
+      (data) => data.generation,
+    ),
+
+  /** Forget a failed build and keep the blank draft. */
+  dismissGeneration: (id: string) => request<void>(`${BASE}/${id}/generation`, { method: "DELETE" }),
+
   delete: (id: string) => request<void>(`${BASE}/${id}`, { method: "DELETE" }),
 
   saveDraft: (id: string, input: SaveDraftInput) =>
@@ -212,6 +257,8 @@ export const websitesApi = {
       sectionId?: string;
       currentSection?: Section;
       currentSections?: Section[];
+      /** Page open in the editor; lets the AI see and update its SEO. */
+      pageId?: string;
       history?: Array<{ role: "user" | "assistant"; content: string }>;
     },
   ) =>
