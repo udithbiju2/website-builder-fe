@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { AlertTriangle, RotateCw } from "lucide-react";
 import { ApiError, errorMessage } from "../../api/http.ts";
@@ -7,6 +7,7 @@ import { useAuth } from "../../auth/auth-context.ts";
 import type { CreatedState } from "../../pages/websites/CreateWebsitePage.tsx";
 import EditorErrorBoundary from "./shell/EditorErrorBoundary.tsx";
 import EditorSkeleton from "./shell/EditorSkeleton.tsx";
+import GenerationProgress from "./shell/GenerationProgress.tsx";
 
 /** Puck and the editor shell load only when someone opens the editor. */
 const EditorApp = lazy(() => import("./EditorApp.tsx"));
@@ -23,6 +24,7 @@ export default function BuilderRoute() {
   const justCreated = (location.state as CreatedState | null)?.created === true;
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const reload = useCallback(() => setAttempt((count) => count + 1), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,6 +58,19 @@ export default function BuilderRoute() {
 
   if (state.status === "loading") return <EditorSkeleton />;
 
+  const generation = state.status === "ready" ? state.data.website.generation : null;
+  if (state.status === "ready" && generation && generation.status !== "SUCCEEDED") {
+    return (
+      <GenerationProgress
+        websiteId={state.data.website.id}
+        websiteName={state.data.website.name}
+        initial={generation}
+        backTo={backTo}
+        onReady={reload}
+      />
+    );
+  }
+
   if (state.status === "error") {
     return (
       <div role="alert" className="ed-root grid min-h-dvh place-items-center bg-ed-app p-6">
@@ -69,7 +84,7 @@ export default function BuilderRoute() {
             {!state.notFound && (
               <button
                 type="button"
-                onClick={() => setAttempt((count) => count + 1)}
+                onClick={reload}
                 className="flex h-8 items-center gap-1.5 rounded-ed bg-ed-accent px-3 text-ed-sm font-medium text-white hover:bg-ed-accent-hover"
               >
                 <RotateCw className="size-3.5" aria-hidden /> Try again

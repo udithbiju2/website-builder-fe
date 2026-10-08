@@ -17,7 +17,12 @@ export type ChatMessage = {
   status?: SuggestionStatus;
   acceptedAt?: number;
   /** Canvas before/after the accepted change; only the latest accepted change keeps one. */
-  rollback?: { before: Section[]; after: Section[] };
+  rollback?: {
+    before: Section[];
+    after: Section[];
+    /** Page SEO before an accepted AI SEO change. */
+    seo?: { pageId: string; seoTitle: string | null; seoDescription: string | null };
+  };
 };
 
 export type ChatSession = {
