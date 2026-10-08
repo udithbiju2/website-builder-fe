@@ -618,6 +618,7 @@ export default function AiDrawer() {
 
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [planned, setPlanned] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [suggestion, setSuggestion] = useState<AiSuggestion | null>(null);
 
@@ -705,7 +706,9 @@ export default function AiDrawer() {
   }, [dispatch, setAiBuilding]);
 
   const aiLock: AiLock = loading
-    ? "building"
+    ? planned
+      ? "building"
+      : "thinking"
     : previewCanvasContent
       ? "reviewing"
       : null;
@@ -714,6 +717,7 @@ export default function AiDrawer() {
   }, [aiLock, setAiLock]);
   // Declared after the restore-on-unmount effect so the canvas is restored before editing unlocks.
   useEffect(() => () => setAiLock(null), [setAiLock]);
+  const aiBusy = aiLock === "thinking" || aiLock === "building";
 
   if (!aiOpen) return null;
 
@@ -833,6 +837,7 @@ export default function AiDrawer() {
     layout: AiLayoutSlot[],
     baseline: typeof allItems,
   ) => {
+    setPlanned(true);
     const existing = new Map(baseline.map((item) => [item.props.id, item]));
     const items = layout.flatMap((slot) => {
       if (slot.status !== "pending") return existing.get(slot.id) ?? [];
@@ -912,14 +917,6 @@ export default function AiDrawer() {
     // Regenerating during review must start from the original page, not the unapplied preview.
     const baseline = structuredClone(originalCanvasContent ?? allItems);
     setOriginalCanvasContent(baseline);
-
-    setAiBuilding({
-      active: true,
-      step: "Understanding your request...",
-      scope: isSectionScope ? "section" : "page",
-      progressPercent: 20,
-      pointerY: isSectionScope ? 40 : 25,
-    });
 
     try {
       const historyPayload = nextMessages.slice(-10).map((m) => ({
@@ -1121,6 +1118,7 @@ export default function AiDrawer() {
     } finally {
       abortControllerRef.current = null;
       setLoading(false);
+      setPlanned(false);
     }
   };
 
@@ -1257,7 +1255,7 @@ export default function AiDrawer() {
 
   /** Closing discards an unapplied preview, so ask first; nothing can close mid-generation. */
   const requestClose = () => {
-    if (aiLock === "building") return;
+    if (aiBusy) return;
     if (aiLock === "reviewing") {
       setCloseRequested(true);
       return;
@@ -1286,7 +1284,7 @@ export default function AiDrawer() {
           <ToolButton
             label="New chat thread (Reset context)"
             size="sm"
-            disabled={aiLock === "building"}
+            disabled={aiBusy}
             onClick={handleNewChat}
           >
             <MessageSquarePlus className="size-3.5" aria-hidden />
@@ -1294,7 +1292,7 @@ export default function AiDrawer() {
           <ToolButton
             label="Close AI assistant"
             size="sm"
-            disabled={aiLock === "building"}
+            disabled={aiBusy}
             onClick={requestClose}
           >
             <X className="size-3.5" aria-hidden />
@@ -1557,7 +1555,7 @@ export default function AiDrawer() {
                   variant="glossy"
                 />
                 <span className="text-ed-muted font-medium">
-                  Generating section on canvas...
+                  {planned ? "Building on canvas..." : "Thinking..."}
                 </span>
               </div>
             )}
