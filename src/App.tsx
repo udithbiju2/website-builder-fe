@@ -6,10 +6,12 @@ import { GuestOnly, RequireAuth } from "./auth/RouteGuards.tsx";
 import AdminLayout from "./layouts/AdminLayout.tsx";
 import ClientLayout from "./layouts/ClientLayout.tsx";
 import PublicLayout from "./layouts/PublicLayout.tsx";
+import RoleLayout from "./layouts/RoleLayout.tsx";
 
 // Route-level code-splitting (Lazy loading)
 const LandingPage = lazy(() => import("./pages/public/LandingPage.tsx"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage.tsx"));
+const TemplateDetailPage = lazy(() => import("./pages/public/TemplateDetailPage.tsx"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage.tsx"));
 const SignupPage = lazy(() => import("./pages/auth/SignupPage.tsx"));
 const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage.tsx"));
@@ -20,6 +22,7 @@ const MyWebsitesPage = lazy(() => import("./pages/client/MyWebsitesPage.tsx"));
 const MediaLibraryPage = lazy(() => import("./pages/media/MediaLibraryPage.tsx"));
 const CreateWebsitePage = lazy(() => import("./pages/websites/CreateWebsitePage.tsx"));
 const WebsitePreviewPage = lazy(() => import("./pages/websites/WebsitePreviewPage.tsx"));
+const ProjectDashboardPage = lazy(() => import("./pages/websites/ProjectDashboardPage.tsx"));
 const BuilderRoute = lazy(() => import("./features/builder/BuilderRoute.tsx"));
 
 // Admin pages
@@ -46,6 +49,7 @@ export default function App() {
           <Routes>
             <Route element={<PublicLayout />}>
               <Route index element={<LandingPage />} />
+              <Route path="templates/:templateKey" element={<TemplateDetailPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
 
@@ -67,6 +71,9 @@ export default function App() {
 
             <Route element={<RequireAuth roles={["CLIENT", "SUPER_ADMIN"]} />}>
               <Route path="websites/new" element={<CreateWebsitePage />} />
+              <Route element={<RoleLayout />}>
+                <Route path="websites/:id" element={<ProjectDashboardPage />} />
+              </Route>
               <Route path="websites/:id/preview" element={<WebsitePreviewPage />} />
               <Route path="websites/:id/edit" element={<BuilderRoute />} />
             </Route>

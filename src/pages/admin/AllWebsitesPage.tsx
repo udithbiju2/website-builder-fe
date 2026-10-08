@@ -177,7 +177,9 @@ export default function AllWebsitesPage() {
                   {data.items.map((website) => (
                     <tr key={website.id} className="hover:bg-canvas/40">
                       <td className="px-5 py-3">
-                        <p className="font-medium text-ink">{website.name}</p>
+                        <Link to={`/websites/${website.id}`} className="font-medium text-ink hover:text-brand transition-colors">
+                          {website.name}
+                        </Link>
                         <p className="font-mono text-xs text-ink-muted">{website.subdomain}</p>
                       </td>
                       <td className="px-5 py-3">
@@ -200,10 +202,13 @@ export default function AllWebsitesPage() {
                       <td className="px-5 py-3 text-ink-body">{formatDate(website.updatedAt)}</td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
+                          <Link to={`/websites/${website.id}`} className="font-medium text-brand hover:underline">
+                            Dashboard
+                          </Link>
                           <Link to={`/websites/${website.id}/edit`} className="font-medium text-ink hover:text-brand">
                             Edit
                           </Link>
-                          <Link to={`/websites/${website.id}/preview`} className="font-medium text-brand hover:underline">
+                          <Link to={`/websites/${website.id}/preview`} className="font-medium text-ink-body hover:text-ink">
                             Preview
                           </Link>
                           <button

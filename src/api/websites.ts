@@ -101,6 +101,17 @@ export type WebsiteTemplate = {
   pages: { name: string; slug: string }[];
 };
 
+/** A platform template rendered as site data, for read-only previews. */
+export type TemplatePreview = {
+  template: WebsiteTemplate;
+  site: {
+    theme: ThemeSettings;
+    header: HeaderData;
+    footer: FooterData;
+    pages: { id: string; name: string; slug: string; sections: Section[] }[];
+  };
+};
+
 export type WebsiteListParams = {
   search?: string;
   clientId?: string;
@@ -138,6 +149,10 @@ export type CreateWebsiteInput = {
   contactEmail?: string;
   contactPhone?: string;
 };
+
+export type UpdateWebsiteInput = {
+  name?: string;
+} & { [K in keyof WebsiteInfo]?: string | null };
 
 export const GENERATION_TONES = ["professional", "friendly", "luxury", "playful", "bold", "minimal"] as const;
 export type GenerationTone = (typeof GENERATION_TONES)[number];
@@ -238,6 +253,9 @@ export const websitesApi = {
   create: (input: CreateWebsiteInput) =>
     request<WebsiteResponse>(BASE, { method: "POST", body: input }).then((data) => data.website),
 
+  update: (id: string, input: UpdateWebsiteInput) =>
+    request<WebsiteResponse>(`${BASE}/${id}`, { method: "PATCH", body: input }).then((data) => data.website),
+
   /** Creates the website and queues the AI build; poll `generation` until it finishes. */
   createWithAi: (input: CreateAiWebsiteInput) =>
     request<WebsiteResponse>(`${BASE}/ai`, { method: "POST", body: input }).then((data) => data.website),
@@ -274,14 +292,47 @@ export const websitesApi = {
     id: string,
     input: AiGenerateInput,
     onPlan: (layout: AiLayoutSlot[]) => void,
+    signal?: AbortSignal,
   ): Promise<AiSuggestion> => {
     let suggestion: AiSuggestion | null = null;
-    await requestNdjson<AiStreamEvent>(`${BASE}/${id}/ai/generate`, { method: "POST", body: input }, (event) => {
+    await requestNdjson<AiStreamEvent>(`${BASE}/${id}/ai/generate`, { method: "POST", body: input, signal }, (event) => {
       if (event.type === "plan") onPlan(event.layout);
       else if (event.type === "result") suggestion = event.suggestion;
       else throw new ApiError(502, { error: event.error });
     });
     if (!suggestion) throw new ApiError(502, { error: { message: "AI response ended unexpectedly. Please try again." } });
     return suggestion;
+  },
+
+  listAiSessions: (id: string) =>
+    request<{ sessions: Array<{ id: string; title: string; timestamp: number; messages: unknown[] }> }>(
+      `${BASE}/${id}/ai/sessions`,
+    ).then((data) => data.sessions),
+
+  saveAiSession: (id: string, session: { id?: string; title: string; messages: unknown[] }) =>
+    request<{ session: unknown }>(`${BASE}/${id}/ai/sessions`, { method: "POST", body: session }),
+
+  deleteAiSession: (id: string, sessionId: string) =>
+    request<void>(`${BASE}/${id}/ai/sessions/${sessionId}`, { method: "DELETE" }),
+
+  clearAiSessions: (id: string) => request<void>(`${BASE}/${id}/ai/sessions`, { method: "DELETE" }),
+};
+
+const previewCache = new Map<string, Promise<TemplatePreview>>();
+
+/** Public platform templates; no sign-in needed. */
+export const templatesApi = {
+  list: () => request<{ templates: WebsiteTemplate[] }>("/templates").then((data) => data.templates),
+
+  /** Cached per key so many thumbnails of the same template share one request. */
+  preview: (key: string): Promise<TemplatePreview> => {
+    const cached = previewCache.get(key);
+    if (cached) return cached;
+    const pending = request<TemplatePreview>(`/templates/${encodeURIComponent(key)}/preview`).catch((error: unknown) => {
+      previewCache.delete(key);
+      throw error;
+    });
+    previewCache.set(key, pending);
+    return pending;
   },
 };

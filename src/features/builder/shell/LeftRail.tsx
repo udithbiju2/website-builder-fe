@@ -76,7 +76,11 @@ export default function LeftRail() {
           </div>
           {aiLock && (
             <p role="status" className="absolute inset-x-3 top-3 rounded-ed border border-ed-border bg-ed-panel px-3 py-2 text-ed-xs text-ed-text shadow-ed-pop">
-              {aiLock === "building" ? "AI is building. Editing unlocks when it finishes." : "Apply or discard the AI changes to keep editing."}
+              {aiLock === "thinking"
+                ? "AI is thinking. Editing unlocks when it replies."
+                : aiLock === "building"
+                  ? "AI is building. Editing unlocks when it finishes."
+                  : "Apply or discard the AI changes to keep editing."}
             </p>
           )}
         </aside>

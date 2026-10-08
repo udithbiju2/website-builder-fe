@@ -40,8 +40,11 @@ export type AiBuildingState = {
   pointerY?: number; // percentage 0 - 100 for canvas vertical position
 } | null;
 
-/** While set, the AI owns the canvas: manual edits are blocked until its change is applied or discarded. */
-export type AiLock = "building" | "reviewing" | null;
+/**
+ * While set, the AI owns the canvas: manual edits are blocked until its change is applied or discarded.
+ * "thinking" covers the time before the AI decides whether to reply or edit, so no build UI is shown.
+ */
+export type AiLock = "thinking" | "building" | "reviewing" | null;
 
 export type EditorValue = {
   website: WebsiteDetail;
