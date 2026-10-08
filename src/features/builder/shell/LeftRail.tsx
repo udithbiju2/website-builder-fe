@@ -50,7 +50,7 @@ export default function LeftRail() {
         ))}
         <span className="my-1 h-px w-6 shrink-0 bg-ed-border" aria-hidden />
         <RailButton label="AI assistant" active={aiOpen} onClick={() => setAiOpen(!aiOpen)}>
-          <AiSparklesIcon className="size-5" variant={aiOpen ? "glossy" : "current"} glow={aiOpen} aria-hidden />
+          <AiSparklesIcon className="size-4.5" variant="glossy" aria-hidden />
         </RailButton>
       </nav>
       {active && Panel && (

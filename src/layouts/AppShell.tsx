@@ -7,7 +7,7 @@ import BrandLogo from "../components/BrandLogo.tsx";
 
 export type ShellNavItem = {
   label: string;
-  icon: LucideIcon;
+  icon: LucideIcon | React.ComponentType<{ className?: string; size?: number | string; variant?: "glossy" | "gradient" | "solid" | "current" }>;
   /** Omit for sections that aren't built yet; they render as disabled. */
   to?: string;
   end?: boolean;

@@ -6,6 +6,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { errorMessage } from "../../api/http.ts";
 import { websitesApi, type BuilderType, type WebsiteList, type WebsiteStatus, type WebsiteSummary } from "../../api/websites.ts";
 import { formatDate } from "../../components/admin/client-labels.tsx";
+import AiSparklesIcon from "../../components/icons/AiSparklesIcon.tsx";
 import PageHeader from "../../components/app/PageHeader.tsx";
 import CommonModal from "../../components/ui/CommonModal.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
@@ -184,7 +185,15 @@ export default function AllWebsitesPage() {
                           {website.clientName}
                         </Link>
                       </td>
-                      <td className="px-5 py-3 text-ink-body">{website.builderType === "AI" ? "AI" : "Manual"}</td>
+                      <td className="px-5 py-3 text-ink-body">
+                        {website.builderType === "AI" ? (
+                          <span className="inline-flex items-center gap-1 font-medium text-brand">
+                            <AiSparklesIcon className="size-3.5" variant="glossy" /> AI
+                          </span>
+                        ) : (
+                          "Manual"
+                        )}
+                      </td>
                       <td className="px-5 py-3">
                         <WebsiteStatusChip website={website} />
                       </td>
