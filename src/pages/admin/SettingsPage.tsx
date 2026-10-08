@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button, Chip, Label, Spinner, Switch } from "@heroui/react";
-import { Bot, Check, Eye, EyeOff, Mail, Send, Sparkles, Sliders } from "lucide-react";
+import { Check, Eye, EyeOff, Mail, Send, Sliders } from "lucide-react";
+import AiSparklesIcon from "../../components/icons/AiSparklesIcon.tsx";
 import { adminAiApi, type AiConfig, type AiConfigInput } from "../../api/admin-ai.ts";
 import { adminEmailApi, type EmailConfig, type EmailConfigInput } from "../../api/admin-email.ts";
 import { ApiError, errorMessage } from "../../api/http.ts";
@@ -278,7 +279,7 @@ export default function SettingsPage() {
               : "border-transparent text-ink-muted hover:text-ink hover:bg-surface/50"
           }`}
         >
-          <Sparkles className="size-4 text-cyan-500" />
+          <AiSparklesIcon className="size-4" variant="glossy" />
           <span>AI Settings</span>
         </button>
       </div>
@@ -439,8 +440,8 @@ export default function SettingsPage() {
                 className="rounded-xl border border-line bg-surface p-6 shadow-xs"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-500">
-                    <Bot className="size-5" />
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-brand-soft text-brand">
+                    <AiSparklesIcon className="size-5" variant="glossy" />
                   </div>
                   <div>
                     <h2 className="text-base font-semibold text-ink">OpenAI Configuration</h2>

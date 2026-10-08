@@ -9,10 +9,12 @@ import {
   Users,
 } from "lucide-react";
 import AppShell, { type ShellNavItem } from "./AppShell.tsx";
+import AiSparklesIcon from "../components/icons/AiSparklesIcon.tsx";
 
 const ADMIN_NAV: ShellNavItem[] = [
   { label: "Clients", icon: Users, to: "/admin", end: true, activePrefixes: ["/admin/clients"] },
   { label: "All websites", icon: Globe, to: "/admin/websites" },
+  { label: "AI Usage", icon: AiSparklesIcon, to: "/admin/ai-usage" },
   { label: "Templates and themes", icon: LayoutTemplate },
   { label: "Headers and footers", icon: PanelsTopLeft },
   { label: "Reusable sections", icon: Rows3, to: "/admin/sections" },
