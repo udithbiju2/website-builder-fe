@@ -6,7 +6,7 @@ const CLIENT_NAV: ShellNavItem[] = [
   { label: "My websites", icon: Globe, to: "/websites", end: true },
   { label: "Media library", icon: Image, to: "/media" },
   { label: "Website settings", icon: Settings },
-  { label: "Account settings", icon: UserCog },
+  { label: "Account settings", icon: UserCog, to: "/account" },
 ];
 
 export default function ClientLayout() {
