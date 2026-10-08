@@ -6,6 +6,16 @@ export const BUILDER_LABELS: Record<BuilderType, string> = {
   AI: "AI builder",
 };
 
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 /** Matches the UI designs: Draft, Published, Unpublished changes, Unpublished. */
 export function WebsiteStatusChip({
   website,

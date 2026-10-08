@@ -19,6 +19,7 @@ import FormAlert from "../../components/ui/FormAlert.tsx";
 import SelectInput, { type SelectOption } from "../../components/ui/SelectInput.tsx";
 import TextAreaInput from "../../components/ui/TextAreaInput.tsx";
 import TextInput from "../../components/ui/TextInput.tsx";
+import TemplateThumbnail from "../../components/websites/TemplateThumbnail.tsx";
 
 type Step = 1 | 2 | 3;
 
@@ -127,7 +128,8 @@ export default function CreateWebsitePage() {
   const [themes, setThemes] = useState<ThemeOption[] | null>(null);
   const [category, setCategory] = useState("All");
   /** Empty = start blank. */
-  const [templateKey, setTemplateKey] = useState("");
+  const [requestedTemplateKey] = useState(() => searchParams.get("templateKey") ?? "");
+  const [templateKey, setTemplateKey] = useState(requestedTemplateKey);
   const [themeId, setThemeId] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -146,12 +148,14 @@ export default function CreateWebsitePage() {
         if (cancelled) return;
         setTemplates(loaded);
         setTemplateKey((current) => (loaded.some((template) => template.key === current) ? current : ""));
+        const requested = loaded.find((template) => template.key === requestedTemplateKey);
+        if (requested?.themeId && !requested.isCustom) setThemeId(requested.themeId);
       })
       .catch((err: unknown) => !cancelled && setLoadError(errorMessage(err)));
     return () => {
       cancelled = true;
     };
-  }, [templateOwner]);
+  }, [templateOwner, requestedTemplateKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -685,25 +689,14 @@ export default function CreateWebsitePage() {
               {visibleTemplates.map((template) => {
                 const selected = template.key === templateKey;
                 return (
-                  <button
+                  <div
                     key={template.key}
-                    type="button"
-                    aria-pressed={selected}
                     onClick={() => chooseTemplate(template)}
-                    className={`flex flex-col overflow-hidden rounded-lg border-2 text-left transition-colors ${
-                      selected ? "border-brand" : "border-line hover:border-line-strong"
+                    className={`group relative flex flex-col overflow-hidden rounded-lg border-2 text-left transition-colors cursor-pointer ${
+                      selected ? "border-brand bg-brand-soft/10" : "border-line hover:border-line-strong"
                     }`}
                   >
-                    <span className="flex aspect-[16/9] w-full flex-col gap-1.5 bg-canvas p-4" aria-hidden>
-                      <span className="h-2 w-1/3 rounded bg-line-strong" />
-                      <span className="mt-2 h-3 w-3/4 rounded bg-ink/70" />
-                      <span className="h-2 w-1/2 rounded bg-line-strong" />
-                      <span className="mt-auto grid grid-cols-3 gap-1.5">
-                        <span className="h-6 rounded bg-surface" />
-                        <span className="h-6 rounded bg-surface" />
-                        <span className="h-6 rounded bg-surface" />
-                      </span>
-                    </span>
+                    <TemplateThumbnail template={template} className="border-b border-line" />
                     <span className="flex flex-1 flex-col p-4">
                       <span className="flex items-center justify-between gap-2">
                         <span className="font-medium text-ink">{template.name}</span>
@@ -715,8 +708,19 @@ export default function CreateWebsitePage() {
                       <span className="mt-2 text-xs text-ink-muted">
                         Pages: {template.pages.map((page) => page.name).join(", ")}
                       </span>
+                      <div className="mt-3 pt-2 border-t border-line flex items-center justify-between text-xs">
+                        <span className="text-ink-body group-hover:text-ink font-medium">Select Template</span>
+                        <Link
+                          to={`/templates/${template.key}`}
+                          target="_blank"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-brand hover:underline font-medium"
+                        >
+                          Preview ↗
+                        </Link>
+                      </div>
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>

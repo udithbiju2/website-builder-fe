@@ -13,7 +13,7 @@ import AiSparklesIcon from "../components/icons/AiSparklesIcon.tsx";
 
 const ADMIN_NAV: ShellNavItem[] = [
   { label: "Clients", icon: Users, to: "/admin", end: true, activePrefixes: ["/admin/clients"] },
-  { label: "All websites", icon: Globe, to: "/admin/websites" },
+  { label: "All websites", icon: Globe, to: "/admin/websites", activePrefixes: ["/websites/"] },
   { label: "AI Usage", icon: AiSparklesIcon, to: "/admin/ai-usage" },
   { label: "Templates and themes", icon: LayoutTemplate },
   { label: "Headers and footers", icon: PanelsTopLeft },
