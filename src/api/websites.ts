@@ -238,4 +238,17 @@ export const websitesApi = {
     if (!suggestion) throw new ApiError(502, { error: { message: "AI response ended unexpectedly. Please try again." } });
     return suggestion;
   },
+
+  listAiSessions: (id: string) =>
+    request<{ sessions: Array<{ id: string; title: string; timestamp: number; messages: unknown[] }> }>(
+      `${BASE}/${id}/ai/sessions`,
+    ).then((data) => data.sessions),
+
+  saveAiSession: (id: string, session: { id?: string; title: string; messages: unknown[] }) =>
+    request<{ session: unknown }>(`${BASE}/${id}/ai/sessions`, { method: "POST", body: session }),
+
+  deleteAiSession: (id: string, sessionId: string) =>
+    request<void>(`${BASE}/${id}/ai/sessions/${sessionId}`, { method: "DELETE" }),
+
+  clearAiSessions: (id: string) => request<void>(`${BASE}/${id}/ai/sessions`, { method: "DELETE" }),
 };

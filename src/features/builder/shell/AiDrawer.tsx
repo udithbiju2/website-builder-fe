@@ -771,6 +771,29 @@ export default function AiDrawer() {
         },
       ];
 
+  // Sync chat sessions with backend on mount
+  useEffect(() => {
+    if (!website?.id) return;
+    websitesApi
+      .listAiSessions(website.id)
+      .then((serverSessions) => {
+        if (serverSessions && serverSessions.length > 0) {
+          setSessions(serverSessions as ChatSession[]);
+          try {
+            localStorage.setItem(
+              sessionsStorageKey(website.id),
+              JSON.stringify(serverSessions),
+            );
+          } catch {
+            // ignore
+          }
+        }
+      })
+      .catch(() => {
+        // Graceful fallback to localStorage
+      });
+  }, [website?.id]);
+
   /** Updates the chat feed and persists it as the active session. */
   const saveSession = (messages: ChatMessage[]) => {
     setChatMessages(messages);
@@ -802,6 +825,18 @@ export default function AiDrawer() {
       }
       return updated;
     });
+
+    if (website?.id) {
+      websitesApi
+        .saveAiSession(website.id, {
+          id: sessionId,
+          title: session.title,
+          messages: session.messages,
+        })
+        .catch(() => {
+          // background sync fails silently
+        });
+    }
   };
 
   const handleNewChat = () => {
@@ -822,6 +857,9 @@ export default function AiDrawer() {
       localStorage.removeItem(sessionsStorageKey(website?.id));
     } catch {
       // ignore
+    }
+    if (website?.id) {
+      websitesApi.clearAiSessions(website.id).catch(() => {});
     }
   };
 
