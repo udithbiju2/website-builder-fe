@@ -94,6 +94,10 @@ export const aiSuggestionSchema = z.object({
   ]),
   before: z.array(sectionEnvelopeSchema).max(60),
   after: z.array(sectionEnvelopeSchema).max(60),
+  /** Proposed SEO for the open page (AI-built websites); applied on accept. */
+  seo: z
+    .object({ pageId: z.string().min(1), seoTitle: z.string().max(160), seoDescription: z.string().max(320) })
+    .optional(),
 });
 
 export type AiSuggestion = z.infer<typeof aiSuggestionSchema>;

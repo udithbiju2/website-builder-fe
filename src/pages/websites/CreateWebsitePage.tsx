@@ -8,6 +8,12 @@ import { websitesApi, type CreateWebsiteInput, type ThemeOption, type WebsiteTem
 import { useAuth } from "../../auth/auth-context.ts";
 import { validateEmail } from "../../auth/validation.ts";
 import { AiSparklesIcon } from "../../components/icons/AiSparklesIcon.tsx";
+import AiBriefStep, {
+  EMPTY_AI_BRIEF,
+  validateAiBrief,
+  type AiBrief,
+  type AiBriefErrors,
+} from "../../components/websites/AiBriefStep.tsx";
 import CommonModal from "../../components/ui/CommonModal.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
 import SelectInput, { type SelectOption } from "../../components/ui/SelectInput.tsx";
@@ -32,12 +38,22 @@ type InfoErrors = Partial<Record<keyof InfoForm | "clientId", string>>;
 
 export type CreatedState = { created?: boolean };
 
-const STEPS: { step: Step | 4; label: string }[] = [
-  { step: 1, label: "Builder type" },
-  { step: 2, label: "Website info" },
-  { step: 3, label: "Starting point" },
-  { step: 4, label: "Create draft" },
-];
+type BuilderMode = "MANUAL" | "AI";
+
+const STEPS: Record<BuilderMode, { step: Step | 4; label: string }[]> = {
+  MANUAL: [
+    { step: 1, label: "Builder type" },
+    { step: 2, label: "Website info" },
+    { step: 3, label: "Starting point" },
+    { step: 4, label: "Create draft" },
+  ],
+  AI: [
+    { step: 1, label: "Builder type" },
+    { step: 2, label: "Website info" },
+    { step: 3, label: "Describe it" },
+    { step: 4, label: "AI builds it" },
+  ],
+};
 
 const WEBSITE_TYPES: SelectOption<string>[] = [
   { value: "", label: "Select a type" },
@@ -91,6 +107,9 @@ export default function CreateWebsitePage() {
   const backTo = isAdmin ? "/admin/websites" : "/websites";
 
   const [step, setStep] = useState<Step>(1);
+  const [mode, setMode] = useState<BuilderMode>(searchParams.get("builder") === "ai" ? "AI" : "MANUAL");
+  const [aiBrief, setAiBrief] = useState<AiBrief>(EMPTY_AI_BRIEF);
+  const [aiErrors, setAiErrors] = useState<AiBriefErrors>({});
   const [form, setForm] = useState<InfoForm>({
     name: "",
     businessName: user?.client?.businessName ?? "",
@@ -223,14 +242,10 @@ export default function CreateWebsitePage() {
     else if (!themeId) setThemeId(themes?.[0]?.id ?? "");
   }
 
-  async function createDraft() {
-    setCreating(true);
-    setSubmitError(null);
-    const input: CreateWebsiteInput = {
+  function infoInput(): CreateWebsiteInput {
+    return {
       ...(isAdmin ? { clientId } : {}),
       name: form.name.trim(),
-      ...(templateKey ? { templateKey } : {}),
-      ...(themeId ? { themeId } : {}),
       subdomain: optional(form.subdomain.toLowerCase()),
       businessName: optional(form.businessName),
       websiteType: optional(form.websiteType),
@@ -239,8 +254,40 @@ export default function CreateWebsitePage() {
       contactEmail: optional(form.contactEmail),
       contactPhone: optional(form.contactPhone),
     };
+  }
+
+  async function createDraft() {
+    await submit(() =>
+      websitesApi.create({
+        ...infoInput(),
+        ...(templateKey ? { templateKey } : {}),
+        ...(themeId ? { themeId } : {}),
+      }),
+    );
+  }
+
+  async function generateWithAi() {
+    const nextErrors = validateAiBrief(aiBrief);
+    setAiErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
+    await submit(() =>
+      websitesApi.createWithAi({
+        ...infoInput(),
+        prompt: aiBrief.prompt.trim(),
+        pages: ["Home", ...aiBrief.pages],
+        ...(aiBrief.tone ? { tone: aiBrief.tone } : {}),
+        ...(aiBrief.themeId ? { themeId: aiBrief.themeId } : {}),
+        ...(aiBrief.images.length > 0 ? { mediaIds: aiBrief.images.map((image) => image.id) } : {}),
+        ...(aiBrief.logo ? { logoMediaId: aiBrief.logo.id } : {}),
+      }),
+    );
+  }
+
+  async function submit(create: () => Promise<{ id: string }>) {
+    setCreating(true);
+    setSubmitError(null);
     try {
-      const website = await websitesApi.create(input);
+      const website = await create();
       navigate(`/websites/${website.id}/edit`, { replace: true, state: { created: true } satisfies CreatedState });
     } catch (err) {
       if (err instanceof ApiError) {
@@ -254,6 +301,8 @@ export default function CreateWebsitePage() {
           setErrors(fieldErrors);
           setStep(2);
         }
+        const briefErrors = err.fieldErrors();
+        if (briefErrors.prompt || briefErrors.pages) setAiErrors({ prompt: briefErrors.prompt, pages: briefErrors.pages });
       }
       setSubmitError(errorMessage(err));
     } finally {
@@ -275,7 +324,7 @@ export default function CreateWebsitePage() {
 
       <div className="mx-auto max-w-5xl px-6 py-8">
         <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Steps">
-          {STEPS.map(({ step: number, label }) => {
+          {STEPS[mode].map(({ step: number, label }) => {
             const done = number < step;
             const current = number === step;
             return (
@@ -311,28 +360,42 @@ export default function CreateWebsitePage() {
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <button
                 type="button"
-                aria-pressed="true"
-                className="rounded-lg border-2 border-brand bg-brand-soft/40 p-5 text-left"
+                aria-pressed={mode === "MANUAL"}
+                onClick={() => setMode("MANUAL")}
+                className={`rounded-lg border-2 p-5 text-left transition-colors ${
+                  mode === "MANUAL" ? "border-brand bg-brand-soft/40" : "border-line hover:border-line-strong"
+                }`}
               >
                 <span className="flex items-center justify-between">
                   <MousePointerClick className="size-5 text-brand" aria-hidden />
-                  <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-medium text-white">Selected</span>
+                  {mode === "MANUAL" && (
+                    <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-medium text-white">Selected</span>
+                  )}
                 </span>
                 <span className="mt-3 block font-medium text-ink">Manual Website Builder</span>
                 <span className="mt-1 block text-sm text-ink-body">
                   Build your own pages from ready-made sections, or start from a template. Change anything later.
                 </span>
               </button>
-              <div aria-disabled="true" className="rounded-lg border border-line p-5 opacity-70">
-                <AiSparklesIcon className="size-6" variant="glossy" glow aria-hidden />
+              <button
+                type="button"
+                aria-pressed={mode === "AI"}
+                onClick={() => setMode("AI")}
+                className={`rounded-lg border-2 p-5 text-left transition-colors ${
+                  mode === "AI" ? "border-brand bg-brand-soft/40" : "border-line hover:border-line-strong"
+                }`}
+              >
+                <span className="flex items-center justify-between">
+                  <AiSparklesIcon className="size-6" variant="glossy" glow aria-hidden />
+                  {mode === "AI" && (
+                    <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-medium text-white">Selected</span>
+                  )}
+                </span>
                 <span className="mt-3 block font-medium text-ink">AI Website Builder</span>
                 <span className="mt-1 block text-sm text-ink-body">
                   Describe your website in a prompt. AI creates an editable draft you can change any time.
                 </span>
-                <span className="mt-3 block font-mono text-[11px] uppercase tracking-wider text-ink-muted">
-                  Coming soon
-                </span>
-              </div>
+              </button>
             </div>
             <div className="mt-6 flex justify-end">
               <Button onPress={() => setStep(2)}>Continue: website info</Button>
@@ -415,12 +478,50 @@ export default function CreateWebsitePage() {
               <Button variant="outline" onPress={() => setStep(1)}>
                 Back
               </Button>
-              <Button type="submit">Continue: starting point</Button>
+              <Button type="submit">{mode === "AI" ? "Continue: describe your website" : "Continue: starting point"}</Button>
             </div>
           </form>
         )}
 
-        {step === 3 && (
+        {step === 3 && mode === "AI" && (
+          <section className="mt-6 rounded-xl border border-line bg-surface p-6">
+            <h2 className="text-lg font-semibold text-ink">Describe your website</h2>
+            <p className="mt-1 text-sm text-ink-body">
+              The AI writes every page from this brief and your website info. You get a normal draft to edit before
+              anything goes live.
+            </p>
+
+            {submitError && (
+              <div className="mt-5">
+                <FormAlert status="danger">{submitError}</FormAlert>
+              </div>
+            )}
+
+            <div className="mt-5">
+              <AiBriefStep
+                brief={aiBrief}
+                onChange={(next) => {
+                  setAiBrief(next);
+                  setAiErrors({});
+                }}
+                errors={aiErrors}
+                themes={themes}
+                mediaClientId={isAdmin ? clientId : (user?.client?.id ?? "")}
+              />
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+              <Button variant="outline" onPress={() => setStep(2)} isDisabled={creating}>
+                Back
+              </Button>
+              <Button onPress={generateWithAi} isPending={creating}>
+                <AiSparklesIcon className="size-4" variant="current" aria-hidden /> Generate website
+              </Button>
+            </div>
+          </section>
+        )}
+
+        {step === 3 && mode === "MANUAL" && (
           <section className="mt-6 rounded-xl border border-line bg-surface p-6">
             <h2 className="text-lg font-semibold text-ink">How do you want to start?</h2>
             <p className="mt-1 text-sm text-ink-body">

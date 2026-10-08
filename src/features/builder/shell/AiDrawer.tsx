@@ -22,11 +22,8 @@ import {
 import { websitesApi, type AiLayoutSlot } from "../../../api/websites.ts";
 import type { AiSuggestion } from "../schema/editor-document.ts";
 import { useEditor, type AiLock } from "../editor-context.ts";
-import {
-  aiPlaceholderItem,
-  itemAsSection,
-  sectionToItem,
-} from "../puck/adapter.ts";
+import { updatePageMeta } from "../../../pages/websites/editor/editor-state.ts";
+import { aiPlaceholderItem, itemAsSection, sectionToItem } from "../puck/adapter.ts";
 import { selectSection, useBuilderPuck } from "../puck/puck-api.ts";
 import { scrollCanvasToSection } from "./AiBuilderCanvasOverlay.tsx";
 import { ToolButton } from "./ui.tsx";
@@ -583,6 +580,12 @@ function normalizeSection(raw: Section): Section {
   } as Section;
 }
 
+/** Sections the suggestion adds or modifies; unchanged ones (e.g. an SEO-only update) are left out. */
+function changedSections(suggestion: AiSuggestion): AiSuggestion["after"] {
+  const before = new Map(suggestion.before.map((section) => [section.id, JSON.stringify(section)]));
+  return suggestion.after.filter((section) => before.get(section.id) !== JSON.stringify(section));
+}
+
 function formatRelativeTime(ts: number): string {
   const diffMs = Date.now() - ts;
   const mins = Math.floor(diffMs / 60000);
@@ -603,8 +606,9 @@ const sameContent = (a: Section[], b: Section[]) =>
   JSON.stringify(a) === JSON.stringify(b);
 
 export default function AiDrawer() {
-  const { aiOpen, setAiOpen, website, notify, setAiBuilding, setAiLock } =
-    useEditor();
+  const { aiOpen, setAiOpen, website, draft, page, editDraft, notify, setAiBuilding, setAiLock } = useEditor();
+  /** AI-built sites get the business-aware copilot (content, copy and SEO from the original brief). */
+  const isAiSite = website.builderType === "AI";
   const dispatch = useBuilderPuck((state) => state.dispatch);
   const selectedIndex = useBuilderPuck(
     (state) => state.appState.ui.itemSelector?.index ?? null,
@@ -725,7 +729,21 @@ export default function AiDrawer() {
   const isSectionScope = Boolean(currentSection);
   const activeType = currentSection?.type as SectionType | undefined;
 
-  const VIBE_PRESETS = isSectionScope
+  const VIBE_PRESETS = isAiSite
+    ? isSectionScope
+      ? [
+          { label: "Rewrite for my customers", prompt: "Rewrite this section's copy so it speaks directly to my customers and what my business offers" },
+          { label: "Shorter & punchier", prompt: "Make this section's text shorter and punchier while keeping the key message about my business" },
+          { label: "Match my brand tone", prompt: "Rewrite this section in my brand's tone of voice" },
+          { label: "Use my photos", prompt: "Use a fitting image from my media library in this section" },
+        ]
+      : [
+          { label: "Improve this page's copy", prompt: "Rewrite the copy on this page to better sell my business, keeping the layout" },
+          { label: "Improve SEO", prompt: "Write a better SEO title and description for this page based on my business" },
+          { label: "What's missing?", prompt: "Review this page for my business and tell me what content is missing or could convert better" },
+          { label: "Add a customer FAQ", prompt: "Add an FAQ section answering the questions my customers are most likely to ask" },
+        ]
+    : isSectionScope
     ? [
         {
           label: "Modern SaaS",
@@ -970,6 +988,7 @@ export default function AiDrawer() {
           sectionId: currentSection?.id,
           currentSection: currentSection ?? undefined,
           currentSections: baseline.map(itemAsSection),
+          pageId: page.id,
           history: historyPayload,
         },
         (layout) => showPlannedLayout(layout, baseline),
@@ -1191,10 +1210,21 @@ export default function AiDrawer() {
       }),
     });
 
+    const seo = suggestion?.seo;
+    const seoPage = seo ? draft.pages.find((candidate) => candidate.id === seo.pageId) : undefined;
+    if (seo && seoPage) {
+      editDraft((current) =>
+        updatePageMeta(current, seo.pageId, { seoTitle: seo.seoTitle || null, seoDescription: seo.seoDescription || null }),
+      );
+    }
+
     if (activeMessageId && originalCanvasContent) {
       const rollback = {
         before: originalCanvasContent.map(itemAsSection),
         after: previewCanvasContent.map(itemAsSection),
+        seo: seoPage
+          ? { pageId: seoPage.id, seoTitle: seoPage.seoTitle, seoDescription: seoPage.seoDescription }
+          : undefined,
       };
       // Rollback restores a whole-canvas snapshot, so only the latest accepted change may use it.
       saveSession(
@@ -1264,6 +1294,15 @@ export default function AiDrawer() {
         content: before.map(sectionToItem),
       }),
     });
+    const previousSeo = message.rollback.seo;
+    if (previousSeo) {
+      editDraft((current) =>
+        updatePageMeta(current, previousSeo.pageId, {
+          seoTitle: previousSeo.seoTitle,
+          seoDescription: previousSeo.seoDescription,
+        }),
+      );
+    }
     saveSession(
       chatMessages.map((m) =>
         m.id === message.id
@@ -1403,7 +1442,11 @@ export default function AiDrawer() {
                 }
               }}
               placeholder={
-                isSectionScope
+                isAiSite
+                  ? isSectionScope
+                    ? `Rewrite, update or restyle this ${activeType || "section"} for your business...`
+                    : "Ask about your site, rewrite this page's copy, improve SEO, add a section..."
+                  : isSectionScope
                   ? `Ask anything, describe changes to this ${activeType || "section"}...`
                   : "Ask anything, describe your website goal..."
               }
@@ -1529,8 +1572,16 @@ export default function AiDrawer() {
                       </div>
 
                       {/* Affected Section Tags */}
+                      {suggestion.seo && (
+                        <div className="flex flex-col gap-0.5 rounded-xl border border-ed-border/70 bg-ed-subtle/50 px-2.5 py-2 text-[10.5px]">
+                          <span className="font-bold text-ed-text">SEO for this page</span>
+                          <span className="text-ed-text">{suggestion.seo.seoTitle}</span>
+                          <span className="text-ed-muted">{suggestion.seo.seoDescription}</span>
+                        </div>
+                      )}
+
                       <div className="flex flex-wrap gap-1">
-                        {suggestion.after.map((sec, sIdx) => (
+                        {changedSections(suggestion).map((sec, sIdx) => (
                           <span
                             key={sec.id || sIdx}
                             className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-brand"
@@ -1666,7 +1717,9 @@ export default function AiDrawer() {
                   ? "Accept or reject the AI changes to continue..."
                   : isSectionScope
                     ? `Describe changes to ${activeType || "section"}...`
-                    : "Ask anything, describe your next section goal..."
+                    : isAiSite
+                      ? "Ask about your site, rewrite copy, improve SEO..."
+                      : "Ask anything, describe your next section goal..."
               }
               className="w-full resize-none bg-transparent text-ed-xs text-ed-text placeholder:text-ed-muted/60 focus:outline-none leading-relaxed max-h-32"
             />
