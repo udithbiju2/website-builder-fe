@@ -62,6 +62,7 @@ import {
   VideoField,
 } from "./fields.tsx";
 import { FontPicker } from "./FontPicker.tsx";
+import CustomSectionForm from "./CustomSectionForm.tsx";
 
 type DataFormProps<T> = { data: T; onChange: (data: T) => void };
 
@@ -3356,6 +3357,13 @@ function DataForm({
     case "marquee":
       return (
         <MarqueeForm
+          data={section.data}
+          onChange={(data) => onChange({ ...section, data })}
+        />
+      );
+    case "custom":
+      return (
+        <CustomSectionForm
           data={section.data}
           onChange={(data) => onChange({ ...section, data })}
         />

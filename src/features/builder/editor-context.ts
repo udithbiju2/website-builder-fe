@@ -40,6 +40,9 @@ export type AiBuildingState = {
   pointerY?: number; // percentage 0 - 100 for canvas vertical position
 } | null;
 
+/** While set, the AI owns the canvas: manual edits are blocked until its change is applied or discarded. */
+export type AiLock = "building" | "reviewing" | null;
+
 export type EditorValue = {
   website: WebsiteDetail;
   draft: EditorDraft;
@@ -62,6 +65,8 @@ export type EditorValue = {
   notify: (message: string, tone?: "success" | "danger") => void;
   aiBuilding: AiBuildingState;
   setAiBuilding: (state: AiBuildingState | ((prev: AiBuildingState) => AiBuildingState)) => void;
+  aiLock: AiLock;
+  setAiLock: (lock: AiLock) => void;
 };
 
 export const EditorContext = createContext<EditorValue | null>(null);

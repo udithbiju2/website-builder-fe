@@ -1,7 +1,7 @@
 import "@puckeditor/core/no-external.css";
 import "./builder.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Puck, type Data } from "@puckeditor/core";
+import { Puck, useGetPuck, type Data, type Permissions } from "@puckeditor/core";
 import { AlertTriangle, CheckCircle2, RotateCw, X } from "lucide-react";
 import type { SavedSection, ThemeOption, WebsiteDetail, WebsitePage } from "../../api/websites.ts";
 import type { Device } from "../../components/websites/DevicePreview.tsx";
@@ -13,6 +13,7 @@ import {
   BuilderSiteContext,
   EditorContext,
   useEditor,
+  type AiLock,
   type BuilderSiteValue,
   type EditorRole,
   type EditorValue,
@@ -20,7 +21,7 @@ import {
   type SiteArea,
 } from "./editor-context.ts";
 import { builderConfig } from "./puck/config.tsx";
-import { EditorDataError, puckDataToSections, sectionsToPuckData } from "./puck/adapter.ts";
+import { EditorDataError, hasAiPlaceholder, puckDataToSections, sectionsToPuckData } from "./puck/adapter.ts";
 import { selectSection, useBuilderPuck } from "./puck/puck-api.ts";
 import AiDrawer from "./shell/AiDrawer.tsx";
 import CanvasViewport from "./shell/CanvasViewport.tsx";
@@ -42,10 +43,56 @@ export type EditorAppProps = {
 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
+// Puck merges this prop into its state, so unlocking must pass explicit `true`s rather than `undefined`.
+const EDITABLE_PERMISSIONS: Permissions = { drag: true, duplicate: true, delete: true, edit: true, insert: true };
+const LOCKED_PERMISSIONS: Permissions = { drag: false, duplicate: false, delete: false, edit: false, insert: false };
+
+/** Swallows undo/redo shortcuts (host page and canvas iframe) so they can't rewind an AI change mid-review. */
+function blockHistoryHotkeys(): () => void {
+  const block = (event: KeyboardEvent) => {
+    const key = event.key.toLowerCase();
+    if ((event.metaKey || event.ctrlKey) && (key === "z" || key === "y")) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
+  const targets: Window[] = [window];
+  for (const iframe of Array.from(document.querySelectorAll("iframe"))) {
+    try {
+      if (iframe.contentWindow?.document) targets.push(iframe.contentWindow);
+    } catch {
+      // Cross-origin iframes are not the canvas.
+    }
+  }
+  for (const target of targets) target.addEventListener("keydown", block, true);
+  return () => {
+    for (const target of targets) target.removeEventListener("keydown", block, true);
+  };
+}
+
 /** Lives inside <Puck> so it can reach editor state; draws the canvas and site chrome. */
-function EditorShell({ backTo, onPublish }: { backTo: string; onPublish: () => void }) {
-  const { draft, siteArea, setSiteArea, setLeftPanel, device, aiOpen } = useEditor();
+function EditorShell({ backTo, onPublish, onCommit }: { backTo: string; onPublish: () => void; onCommit: (data: Data) => void }) {
+  const { draft, siteArea, setSiteArea, setLeftPanel, device, aiOpen, aiLock } = useEditor();
   const dispatch = useBuilderPuck((state) => state.dispatch);
+  const getPuck = useGetPuck();
+  const wasLocked = useRef(false);
+
+  // Autosave skips changes while the AI holds the canvas, and Puck won't re-emit unchanged data,
+  // so the applied (or restored) canvas is committed explicitly once the lock is released.
+  useEffect(() => {
+    if (aiLock) {
+      wasLocked.current = true;
+      return;
+    }
+    if (!wasLocked.current) return;
+    wasLocked.current = false;
+    onCommit(getPuck().appState.data);
+  }, [aiLock, getPuck, onCommit]);
+
+  useEffect(() => {
+    if (!aiLock) return;
+    return blockHistoryHotkeys();
+  }, [aiLock]);
   const hasSelection = useBuilderPuck((state) => state.appState.ui.itemSelector !== null);
   const isEmpty = useBuilderPuck((state) => state.appState.data.content.length === 0);
 
@@ -99,9 +146,10 @@ function EditorShell({ backTo, onPublish }: { backTo: string; onPublish: () => v
 /** One Puck instance per page; initial data is read once and later edits flow out through onChange. */
 function PageCanvas({ page, backTo, onChange, onPublish }: { page: WebsitePage; backTo: string; onChange: (data: Data) => void; onPublish: () => void }) {
   const [initialData] = useState(() => sectionsToPuckData(page.sections));
+  const { aiLock } = useEditor();
   return (
-    <Puck config={builderConfig} data={initialData} onChange={onChange}>
-      <EditorShell backTo={backTo} onPublish={onPublish} />
+    <Puck config={builderConfig} data={initialData} onChange={onChange} permissions={aiLock ? LOCKED_PERMISSIONS : EDITABLE_PERMISSIONS}>
+      <EditorShell backTo={backTo} onPublish={onPublish} onCommit={onChange} />
     </Puck>
   );
 }
@@ -115,6 +163,12 @@ export default function EditorApp({ website: initialWebsite, themes, savedSectio
   const [siteArea, setSiteArea] = useState<SiteArea>("page");
   const [aiOpen, setAiOpen] = useState(false);
   const [aiBuilding, setAiBuilding] = useState<import("./editor-context.ts").AiBuildingState>(null);
+  const [aiLock, setAiLockState] = useState<AiLock>(null);
+  const aiLockRef = useRef<AiLock>(null);
+  const setAiLock = useCallback((lock: AiLock) => {
+    aiLockRef.current = lock;
+    setAiLockState(lock);
+  }, []);
   const [device, setDevice] = useState<Device>("desktop");
   const [publishOpen, setPublishOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(
@@ -155,6 +209,8 @@ export default function EditorApp({ website: initialWebsite, themes, savedSectio
 
   const handlePuckChange = useCallback(
     (data: Data) => {
+      // AI previews and placeholders are not saved until the change is applied (see EditorShell).
+      if (aiLockRef.current || hasAiPlaceholder(data)) return;
       let sections: Section[];
       try {
         sections = puckDataToSections(data);
@@ -206,8 +262,10 @@ export default function EditorApp({ website: initialWebsite, themes, savedSectio
       notify,
       aiBuilding,
       setAiBuilding,
+      aiLock,
+      setAiLock,
     }),
-    [website, draft, page, role, themes, savedSections, setSavedSections, autosave, editDraft, selectPage, leftPanel, siteArea, aiOpen, device, notify, aiBuilding],
+    [website, draft, page, role, themes, savedSections, setSavedSections, autosave, editDraft, selectPage, leftPanel, siteArea, aiOpen, device, notify, aiBuilding, aiLock, setAiLock],
   );
 
   return (

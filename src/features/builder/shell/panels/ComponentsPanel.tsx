@@ -11,6 +11,7 @@ import {
   HelpCircle,
   Image,
   Layers,
+  LayoutDashboard,
   Mail,
   Megaphone,
   MessageSquareQuote,
@@ -47,6 +48,7 @@ const SECTION_ICONS: Record<SectionType, ComponentType<LucideProps>> = {
   team: Users,
   carousel: SlidersHorizontal,
   marquee: MoveHorizontal,
+  custom: LayoutDashboard,
 };
 
 /** Drag-to-insert list backed by Puck's drawer, rendered with the builder's own styling and icons. */

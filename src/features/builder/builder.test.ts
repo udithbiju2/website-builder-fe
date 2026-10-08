@@ -1,12 +1,29 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { WebsitePage } from "../../api/websites.ts";
 import type { EditorDraft } from "../../pages/websites/editor/editor-state.ts";
-import { createSection, DEFAULT_THEME, FONT_KEYS, FONTS, fontStack, sectionFontStyle, themeToCssVars } from "../../site-kit/index.ts";
+import { createSection, DEFAULT_THEME, SectionView, FONT_KEYS, FONTS, fontStack, sectionFontStyle, themeToCssVars } from "../../site-kit/index.ts";
 import { collectAssets } from "./assets.ts";
 import { planSave } from "./autosave/save-plan.ts";
 import { SerialSaver } from "./autosave/serial-saver.ts";
-import { EditorDataError, itemAsSection, puckDataToSections, sectionsToPuckData } from "./puck/adapter.ts";
+import {
+  aiPlaceholderItem,
+  EditorDataError,
+  hasAiPlaceholder,
+  isAiPlaceholderData,
+  itemAsSection,
+  puckDataToSections,
+  sectionsToPuckData,
+} from "./puck/adapter.ts";
 import { aiSuggestionSchema, puckContentSchema } from "./schema/editor-document.ts";
+import {
+  formatCountdown,
+  pruneExpiredRollbacks,
+  ROLLBACK_WINDOW_MS,
+  rollbackRemainingMs,
+  type ChatMessage,
+} from "./shell/ai-chat-history.ts";
 
 function page(id: string, overrides: Partial<WebsitePage> = {}): WebsitePage {
   return {
@@ -166,5 +183,78 @@ describe("aiSuggestionSchema", () => {
     expect(aiSuggestionSchema.safeParse(valid).success).toBe(true);
     expect(aiSuggestionSchema.safeParse({ ...valid, target: { scope: "site" } }).success).toBe(false);
     expect(aiSuggestionSchema.safeParse({ ...valid, after: [{ ...section, type: "iframe" }] }).success).toBe(false);
+  });
+});
+
+describe("custom section", () => {
+  const render = (section: ReturnType<typeof createSection<"custom">>) =>
+    renderToStaticMarkup(createElement(SectionView, { section }));
+
+  it("renders the starter layout from its blocks", () => {
+    const html = render(createSection("custom"));
+    expect(html).toContain("wb-cb-grid");
+    expect(html).toContain("Build any layout you can describe");
+    expect(html).toContain('href="/contact"');
+  });
+
+  it("never renders unsafe links or images and skips unknown blocks", () => {
+    const html = render(
+      createSection("custom", {
+        data: {
+          blocks: [
+            { type: "button", label: "Go", href: "javascript:alert(1)" },
+            { type: "image", url: "javascript:alert(1)", alt: "x" },
+            { type: "iframe" } as never,
+          ],
+        },
+      }),
+    );
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("<img");
+    expect(html).toContain('href="#"');
+  });
+});
+
+describe("AI rollback window", () => {
+  const acceptedAt = 1_000_000;
+  const accepted: ChatMessage = {
+    id: "m1",
+    role: "assistant",
+    content: "Removed header",
+    timestamp: "10:00",
+    status: "accepted",
+    acceptedAt,
+    rollback: { before: [createSection("header")], after: [] },
+  };
+
+  it("counts down only for accepted changes that still have a snapshot", () => {
+    expect(rollbackRemainingMs(accepted, acceptedAt + 60_000)).toBe(ROLLBACK_WINDOW_MS - 60_000);
+    expect(rollbackRemainingMs(accepted, acceptedAt + ROLLBACK_WINDOW_MS)).toBe(0);
+    expect(rollbackRemainingMs({ ...accepted, status: "rolled_back" }, acceptedAt)).toBe(0);
+    expect(rollbackRemainingMs({ ...accepted, rollback: undefined }, acceptedAt)).toBe(0);
+  });
+
+  it("drops expired snapshots and keeps live ones", () => {
+    expect(pruneExpiredRollbacks([accepted], acceptedAt + 1000)[0]?.rollback).toBeDefined();
+    expect(pruneExpiredRollbacks([accepted], acceptedAt + ROLLBACK_WINDOW_MS)[0]?.rollback).toBeUndefined();
+  });
+
+  it("formats the countdown as m:ss", () => {
+    expect(formatCountdown(ROLLBACK_WINDOW_MS)).toBe("10:00");
+    expect(formatCountdown(61_500)).toBe("1:02");
+    expect(formatCountdown(4_000)).toBe("0:04");
+  });
+});
+
+describe("AI placeholders", () => {
+  it("marks planned sections so they are detected and never treated as real content", () => {
+    const placeholder = aiPlaceholderItem("new-footer", "footer");
+    const real = sectionsToPuckData([createSection("hero")]);
+
+    expect(placeholder.type).toBe("footer");
+    expect(placeholder.props.id).toBe("new-footer");
+    expect(isAiPlaceholderData(placeholder.props.data)).toBe(true);
+    expect(hasAiPlaceholder(real)).toBe(false);
+    expect(hasAiPlaceholder({ ...real, content: [...real.content, placeholder] })).toBe(true);
   });
 });

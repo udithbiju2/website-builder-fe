@@ -17,15 +17,28 @@ const PANELS: { id: LeftPanelId; label: string; icon: ComponentType<LucideProps>
   { id: "templates", label: "Templates", icon: LayoutTemplate, render: TemplatesPanel },
 ];
 
-function RailButton({ label, active, onClick, children }: { label: string; active: boolean; onClick: () => void; children: ReactNode }) {
+function RailButton({
+  label,
+  active,
+  disabled = false,
+  onClick,
+  children,
+}: {
+  label: string;
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <AppTooltip content={label} placement="right" offset={8}>
       <button
         type="button"
         aria-label={label}
         aria-pressed={active}
+        disabled={disabled}
         onClick={onClick}
-        className={`relative grid size-9 place-items-center rounded-ed transition-colors ${
+        className={`relative grid size-9 place-items-center rounded-ed transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
           active ? "bg-ed-accent-soft text-ed-accent" : "text-ed-muted hover:bg-ed-hover hover:text-ed-text"
         }`}
       >
@@ -36,7 +49,7 @@ function RailButton({ label, active, onClick, children }: { label: string; activ
 }
 
 export default function LeftRail() {
-  const { leftPanel, setLeftPanel, aiOpen, setAiOpen } = useEditor();
+  const { leftPanel, setLeftPanel, aiOpen, setAiOpen, aiLock } = useEditor();
   const active = PANELS.find((panel) => panel.id === leftPanel);
   const Panel = active?.render;
 
@@ -49,16 +62,23 @@ export default function LeftRail() {
           </RailButton>
         ))}
         <span className="my-1 h-px w-6 shrink-0 bg-ed-border" aria-hidden />
-        <RailButton label="AI assistant" active={aiOpen} onClick={() => setAiOpen(!aiOpen)}>
+        <RailButton label="AI assistant" active={aiOpen} disabled={aiLock !== null} onClick={() => setAiOpen(!aiOpen)}>
           <AiSparklesIcon className="size-4.5" variant="glossy" aria-hidden />
         </RailButton>
       </nav>
       {active && Panel && (
         <aside
           aria-label={active.label}
-          className={`flex h-full min-h-0 ${leftPanel === "add" ? "w-96" : "w-72"} shrink-0 flex-col border-r border-ed-border bg-ed-panel overflow-hidden transition-[width] duration-150`}
+          className={`relative flex h-full min-h-0 ${leftPanel === "add" ? "w-96" : "w-72"} shrink-0 flex-col border-r border-ed-border bg-ed-panel overflow-hidden transition-[width] duration-150`}
         >
-          <Panel />
+          <div inert={aiLock !== null} className={`flex min-h-0 flex-1 flex-col ${aiLock ? "opacity-40" : ""}`}>
+            <Panel />
+          </div>
+          {aiLock && (
+            <p role="status" className="absolute inset-x-3 top-3 rounded-ed border border-ed-border bg-ed-panel px-3 py-2 text-ed-xs text-ed-text shadow-ed-pop">
+              {aiLock === "building" ? "AI is building. Editing unlocks when it finishes." : "Apply or discard the AI changes to keep editing."}
+            </p>
+          )}
         </aside>
       )}
     </div>
