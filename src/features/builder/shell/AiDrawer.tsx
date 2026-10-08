@@ -7,6 +7,7 @@ import {
   Loader2,
   MessageSquarePlus,
   RotateCcw,
+  Square,
   Undo2,
   X,
 } from "lucide-react";
@@ -21,7 +22,11 @@ import {
 import { websitesApi, type AiLayoutSlot } from "../../../api/websites.ts";
 import type { AiSuggestion } from "../schema/editor-document.ts";
 import { useEditor, type AiLock } from "../editor-context.ts";
-import { aiPlaceholderItem, itemAsSection, sectionToItem } from "../puck/adapter.ts";
+import {
+  aiPlaceholderItem,
+  itemAsSection,
+  sectionToItem,
+} from "../puck/adapter.ts";
 import { selectSection, useBuilderPuck } from "../puck/puck-api.ts";
 import { scrollCanvasToSection } from "./AiBuilderCanvasOverlay.tsx";
 import { ToolButton } from "./ui.tsx";
@@ -75,7 +80,10 @@ function sanitizeHex(val: unknown): string | undefined {
 }
 
 function normalizeSection(raw: Section): Section {
-  const type = (raw.type as SectionType) in SECTION_DEFINITIONS ? (raw.type as SectionType) : "hero";
+  const type =
+    (raw.type as SectionType) in SECTION_DEFINITIONS
+      ? (raw.type as SectionType)
+      : "hero";
   const def = SECTION_DEFINITIONS[type] || SECTION_DEFINITIONS.hero;
   const defaultData = def ? def.createData() : {};
   const rawData = (raw.data || {}) as Record<string, unknown>;
@@ -86,16 +94,32 @@ function normalizeSection(raw: Section): Section {
   };
 
   // Safe mapping for common AI field name synonyms
-  if (rawData.title && !rawData.heading && "heading" in (defaultData as Record<string, unknown>)) {
+  if (
+    rawData.title &&
+    !rawData.heading &&
+    "heading" in (defaultData as Record<string, unknown>)
+  ) {
     mergedData.heading = rawData.title;
   }
-  if (rawData.subtitle && !rawData.subheading && "subheading" in (defaultData as Record<string, unknown>)) {
+  if (
+    rawData.subtitle &&
+    !rawData.subheading &&
+    "subheading" in (defaultData as Record<string, unknown>)
+  ) {
     mergedData.subheading = rawData.subtitle;
   }
-  if (rawData.subtitle && !rawData.intro && "intro" in (defaultData as Record<string, unknown>)) {
+  if (
+    rawData.subtitle &&
+    !rawData.intro &&
+    "intro" in (defaultData as Record<string, unknown>)
+  ) {
     mergedData.intro = rawData.subtitle;
   }
-  if (rawData.description && !rawData.intro && "intro" in (defaultData as Record<string, unknown>)) {
+  if (
+    rawData.description &&
+    !rawData.intro &&
+    "intro" in (defaultData as Record<string, unknown>)
+  ) {
     mergedData.intro = rawData.description;
   }
 
@@ -105,7 +129,10 @@ function normalizeSection(raw: Section): Section {
       ? { url: mergedData.backgroundImage.trim(), alt: "Hero Background" }
       : undefined;
   }
-  if (mergedData.backgroundImage && typeof mergedData.backgroundImage === "object") {
+  if (
+    mergedData.backgroundImage &&
+    typeof mergedData.backgroundImage === "object"
+  ) {
     const bg = mergedData.backgroundImage as Record<string, unknown>;
     if (!bg.url || typeof bg.url !== "string" || !bg.url.trim()) {
       delete mergedData.backgroundImage;
@@ -113,7 +140,9 @@ function normalizeSection(raw: Section): Section {
   }
 
   if (typeof mergedData.image === "string") {
-    mergedData.image = mergedData.image.trim() ? { url: mergedData.image.trim(), alt: "Image" } : undefined;
+    mergedData.image = mergedData.image.trim()
+      ? { url: mergedData.image.trim(), alt: "Image" }
+      : undefined;
   }
   if (mergedData.image && typeof mergedData.image === "object") {
     const img = mergedData.image as Record<string, unknown>;
@@ -122,7 +151,10 @@ function normalizeSection(raw: Section): Section {
     }
   }
 
-  if (mergedData.secondaryImage && typeof mergedData.secondaryImage === "object") {
+  if (
+    mergedData.secondaryImage &&
+    typeof mergedData.secondaryImage === "object"
+  ) {
     const img = mergedData.secondaryImage as Record<string, unknown>;
     if (!img.url || typeof img.url !== "string" || !img.url.trim()) {
       delete mergedData.secondaryImage;
@@ -131,36 +163,80 @@ function normalizeSection(raw: Section): Section {
 
   // Type-specific schema normalization
   if (type === "hero") {
-    const validHeroVariants = ["centered", "split", "split-left", "background-image", "video-bg", "gradient", "curved-bottom", "soft-card", "minimal-typography", "floating-cards", "asymmetric"];
-    if (typeof mergedData.variant !== "string" || !validHeroVariants.includes(mergedData.variant)) {
-      mergedData.variant = mergedData.backgroundImage ? "background-image" : "centered";
+    const validHeroVariants = [
+      "centered",
+      "split",
+      "split-left",
+      "background-image",
+      "video-bg",
+      "gradient",
+      "curved-bottom",
+      "soft-card",
+      "minimal-typography",
+      "floating-cards",
+      "asymmetric",
+    ];
+    if (
+      typeof mergedData.variant !== "string" ||
+      !validHeroVariants.includes(mergedData.variant)
+    ) {
+      mergedData.variant = mergedData.backgroundImage
+        ? "background-image"
+        : "centered";
     }
-    const validImagePositions = ["right", "left", "bottom", "background", "card"];
-    if (mergedData.imagePosition && !validImagePositions.includes(mergedData.imagePosition as string)) {
+    const validImagePositions = [
+      "right",
+      "left",
+      "bottom",
+      "background",
+      "card",
+    ];
+    if (
+      mergedData.imagePosition &&
+      !validImagePositions.includes(mergedData.imagePosition as string)
+    ) {
       delete mergedData.imagePosition;
     }
     const validBgPositions = ["bottom", "center", "top", "cover"];
-    if (mergedData.bgImagePosition && !validBgPositions.includes(mergedData.bgImagePosition as string)) {
+    if (
+      mergedData.bgImagePosition &&
+      !validBgPositions.includes(mergedData.bgImagePosition as string)
+    ) {
       delete mergedData.bgImagePosition;
     }
     const validBgOverlays = ["dark", "light", "gradient", "none"];
-    if (mergedData.bgOverlayType && !validBgOverlays.includes(mergedData.bgOverlayType as string)) {
+    if (
+      mergedData.bgOverlayType &&
+      !validBgOverlays.includes(mergedData.bgOverlayType as string)
+    ) {
       delete mergedData.bgOverlayType;
     }
     const validImageStyles = ["mockup", "rounded", "glow", "shadow", "plain"];
-    if (mergedData.imageStyle && !validImageStyles.includes(mergedData.imageStyle as string)) {
+    if (
+      mergedData.imageStyle &&
+      !validImageStyles.includes(mergedData.imageStyle as string)
+    ) {
       delete mergedData.imageStyle;
     }
     const validMinHeights = ["auto", "compact", "screen", "tall"];
-    if (mergedData.minHeight && !validMinHeights.includes(mergedData.minHeight as string)) {
+    if (
+      mergedData.minHeight &&
+      !validMinHeights.includes(mergedData.minHeight as string)
+    ) {
       delete mergedData.minHeight;
     }
     const validAligns = ["center", "left", "right"];
-    if (mergedData.contentAlign && !validAligns.includes(mergedData.contentAlign as string)) {
+    if (
+      mergedData.contentAlign &&
+      !validAligns.includes(mergedData.contentAlign as string)
+    ) {
       delete mergedData.contentAlign;
     }
     const validBottomShapes = ["none", "wave", "curve", "slant", "tilt"];
-    if (mergedData.bottomShape && !validBottomShapes.includes(mergedData.bottomShape as string)) {
+    if (
+      mergedData.bottomShape &&
+      !validBottomShapes.includes(mergedData.bottomShape as string)
+    ) {
       delete mergedData.bottomShape;
     }
 
@@ -173,15 +249,33 @@ function normalizeSection(raw: Section): Section {
         cta.label = "Get Started";
       }
     }
-    if (mergedData.secondaryCta && typeof mergedData.secondaryCta === "object") {
+    if (
+      mergedData.secondaryCta &&
+      typeof mergedData.secondaryCta === "object"
+    ) {
       const cta = mergedData.secondaryCta as Record<string, unknown>;
-      if (!cta.href || typeof cta.href !== "string" || !cta.href.trim() || !cta.label || typeof cta.label !== "string" || !cta.label.trim()) {
+      if (
+        !cta.href ||
+        typeof cta.href !== "string" ||
+        !cta.href.trim() ||
+        !cta.label ||
+        typeof cta.label !== "string" ||
+        !cta.label.trim()
+      ) {
         delete mergedData.secondaryCta;
       }
     }
   } else if (type === "cta") {
-    const validCtaVariants = ["centered-card", "split-visual", "floating-card", "minimal-editorial"];
-    if (typeof mergedData.variant !== "string" || !validCtaVariants.includes(mergedData.variant)) {
+    const validCtaVariants = [
+      "centered-card",
+      "split-visual",
+      "floating-card",
+      "minimal-editorial",
+    ];
+    if (
+      typeof mergedData.variant !== "string" ||
+      !validCtaVariants.includes(mergedData.variant)
+    ) {
       mergedData.variant = "centered-card";
     }
     if (rawData.description && !mergedData.text) {
@@ -193,12 +287,23 @@ function normalizeSection(raw: Section): Section {
     if (rawData.cta && !mergedData.button) {
       mergedData.button = rawData.cta;
     }
-    if (!mergedData.button || typeof (mergedData.button as Record<string, unknown>)?.label !== "string") {
+    if (
+      !mergedData.button ||
+      typeof (mergedData.button as Record<string, unknown>)?.label !== "string"
+    ) {
       mergedData.button = { label: "Get started", href: "/contact" };
     }
   } else if (type === "contact") {
-    const validContactVariants = ["split-form", "cards-hub", "minimal-editorial", "floating-glass"];
-    if (typeof mergedData.variant !== "string" || !validContactVariants.includes(mergedData.variant)) {
+    const validContactVariants = [
+      "split-form",
+      "cards-hub",
+      "minimal-editorial",
+      "floating-glass",
+    ];
+    if (
+      typeof mergedData.variant !== "string" ||
+      !validContactVariants.includes(mergedData.variant)
+    ) {
       mergedData.variant = "split-form";
     }
     if (mergedData.showForm === undefined) {
@@ -208,73 +313,181 @@ function normalizeSection(raw: Section): Section {
       mergedData.submitLabel = "Send message";
     }
   } else if (type === "pricing") {
-    const validPricingVariants = ["cards-grid", "minimal-monochrome", "spotlight-tier", "horizontal-rows"];
-    if (typeof mergedData.variant !== "string" || !validPricingVariants.includes(mergedData.variant)) {
+    const validPricingVariants = [
+      "cards-grid",
+      "minimal-monochrome",
+      "spotlight-tier",
+      "horizontal-rows",
+    ];
+    if (
+      typeof mergedData.variant !== "string" ||
+      !validPricingVariants.includes(mergedData.variant)
+    ) {
       mergedData.variant = "cards-grid";
     }
     if (!mergedData.heading) mergedData.heading = "Transparent Pricing";
-    const rawPlans = Array.isArray(rawData.plans) ? rawData.plans : Array.isArray(rawData.tiers) ? rawData.tiers : Array.isArray(mergedData.plans) ? (mergedData.plans as unknown[]) : [];
+    const rawPlans = Array.isArray(rawData.plans)
+      ? rawData.plans
+      : Array.isArray(rawData.tiers)
+        ? rawData.tiers
+        : Array.isArray(mergedData.plans)
+          ? (mergedData.plans as unknown[])
+          : [];
     if (rawPlans.length > 0) {
       mergedData.plans = rawPlans.map((p: any, idx: number) => ({
         name: typeof p?.name === "string" ? p.name : `Plan ${idx + 1}`,
         price: typeof p?.price === "string" ? p.price : "$29",
-        period: typeof p?.period === "string" ? p.period : typeof p?.interval === "string" ? p.interval : "/mo",
-        originalPrice: typeof p?.originalPrice === "string" ? p.originalPrice : undefined,
+        period:
+          typeof p?.period === "string"
+            ? p.period
+            : typeof p?.interval === "string"
+              ? p.interval
+              : "/mo",
+        originalPrice:
+          typeof p?.originalPrice === "string" ? p.originalPrice : undefined,
         badge: typeof p?.badge === "string" ? p.badge : undefined,
         description: typeof p?.description === "string" ? p.description : "",
-        features: Array.isArray(p?.features) ? p.features.map(String) : ["All core features"],
-        excludedFeatures: Array.isArray(p?.excludedFeatures) ? p.excludedFeatures.map(String) : undefined,
-        cta: p?.cta && typeof p.cta === "object" ? p.cta : p?.button && typeof p.button === "object" ? p.button : { label: "Get started", href: "/contact" },
+        features: Array.isArray(p?.features)
+          ? p.features.map(String)
+          : ["All core features"],
+        excludedFeatures: Array.isArray(p?.excludedFeatures)
+          ? p.excludedFeatures.map(String)
+          : undefined,
+        cta:
+          p?.cta && typeof p.cta === "object"
+            ? p.cta
+            : p?.button && typeof p.button === "object"
+              ? p.button
+              : { label: "Get started", href: "/contact" },
         featured: Boolean(p?.featured ?? p?.highlighted ?? idx === 1),
-        highlightNote: typeof p?.highlightNote === "string" ? p.highlightNote : undefined,
+        highlightNote:
+          typeof p?.highlightNote === "string" ? p.highlightNote : undefined,
       }));
     }
   } else if (type === "features") {
-    const validFeaturesVariants = ["grid", "split", "pastel-icons", "minimal", "cards"];
-    if (typeof mergedData.variant !== "string" || !validFeaturesVariants.includes(mergedData.variant)) {
+    const validFeaturesVariants = [
+      "grid",
+      "split",
+      "pastel-icons",
+      "minimal",
+      "cards",
+    ];
+    if (
+      typeof mergedData.variant !== "string" ||
+      !validFeaturesVariants.includes(mergedData.variant)
+    ) {
       mergedData.variant = "pastel-icons";
     }
   } else if (type === "services") {
-    const validServicesVariants = ["cards-grid", "bento-grid", "split-showcase", "interactive-list", "horizontal-cards", "minimal-numbered"];
-    if (typeof mergedData.variant !== "string" || !validServicesVariants.includes(mergedData.variant)) {
+    const validServicesVariants = [
+      "cards-grid",
+      "bento-grid",
+      "split-showcase",
+      "interactive-list",
+      "horizontal-cards",
+      "minimal-numbered",
+    ];
+    if (
+      typeof mergedData.variant !== "string" ||
+      !validServicesVariants.includes(mergedData.variant)
+    ) {
       mergedData.variant = "cards-grid";
     }
   } else if (type === "faq") {
-    const validFaqVariants = ["accordion-classic", "two-column-grid", "split-sidebar", "minimal-numbered", "categorized-cards"];
-    if (typeof mergedData.variant !== "string" || !validFaqVariants.includes(mergedData.variant)) {
+    const validFaqVariants = [
+      "accordion-classic",
+      "two-column-grid",
+      "split-sidebar",
+      "minimal-numbered",
+      "categorized-cards",
+    ];
+    if (
+      typeof mergedData.variant !== "string" ||
+      !validFaqVariants.includes(mergedData.variant)
+    ) {
       mergedData.variant = "accordion-classic";
     }
   } else if (type === "team") {
-    const validTeamVariants = ["grid-cards", "spotlight-featured", "minimal-editorial", "glass-overlay"];
-    if (typeof mergedData.variant !== "string" || !validTeamVariants.includes(mergedData.variant)) {
+    const validTeamVariants = [
+      "grid-cards",
+      "spotlight-featured",
+      "minimal-editorial",
+      "glass-overlay",
+    ];
+    if (
+      typeof mergedData.variant !== "string" ||
+      !validTeamVariants.includes(mergedData.variant)
+    ) {
       mergedData.variant = "grid-cards";
     }
   } else if (type === "footer") {
-    const validFooterDesigns = ["columns", "simple", "mega", "newsletter", "split", "inline", "centered", "cta-banner"];
-    if (typeof mergedData.design !== "string" || !validFooterDesigns.includes(mergedData.design)) {
+    const validFooterDesigns = [
+      "columns",
+      "simple",
+      "mega",
+      "newsletter",
+      "split",
+      "inline",
+      "centered",
+      "cta-banner",
+    ];
+    if (
+      typeof mergedData.design !== "string" ||
+      !validFooterDesigns.includes(mergedData.design)
+    ) {
       mergedData.design = "columns";
     }
     if (!mergedData.siteName) {
       mergedData.siteName = "Brand";
     }
-    if (!Array.isArray(mergedData.columns) || (mergedData.columns as unknown[]).length === 0) {
+    if (
+      !Array.isArray(mergedData.columns) ||
+      (mergedData.columns as unknown[]).length === 0
+    ) {
       mergedData.columns = [
-        { title: "Product", links: [{ label: "Features", href: "#features" }, { label: "Pricing", href: "#pricing" }] },
-        { title: "Company", links: [{ label: "About", href: "#about" }, { label: "Contact", href: "#contact" }] },
+        {
+          title: "Product",
+          links: [
+            { label: "Features", href: "#features" },
+            { label: "Pricing", href: "#pricing" },
+          ],
+        },
+        {
+          title: "Company",
+          links: [
+            { label: "About", href: "#about" },
+            { label: "Contact", href: "#contact" },
+          ],
+        },
       ];
     }
     if (!mergedData.copyright) {
       mergedData.copyright = `© ${new Date().getFullYear()} ${mergedData.siteName || "Company"}. All rights reserved.`;
     }
   } else if (type === "header") {
-    const validHeaderDesigns = ["logo-left", "centered", "classical", "minimalist", "comprehensive", "ecommerce", "floating", "transparent"];
-    if (typeof mergedData.design !== "string" || !validHeaderDesigns.includes(mergedData.design)) {
+    const validHeaderDesigns = [
+      "logo-left",
+      "centered",
+      "classical",
+      "minimalist",
+      "comprehensive",
+      "ecommerce",
+      "floating",
+      "transparent",
+    ];
+    if (
+      typeof mergedData.design !== "string" ||
+      !validHeaderDesigns.includes(mergedData.design)
+    ) {
       mergedData.design = "logo-left";
     }
     if (!mergedData.siteName) {
       mergedData.siteName = "Brand";
     }
-    if (!Array.isArray(mergedData.menu) || (mergedData.menu as unknown[]).length === 0) {
+    if (
+      !Array.isArray(mergedData.menu) ||
+      (mergedData.menu as unknown[]).length === 0
+    ) {
       mergedData.menu = [
         { label: "Home", href: "/" },
         { label: "Features", href: "#features" },
@@ -288,8 +501,14 @@ function normalizeSection(raw: Section): Section {
   }
 
   // Ensure arrays like items, tiers, members, slides never become non-arrays
-  for (const [key, val] of Object.entries(defaultData as Record<string, unknown>)) {
-    if (Array.isArray(val) && (!Array.isArray(mergedData[key]) || (mergedData[key] as unknown[]).length === 0)) {
+  for (const [key, val] of Object.entries(
+    defaultData as Record<string, unknown>,
+  )) {
+    if (
+      Array.isArray(val) &&
+      (!Array.isArray(mergedData[key]) ||
+        (mergedData[key] as unknown[]).length === 0)
+    ) {
       if (!Array.isArray(mergedData[key])) {
         mergedData[key] = val;
       }
@@ -302,8 +521,12 @@ function normalizeSection(raw: Section): Section {
   };
 
   const validBgs = ["default", "surface", "primary", "dark"];
-  if (typeof rawSettings.background === "string" && validBgs.includes(rawSettings.background)) {
-    cleanSettings.background = rawSettings.background as SectionSettings["background"];
+  if (
+    typeof rawSettings.background === "string" &&
+    validBgs.includes(rawSettings.background)
+  ) {
+    cleanSettings.background =
+      rawSettings.background as SectionSettings["background"];
   } else if (typeof rawSettings.background === "string") {
     // If user passed a custom color like "red" or "#ff0000" in background
     const hex = sanitizeHex(rawSettings.background);
@@ -316,10 +539,21 @@ function normalizeSection(raw: Section): Section {
     cleanSettings.background = "default";
   }
 
-  if (typeof rawSettings.customColors === "object" && rawSettings.customColors !== null) {
+  if (
+    typeof rawSettings.customColors === "object" &&
+    rawSettings.customColors !== null
+  ) {
     const rawCustom = rawSettings.customColors as Record<string, unknown>;
-    const cleanCustom: Record<string, string> = { ...(cleanSettings.customColors || {}) };
-    for (const key of ["background", "text", "primary", "muted", "border"] as const) {
+    const cleanCustom: Record<string, string> = {
+      ...(cleanSettings.customColors || {}),
+    };
+    for (const key of [
+      "background",
+      "text",
+      "primary",
+      "muted",
+      "border",
+    ] as const) {
       const hex = sanitizeHex(rawCustom[key]);
       if (hex) {
         cleanCustom[key] = hex;
@@ -362,12 +596,15 @@ function formatRelativeTime(ts: number): string {
 
 const MAX_SESSIONS = 15;
 
-const sessionsStorageKey = (websiteId: string | undefined) => `ai_chat_sessions_${websiteId}`;
+const sessionsStorageKey = (websiteId: string | undefined) =>
+  `ai_chat_sessions_${websiteId}`;
 
-const sameContent = (a: Section[], b: Section[]) => JSON.stringify(a) === JSON.stringify(b);
+const sameContent = (a: Section[], b: Section[]) =>
+  JSON.stringify(a) === JSON.stringify(b);
 
 export default function AiDrawer() {
-  const { aiOpen, setAiOpen, website, notify, setAiBuilding, setAiLock } = useEditor();
+  const { aiOpen, setAiOpen, website, notify, setAiBuilding, setAiLock } =
+    useEditor();
   const dispatch = useBuilderPuck((state) => state.dispatch);
   const selectedIndex = useBuilderPuck(
     (state) => state.appState.ui.itemSelector?.index ?? null,
@@ -397,15 +634,23 @@ export default function AiDrawer() {
     return [];
   });
 
-  const [originalCanvasContent, setOriginalCanvasContent] = useState<typeof allItems | null>(null);
-  const [previewCanvasContent, setPreviewCanvasContent] = useState<typeof allItems | null>(null);
+  const [originalCanvasContent, setOriginalCanvasContent] = useState<
+    typeof allItems | null
+  >(null);
+  const [previewCanvasContent, setPreviewCanvasContent] = useState<
+    typeof allItems | null
+  >(null);
   const [previewMode, setPreviewMode] = useState<"ai" | "original">("ai");
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
-  const [rollbackRequest, setRollbackRequest] = useState<ChatMessage | null>(null);
+  const [rollbackRequest, setRollbackRequest] = useState<ChatMessage | null>(
+    null,
+  );
   const [closeRequested, setCloseRequested] = useState(false);
 
-  const hasLiveRollback = chatMessages.some((m) => rollbackRemainingMs(m, Date.now()) > 0);
+  const hasLiveRollback = chatMessages.some(
+    (m) => rollbackRemainingMs(m, Date.now()) > 0,
+  );
   const now = useNow(hasLiveRollback);
 
   const promptId = useId();
@@ -413,6 +658,14 @@ export default function AiDrawer() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const isAcceptedRef = useRef(false);
   const originalCanvasRef = useRef<typeof allItems | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  };
 
   useEffect(() => {
     originalCanvasRef.current = originalCanvasContent;
@@ -451,7 +704,11 @@ export default function AiDrawer() {
     };
   }, [dispatch, setAiBuilding]);
 
-  const aiLock: AiLock = loading ? "building" : previewCanvasContent ? "reviewing" : null;
+  const aiLock: AiLock = loading
+    ? "building"
+    : previewCanvasContent
+      ? "reviewing"
+      : null;
   useEffect(() => {
     setAiLock(aiLock);
   }, [aiLock, setAiLock]);
@@ -466,16 +723,48 @@ export default function AiDrawer() {
 
   const VIBE_PRESETS = isSectionScope
     ? [
-        { label: "Modern SaaS", prompt: "Transform into modern high-converting SaaS style with punchy copy and high-contrast CTA" },
-        { label: "Cyber Glow", prompt: "Give this section a futuristic cyberpunk dark mode with vibrant neon glow and glassmorphism styling" },
-        { label: "Clean Luxury", prompt: "Redesign with elegant luxury minimalist layout, elegant typography, and calm spacing" },
-        { label: "Stock Image", prompt: "Add a full cover high-resolution background image with dark overlay and crisp white text" },
+        {
+          label: "Modern SaaS",
+          prompt:
+            "Transform into modern high-converting SaaS style with punchy copy and high-contrast CTA",
+        },
+        {
+          label: "Cyber Glow",
+          prompt:
+            "Give this section a futuristic cyberpunk dark mode with vibrant neon glow and glassmorphism styling",
+        },
+        {
+          label: "Clean Luxury",
+          prompt:
+            "Redesign with elegant luxury minimalist layout, elegant typography, and calm spacing",
+        },
+        {
+          label: "Stock Image",
+          prompt:
+            "Add a full cover high-resolution background image with dark overlay and crisp white text",
+        },
       ]
     : [
-        { label: "Modern AI SaaS", prompt: "Generate a complete modern AI SaaS landing page with dark mode, high-converting hero, features, and pricing" },
-        { label: "Luxury Agency", prompt: "Generate a high-end design agency landing page with proof, showcase carousel, and client testimonials" },
-        { label: "Artisan Boutique", prompt: "Generate a warm boutique artisan bakery landing page with rich menus and contact cards" },
-        { label: "Enterprise Platform", prompt: "Generate a high-trust enterprise B2B platform page with stats, security badges, and tiered plans" },
+        {
+          label: "Modern AI SaaS",
+          prompt:
+            "Generate a complete modern AI SaaS landing page with dark mode, high-converting hero, features, and pricing",
+        },
+        {
+          label: "Luxury Agency",
+          prompt:
+            "Generate a high-end design agency landing page with proof, showcase carousel, and client testimonials",
+        },
+        {
+          label: "Artisan Boutique",
+          prompt:
+            "Generate a warm boutique artisan bakery landing page with rich menus and contact cards",
+        },
+        {
+          label: "Enterprise Platform",
+          prompt:
+            "Generate a high-trust enterprise B2B platform page with stats, security badges, and tiered plans",
+        },
       ];
 
   /** Updates the chat feed and persists it as the active session. */
@@ -488,15 +777,22 @@ export default function AiDrawer() {
     const firstPrompt = messages[0]?.content ?? "";
     const session: ChatSession = {
       id: sessionId,
-      title: firstPrompt.length > 40 ? `${firstPrompt.slice(0, 40)}…` : firstPrompt,
+      title:
+        firstPrompt.length > 40 ? `${firstPrompt.slice(0, 40)}…` : firstPrompt,
       timestamp: Date.now(),
       messages: pruneExpiredRollbacks(messages, Date.now()),
     };
 
     setSessions((prev) => {
-      const updated = [session, ...prev.filter((s) => s.id !== sessionId)].slice(0, MAX_SESSIONS);
+      const updated = [
+        session,
+        ...prev.filter((s) => s.id !== sessionId),
+      ].slice(0, MAX_SESSIONS);
       try {
-        localStorage.setItem(sessionsStorageKey(website?.id), JSON.stringify(updated));
+        localStorage.setItem(
+          sessionsStorageKey(website?.id),
+          JSON.stringify(updated),
+        );
       } catch {
         // Storage full or unavailable; the in-memory session still works.
       }
@@ -533,26 +829,40 @@ export default function AiDrawer() {
   };
 
   /** Puts empty blocks where the AI will add sections and scrolls to the first change. */
-  const showPlannedLayout = (layout: AiLayoutSlot[], baseline: typeof allItems) => {
+  const showPlannedLayout = (
+    layout: AiLayoutSlot[],
+    baseline: typeof allItems,
+  ) => {
     const existing = new Map(baseline.map((item) => [item.props.id, item]));
     const items = layout.flatMap((slot) => {
       if (slot.status !== "pending") return existing.get(slot.id) ?? [];
-      return slot.type in SECTION_DEFINITIONS ? aiPlaceholderItem(slot.id, slot.type as SectionType) : [];
+      return slot.type in SECTION_DEFINITIONS
+        ? aiPlaceholderItem(slot.id, slot.type as SectionType)
+        : [];
     });
 
     dispatch({
       type: "setData",
-      data: (previous) => ({ ...previous, root: previous.root ?? { props: {} }, content: items }),
+      data: (previous) => ({
+        ...previous,
+        root: previous.root ?? { props: {} },
+        content: items,
+      }),
     });
 
     const focus = layout.find((slot) => slot.status !== "existing");
-    const focusIdx = focus ? items.findIndex((item) => item.props.id === focus.id) : -1;
+    const focusIdx = focus
+      ? items.findIndex((item) => item.props.id === focus.id)
+      : -1;
     if (!focus || focusIdx === -1) return;
 
     const label = focus.type.toUpperCase();
     setAiBuilding({
       active: true,
-      step: focus.status === "pending" ? `Building ${label} section...` : `Updating ${label} layout & typography...`,
+      step:
+        focus.status === "pending"
+          ? `Building ${label} section...`
+          : `Updating ${label} layout & typography...`,
       scope: focus.status === "pending" ? "page" : "section",
       sectionType: focus.type,
       sectionIndex: focusIdx,
@@ -562,18 +872,27 @@ export default function AiDrawer() {
       pointerY: 50,
     });
     setTimeout(() => {
-      scrollCanvasToSection({ sectionIndex: focusIdx, sectionType: focus.type, targetId: focus.id });
+      scrollCanvasToSection({
+        sectionIndex: focusIdx,
+        sectionType: focus.type,
+        targetId: focus.id,
+      });
     }, 60);
   };
 
   const handleGenerate = async (customPrompt?: string) => {
-    const textToRun = (typeof customPrompt === "string" ? customPrompt : prompt).trim();
+    const textToRun = (
+      typeof customPrompt === "string" ? customPrompt : prompt
+    ).trim();
     if (!textToRun || loading) return;
 
     // Immediately clear input box
     setPrompt("");
 
-    const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const nowTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
     // Add user message to thread
     const userMessage: ChatMessage = {
@@ -586,6 +905,9 @@ export default function AiDrawer() {
     const nextMessages = [...chatMessages, userMessage];
     setChatMessages(nextMessages);
     setLoading(true);
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     // Regenerating during review must start from the original page, not the unapplied preview.
     const baseline = structuredClone(originalCanvasContent ?? allItems);
@@ -616,10 +938,12 @@ export default function AiDrawer() {
           history: historyPayload,
         },
         (layout) => showPlannedLayout(layout, baseline),
+        abortController.signal,
       );
 
       const target = result.target;
-      const chatReply = target.scope === "chat" ? result.chatReply || result.summary : null;
+      const chatReply =
+        target.scope === "chat" ? result.chatReply || result.summary : null;
 
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -646,11 +970,17 @@ export default function AiDrawer() {
       let nextItems: typeof allItems;
 
       if (target.scope === "section") {
-        const updated = result.after[0] ? normalizeSection(result.after[0] as Section) : null;
+        const updated = result.after[0]
+          ? normalizeSection(result.after[0] as Section)
+          : null;
         nextItems = updated
-          ? baseline.map((it) => (it.props.id === updated.id ? sectionToItem(updated) : it))
+          ? baseline.map((it) =>
+              it.props.id === updated.id ? sectionToItem(updated) : it,
+            )
           : baseline;
-        const targetIdx = nextItems.findIndex((it) => it.props.id === updated?.id);
+        const targetIdx = nextItems.findIndex(
+          (it) => it.props.id === updated?.id,
+        );
 
         if (updated && targetIdx !== -1) {
           setAiBuilding({
@@ -664,28 +994,45 @@ export default function AiDrawer() {
             pointerY: 45,
           });
           setTimeout(() => {
-            scrollCanvasToSection({ sectionIndex: targetIdx, sectionType: updated.type, targetId: updated.id });
+            scrollCanvasToSection({
+              sectionIndex: targetIdx,
+              sectionType: updated.type,
+              targetId: updated.id,
+            });
           }, 60);
         }
       } else if (!target.rebuild) {
-        nextItems = result.after.map((s) => sectionToItem(normalizeSection(s as Section)));
-        const focusIdx = nextItems.findIndex((it) => it.props.id === target.focusSectionId);
+        nextItems = result.after.map((s) =>
+          sectionToItem(normalizeSection(s as Section)),
+        );
+        const focusIdx = nextItems.findIndex(
+          (it) => it.props.id === target.focusSectionId,
+        );
 
         if (focusIdx !== -1) {
           const focused = itemAsSection(nextItems[focusIdx]);
           setTimeout(() => {
-            scrollCanvasToSection({ sectionIndex: focusIdx, sectionType: focused.type, targetId: focused.id });
+            scrollCanvasToSection({
+              sectionIndex: focusIdx,
+              sectionType: focused.type,
+              targetId: focused.id,
+            });
           }, 60);
         }
       } else {
-        nextItems = result.after.map((s) => sectionToItem(normalizeSection(s as Section)));
+        nextItems = result.after.map((s) =>
+          sectionToItem(normalizeSection(s as Section)),
+        );
 
         // Progressive section-by-section construction on canvas
         for (let i = 0; i < nextItems.length; i++) {
           const currentPartial = nextItems.slice(0, i + 1);
           const sec = itemAsSection(nextItems[i]);
           const pct = Math.round(20 + ((i + 1) / nextItems.length) * 75);
-          const posY = Math.min(92, Math.max(12, Math.round(15 + ((i + 1) / nextItems.length) * 75)));
+          const posY = Math.min(
+            92,
+            Math.max(12, Math.round(15 + ((i + 1) / nextItems.length) * 75)),
+          );
 
           dispatch({
             type: "setData",
@@ -760,17 +1107,27 @@ export default function AiDrawer() {
           content: baseline,
         }),
       });
-      const errorMsg =
-        err instanceof Error ? err.message : "Failed to generate AI changes.";
-      notify(errorMsg, "danger");
+      if (
+        abortController.signal.aborted ||
+        (err as Error)?.name === "AbortError" ||
+        (err as Error)?.message?.toLowerCase().includes("cancel")
+      ) {
+        notify("AI generation stopped.");
+      } else {
+        const errorMsg =
+          err instanceof Error ? err.message : "Failed to generate AI changes.";
+        notify(errorMsg, "danger");
+      }
     } finally {
+      abortControllerRef.current = null;
       setLoading(false);
     }
   };
 
   const handleTogglePreview = (mode: "ai" | "original") => {
     setPreviewMode(mode);
-    const targetItems = mode === "ai" ? previewCanvasContent : originalCanvasContent;
+    const targetItems =
+      mode === "ai" ? previewCanvasContent : originalCanvasContent;
     if (targetItems) {
       dispatch({
         type: "setData",
@@ -841,7 +1198,11 @@ export default function AiDrawer() {
       notify("AI changes discarded — restored original canvas.");
     }
     if (activeMessageId) {
-      saveSession(chatMessages.map((m) => (m.id === activeMessageId ? { ...m, status: "rejected" } : m)));
+      saveSession(
+        chatMessages.map((m) =>
+          m.id === activeMessageId ? { ...m, status: "rejected" } : m,
+        ),
+      );
     }
     setActiveMessageId(null);
     setSuggestion(null);
@@ -868,7 +1229,11 @@ export default function AiDrawer() {
       }),
     });
     saveSession(
-      chatMessages.map((m) => (m.id === message.id ? { ...m, status: "rolled_back", rollback: undefined } : m)),
+      chatMessages.map((m) =>
+        m.id === message.id
+          ? { ...m, status: "rolled_back", rollback: undefined }
+          : m,
+      ),
     );
     notify("Rolled back to the version before this AI change.", "success");
   };
@@ -877,7 +1242,10 @@ export default function AiDrawer() {
   const handleRollback = (message: ChatMessage) => {
     if (!message.rollback) return;
     if (aiLock) {
-      notify("Apply or discard the current AI changes before rolling back.", "danger");
+      notify(
+        "Apply or discard the current AI changes before rolling back.",
+        "danger",
+      );
       return;
     }
     if (sameContent(allItems.map(itemAsSection), message.rollback.after)) {
@@ -923,7 +1291,12 @@ export default function AiDrawer() {
           >
             <MessageSquarePlus className="size-3.5" aria-hidden />
           </ToolButton>
-          <ToolButton label="Close AI assistant" size="sm" disabled={aiLock === "building"} onClick={requestClose}>
+          <ToolButton
+            label="Close AI assistant"
+            size="sm"
+            disabled={aiLock === "building"}
+            onClick={requestClose}
+          >
             <X className="size-3.5" aria-hidden />
           </ToolButton>
         </div>
@@ -952,7 +1325,7 @@ export default function AiDrawer() {
             <button
               type="button"
               onClick={() => selectSection(dispatch, null)}
-              className="text-[11px] font-medium text-brand hover:underline cursor-pointer"
+              className="text-ed-2xs font-medium text-brand hover:underline cursor-pointer"
             >
               Deselect (Page Mode)
             </button>
@@ -968,7 +1341,7 @@ export default function AiDrawer() {
                 type="button"
                 disabled={loading}
                 onClick={() => handleGenerate(vibe.prompt)}
-                className="flex items-center gap-1.5 rounded-xl border border-ed-border/70 bg-ed-subtle/50 px-2.5 py-1.5 text-left text-[11px] text-ed-text hover:border-brand/40 hover:bg-blue-500/5 hover:text-brand transition-all group cursor-pointer"
+                className="flex items-center gap-1.5 rounded-xl border border-ed-border/70 bg-ed-subtle/50 px-2.5 py-1.5 text-left text-ed-2xs text-ed-text hover:border-brand/40 hover:bg-blue-500/5 hover:text-brand transition-all group cursor-pointer"
               >
                 <span className="truncate font-medium">{vibe.label}</span>
               </button>
@@ -1007,7 +1380,9 @@ export default function AiDrawer() {
               </span>
 
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-ed-faint font-mono">{prompt.length}/2000</span>
+                <span className="text-[10px] text-ed-faint font-mono">
+                  {prompt.length}/2000
+                </span>
                 <button
                   type="button"
                   disabled={!prompt.trim() || aiLock !== null}
@@ -1045,7 +1420,7 @@ export default function AiDrawer() {
                     }`}
                   >
                     {!isUser && (
-                      <div className="flex items-center gap-1.5 mb-1 text-[11px] font-bold text-brand">
+                      <div className="flex items-center gap-1.5 mb-1 text-ed-2xs font-bold text-brand">
                         <AiSparklesIcon className="size-3.5" variant="glossy" />
                         <span>AI Copilot</span>
                       </div>
@@ -1053,7 +1428,9 @@ export default function AiDrawer() {
                     <p className="whitespace-pre-line">{msg.content}</p>
                     <span
                       className={`mt-1 block text-[9.5px] font-mono ${
-                        isUser ? "text-blue-100/70 text-right" : "text-ed-muted/70 text-left"
+                        isUser
+                          ? "text-blue-100/70 text-right"
+                          : "text-ed-muted/70 text-left"
                       }`}
                     >
                       {msg.timestamp}
@@ -1081,7 +1458,7 @@ export default function AiDrawer() {
                             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                             <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
                           </span>
-                          <span className="text-[11px] font-bold tracking-tight text-ed-text">
+                          <span className="text-ed-2xs font-bold tracking-tight text-ed-text">
                             Live Canvas Preview
                           </span>
                         </div>
@@ -1123,7 +1500,8 @@ export default function AiDrawer() {
                             className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-brand"
                           >
                             <span className="size-1 rounded-full bg-brand" />
-                            {SECTION_DEFINITIONS[sec.type as SectionType]?.label || sec.type}
+                            {SECTION_DEFINITIONS[sec.type as SectionType]
+                              ?.label || sec.type}
                           </span>
                         ))}
                       </div>
@@ -1160,7 +1538,9 @@ export default function AiDrawer() {
                             <RotateCcw className="size-3" />
                             Regenerate
                           </button>
-                          <span className="text-[9.5px] text-ed-muted/80">Click Accept to keep on canvas</span>
+                          <span className="text-[9.5px] text-ed-muted/80">
+                            Click Accept to keep on canvas
+                          </span>
                         </div>
                       </div>
                     </section>
@@ -1172,8 +1552,13 @@ export default function AiDrawer() {
             {/* Loading Thinking Indicator */}
             {loading && (
               <div className="flex items-start gap-2 max-w-[85%] rounded-2xl bg-ed-subtle/80 border border-ed-border/70 p-3 text-ed-xs text-ed-text rounded-tl-xs shadow-xs animate-pulse">
-                <AiSparklesIcon className="size-3.5 animate-spin text-brand" variant="glossy" />
-                <span className="text-ed-muted font-medium">Generating section on canvas...</span>
+                <AiSparklesIcon
+                  className="size-3.5 animate-spin text-brand"
+                  variant="glossy"
+                />
+                <span className="text-ed-muted font-medium">
+                  Generating section on canvas...
+                </span>
               </div>
             )}
           </div>
@@ -1208,10 +1593,11 @@ export default function AiDrawer() {
                       {sess.title}
                     </span>
                     <span className="rounded bg-ed-subtle px-1 py-0.2 text-[9.5px] font-mono text-ed-muted shrink-0">
-                      {sess.messages.length} msg{sess.messages.length > 1 ? "s" : ""}
+                      {sess.messages.length} msg
+                      {sess.messages.length > 1 ? "s" : ""}
                     </span>
                   </div>
-                  <span className="shrink-0 text-[11px] text-ed-muted/70 font-mono ml-2">
+                  <span className="shrink-0 text-ed-2xs text-ed-muted/70 font-mono ml-2">
                     {formatRelativeTime(sess.timestamp)}
                   </span>
                 </button>
@@ -1255,19 +1641,31 @@ export default function AiDrawer() {
               </span>
 
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-ed-faint font-mono">{prompt.length}/2000</span>
-                <button
-                  type="button"
-                  disabled={!prompt.trim() || aiLock !== null}
-                  onClick={() => handleGenerate()}
-                  className="grid size-6.5 place-items-center rounded-full bg-brand text-white shadow-xs hover:bg-brand-hover active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                >
-                  {loading ? (
-                    <Loader2 className="size-3 animate-spin" />
-                  ) : (
-                    <ArrowRight className="size-3" />
-                  )}
-                </button>
+                {loading ? (
+                  <button
+                    type="button"
+                    onClick={handleStop}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 hover:bg-rose-500/25 border border-rose-500/30 text-ed-xs font-medium transition-all cursor-pointer animate-pulse"
+                    title="Stop AI generation"
+                  >
+                    <Square className="size-2.5 fill-current" />
+                    <span>Stop</span>
+                  </button>
+                ) : (
+                  <>
+                    <span className="text-[10px] text-ed-faint font-mono">
+                      {prompt.length}/2000
+                    </span>
+                    <button
+                      type="button"
+                      disabled={!prompt.trim() || aiLock !== null}
+                      onClick={() => handleGenerate()}
+                      className="grid size-6.5 place-items-center rounded-full bg-brand text-white shadow-xs hover:bg-brand-hover active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                    >
+                      <ArrowRight className="size-3" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -1284,7 +1682,9 @@ export default function AiDrawer() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
           </span>
-          <span className="text-ed-xs font-medium text-ed-text">Previewing AI changes</span>
+          <span className="text-ed-xs font-medium text-ed-text">
+            Previewing AI changes
+          </span>
           <button
             type="button"
             onClick={handleReject}
@@ -1314,7 +1714,8 @@ export default function AiDrawer() {
         }}
         onCancel={() => setCloseRequested(false)}
       >
-        The AI changes on the canvas haven&apos;t been applied yet. Closing the assistant discards them.
+        The AI changes on the canvas haven&apos;t been applied yet. Closing the
+        assistant discards them.
       </ConfirmDialog>
 
       <ConfirmDialog
@@ -1325,8 +1726,9 @@ export default function AiDrawer() {
         onConfirm={() => rollbackRequest && applyRollback(rollbackRequest)}
         onCancel={() => setRollbackRequest(null)}
       >
-        The canvas was edited after this change was accepted. Rolling back restores the page as it was before the AI
-        change, and those later edits will be lost.
+        The canvas was edited after this change was accepted. Rolling back
+        restores the page as it was before the AI change, and those later edits
+        will be lost.
       </ConfirmDialog>
     </aside>
   );
@@ -1345,8 +1747,13 @@ function SuggestionStatusCard({
     return (
       <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-amber-900 dark:text-amber-200">
         <div className="flex min-w-0 items-center gap-2">
-          <History className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
-          <span className="truncate text-[11px]">Applied · rollback available</span>
+          <History
+            className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+            aria-hidden
+          />
+          <span className="truncate text-ed-2xs">
+            Applied · rollback available
+          </span>
         </div>
         <button
           type="button"
@@ -1355,7 +1762,10 @@ function SuggestionStatusCard({
         >
           <Undo2 className="size-3" aria-hidden />
           Rollback
-          <span className="font-mono tabular-nums" aria-label={`${formatCountdown(remainingMs)} remaining`}>
+          <span
+            className="font-mono tabular-nums"
+            aria-label={`${formatCountdown(remainingMs)} remaining`}
+          >
             {formatCountdown(remainingMs)}
           </span>
         </button>
@@ -1372,5 +1782,9 @@ function SuggestionStatusCard({
           ? "Discarded"
           : "Not applied";
 
-  return <span className="px-1 text-[10.5px] font-medium text-ed-muted">{label}</span>;
+  return (
+    <span className="px-1 text-[10.5px] font-medium text-ed-muted">
+      {label}
+    </span>
+  );
 }

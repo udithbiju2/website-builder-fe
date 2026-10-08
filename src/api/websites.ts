@@ -227,9 +227,10 @@ export const websitesApi = {
     id: string,
     input: AiGenerateInput,
     onPlan: (layout: AiLayoutSlot[]) => void,
+    signal?: AbortSignal,
   ): Promise<AiSuggestion> => {
     let suggestion: AiSuggestion | null = null;
-    await requestNdjson<AiStreamEvent>(`${BASE}/${id}/ai/generate`, { method: "POST", body: input }, (event) => {
+    await requestNdjson<AiStreamEvent>(`${BASE}/${id}/ai/generate`, { method: "POST", body: input, signal }, (event) => {
       if (event.type === "plan") onPlan(event.layout);
       else if (event.type === "result") suggestion = event.suggestion;
       else throw new ApiError(502, { error: event.error });

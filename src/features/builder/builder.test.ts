@@ -258,3 +258,13 @@ describe("AI placeholders", () => {
     expect(hasAiPlaceholder({ ...real, content: [...real.content, placeholder] })).toBe(true);
   });
 });
+
+describe("AI abort & stop flow", () => {
+  it("allows creating and triggering AbortController on demand", () => {
+    const controller = new AbortController();
+    expect(controller.signal.aborted).toBe(false);
+    controller.abort();
+    expect(controller.signal.aborted).toBe(true);
+  });
+});
+
