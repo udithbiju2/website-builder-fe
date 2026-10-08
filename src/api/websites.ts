@@ -84,6 +84,17 @@ export type WebsiteTemplate = {
   pages: { name: string; slug: string }[];
 };
 
+/** A platform template rendered as site data, for read-only previews. */
+export type TemplatePreview = {
+  template: WebsiteTemplate;
+  site: {
+    theme: ThemeSettings;
+    header: HeaderData;
+    footer: FooterData;
+    pages: { id: string; name: string; slug: string; sections: Section[] }[];
+  };
+};
+
 export type WebsiteListParams = {
   search?: string;
   clientId?: string;
@@ -121,6 +132,10 @@ export type CreateWebsiteInput = {
   contactEmail?: string;
   contactPhone?: string;
 };
+
+export type UpdateWebsiteInput = {
+  name?: string;
+} & { [K in keyof WebsiteInfo]?: string | null };
 
 /** Pages without an id, or with an id the website doesn't own, are created as new pages. */
 export type PageInput = Omit<WebsitePage, "id"> & { id?: string };
@@ -206,6 +221,9 @@ export const websitesApi = {
   create: (input: CreateWebsiteInput) =>
     request<WebsiteResponse>(BASE, { method: "POST", body: input }).then((data) => data.website),
 
+  update: (id: string, input: UpdateWebsiteInput) =>
+    request<WebsiteResponse>(`${BASE}/${id}`, { method: "PATCH", body: input }).then((data) => data.website),
+
   delete: (id: string) => request<void>(`${BASE}/${id}`, { method: "DELETE" }),
 
   saveDraft: (id: string, input: SaveDraftInput) =>
@@ -251,4 +269,23 @@ export const websitesApi = {
     request<void>(`${BASE}/${id}/ai/sessions/${sessionId}`, { method: "DELETE" }),
 
   clearAiSessions: (id: string) => request<void>(`${BASE}/${id}/ai/sessions`, { method: "DELETE" }),
+};
+
+const previewCache = new Map<string, Promise<TemplatePreview>>();
+
+/** Public platform templates; no sign-in needed. */
+export const templatesApi = {
+  list: () => request<{ templates: WebsiteTemplate[] }>("/templates").then((data) => data.templates),
+
+  /** Cached per key so many thumbnails of the same template share one request. */
+  preview: (key: string): Promise<TemplatePreview> => {
+    const cached = previewCache.get(key);
+    if (cached) return cached;
+    const pending = request<TemplatePreview>(`/templates/${encodeURIComponent(key)}/preview`).catch((error: unknown) => {
+      previewCache.delete(key);
+      throw error;
+    });
+    previewCache.set(key, pending);
+    return pending;
+  },
 };

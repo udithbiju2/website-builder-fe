@@ -14,18 +14,24 @@ export default function WebsiteCard({
   onDelete?: (website: WebsiteSummary) => void;
 }) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition-shadow hover:shadow-sm">
-      <div className="grid aspect-video place-items-center border-b border-line bg-canvas">
-        <span className="grid size-14 place-items-center rounded-xl bg-surface text-2xl font-semibold text-brand shadow-sm">
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition-all duration-200 hover:border-brand/40 hover:shadow-md">
+      <Link
+        to={`/websites/${website.id}`}
+        className="grid aspect-video place-items-center border-b border-line bg-canvas transition-colors group-hover:bg-brand-soft/30"
+      >
+        <span className="grid size-14 place-items-center rounded-xl bg-surface text-2xl font-semibold text-brand shadow-sm transition-transform group-hover:scale-105">
           {website.name.charAt(0).toUpperCase()}
         </span>
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="min-w-0 truncate font-medium text-ink">
+          <Link
+            to={`/websites/${website.id}`}
+            className="min-w-0 truncate font-medium text-ink transition-colors hover:text-brand"
+          >
             {website.name}
-          </h3>
+          </Link>
           <WebsiteStatusChip website={website} />
         </div>
         <p className="mt-1 flex items-center gap-1.5 truncate font-mono text-xs text-ink-muted">
@@ -40,16 +46,23 @@ export default function WebsiteCard({
 
         <div className="mt-4 flex items-center gap-2">
           <Link
-            to={`/websites/${website.id}/edit`}
+            to={`/websites/${website.id}`}
             className={buttonVariants({ size: "sm", variant: "primary" })}
+          >
+            Dashboard
+          </Link>
+          <Link
+            to={`/websites/${website.id}/edit`}
+            className={buttonVariants({ size: "sm", variant: "outline" })}
           >
             <Pencil className="size-4" aria-hidden /> Edit
           </Link>
           <Link
             to={`/websites/${website.id}/preview`}
             className={buttonVariants({ size: "sm", variant: "outline" })}
+            title="Full Preview"
           >
-            <Eye className="size-4" aria-hidden /> Preview
+            <Eye className="size-4" aria-hidden />
           </Link>
           {onDelete && (
             <Button
