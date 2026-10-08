@@ -12,7 +12,7 @@ import {
   type SectionType,
 } from "../../../site-kit/index.ts";
 import { useBuilderSite } from "../editor-context.ts";
-import { itemToSection, type BuilderComponents, type BuilderRootProps, type SectionProps } from "./adapter.ts";
+import { isAiPlaceholderData, itemToSection, type BuilderComponents, type BuilderRootProps, type SectionProps } from "./adapter.ts";
 
 function sectionComponent<T extends SectionType>(type: T): ComponentConfig<SectionProps<T>> {
   const definition = SECTION_DEFINITIONS[type];
@@ -20,8 +20,7 @@ function sectionComponent<T extends SectionType>(type: T): ComponentConfig<Secti
     label: definition.label,
     defaultProps: { data: definition.createData(), settings: DEFAULT_SECTION_SETTINGS, hidden: false },
     render: ({ id, data, settings, hidden, puck }) => {
-      const rawData = (data || {}) as Record<string, unknown>;
-      if (rawData._aiPlaceholder) {
+      if (isAiPlaceholderData(data)) {
         return (
           <div
             id={id}
@@ -29,6 +28,17 @@ function sectionComponent<T extends SectionType>(type: T): ComponentConfig<Secti
             className="wb-editor-section-wrap relative w-full my-4 min-h-[220px] rounded-2xl border border-dashed border-cyan-400/35 bg-cyan-500/[0.03] select-none transition-all duration-300 overflow-hidden"
           >
             <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] opacity-15" />
+            <div className="relative flex min-h-[220px] flex-col items-center justify-center gap-3 px-8 py-10 font-sans">
+              <span className="rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-600">
+                Building {definition.label}…
+              </span>
+              <div className="h-5 w-2/3 max-w-md animate-pulse rounded-md bg-cyan-500/15" />
+              <div className="h-3 w-1/2 max-w-sm animate-pulse rounded-md bg-cyan-500/10" />
+              <div className="mt-2 flex gap-3">
+                <div className="h-8 w-24 animate-pulse rounded-lg bg-cyan-500/20" />
+                <div className="h-8 w-24 animate-pulse rounded-lg bg-cyan-500/10" />
+              </div>
+            </div>
           </div>
         );
       }
@@ -108,6 +118,7 @@ const baseComponents: { [T in SectionType]: ComponentConfig<SectionProps<T>> } =
   team: sectionComponent("team"),
   carousel: sectionComponent("carousel"),
   marquee: sectionComponent("marquee"),
+  custom: sectionComponent("custom"),
 };
 
 const presetComponents = Object.fromEntries(

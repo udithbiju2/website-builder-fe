@@ -1,5 +1,9 @@
 import type { Data } from "@puckeditor/core";
-import { SECTION_PRESETS, type Section, type SectionDataMap, type SectionOf, type SectionSettings, type SectionType } from "../../../site-kit/index.ts";
+import {
+  DEFAULT_SECTION_SETTINGS,
+  SECTION_DEFINITIONS,
+  SECTION_PRESETS,
+  type Section, type SectionDataMap, type SectionOf, type SectionSettings, type SectionType } from "../../../site-kit/index.ts";
 import { puckContentSchema } from "../schema/editor-document.ts";
 
 /** Puck's id for the page's top-level drop zone. */
@@ -44,6 +48,22 @@ export function sectionToItem(section: Section): BuilderItem {
 
 export function itemToSection<T extends SectionType>(type: T, props: SectionProps<T> & { id: string }): SectionOf<T> {
   return { id: props.id, type, hidden: props.hidden, settings: props.settings, data: props.data } as SectionOf<T>;
+}
+
+const AI_PLACEHOLDER_FLAG = "_aiPlaceholder";
+
+/** An empty block marking where the AI is about to add a section. It must never be saved. */
+export function aiPlaceholderItem(id: string, type: SectionType): BuilderItem {
+  const data = { ...SECTION_DEFINITIONS[type].createData(), [AI_PLACEHOLDER_FLAG]: true };
+  return sectionToItem({ id, type, hidden: false, settings: DEFAULT_SECTION_SETTINGS, data } as Section);
+}
+
+export function isAiPlaceholderData(data: unknown): boolean {
+  return typeof data === "object" && data !== null && (data as Record<string, unknown>)[AI_PLACEHOLDER_FLAG] === true;
+}
+
+export function hasAiPlaceholder(data: Data): boolean {
+  return data.content.some((item) => isAiPlaceholderData(item.props.data));
 }
 
 export function itemAsSection(item: BuilderItem): Section {

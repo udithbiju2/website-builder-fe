@@ -1,24 +1,42 @@
 import { useEffect, useRef, useState } from "react";
 import { useEditor } from "../editor-context.ts";
 
+const SECTION_SELECTOR = ".wb-editor-section-wrap, [data-puck-component]";
+
+/** Section ids are UUIDs that may start with a digit, so they cannot be used in a raw `#id` selector. */
+function findSectionById(doc: Document, id: string): HTMLElement | null {
+  const el = doc.getElementById(id) ?? doc.querySelector<HTMLElement>(`[data-puck-id="${CSS.escape(id)}"]`);
+  return el ? (el.closest<HTMLElement>(SECTION_SELECTOR) ?? el) : null;
+}
+
+function findSectionByIdInCanvas(id: string): HTMLElement | null {
+  for (const iframe of Array.from(document.querySelectorAll<HTMLIFrameElement>("iframe"))) {
+    try {
+      const doc = iframe.contentDocument;
+      const el = doc ? findSectionById(doc, id) : null;
+      if (el) return el;
+    } catch {
+      // Cross-origin iframes are not the canvas.
+    }
+  }
+  return findSectionById(document, id);
+}
+
 export function getSectionTargetElement(state: {
   sectionIndex?: number;
   sectionType?: string | null;
   targetId?: string | null;
 }): HTMLElement | null {
+  if (state.targetId) {
+    const byId = findSectionByIdInCanvas(state.targetId);
+    if (byId) return byId;
+  }
   try {
     const iframes = Array.from(document.querySelectorAll<HTMLIFrameElement>("iframe"));
     for (const iframe of iframes) {
       try {
         const doc = iframe.contentDocument;
         if (!doc) continue;
-
-        if (state.targetId) {
-          const elById = doc.querySelector<HTMLElement>(`[data-puck-id="${state.targetId}"], #${state.targetId}`);
-          if (elById) {
-            return elById.closest<HTMLElement>(".wb-editor-section-wrap, [data-puck-component]") || elById;
-          }
-        }
 
         const sectionElements = Array.from(
           doc.querySelectorAll<HTMLElement>(".wb-editor-section-wrap, [data-puck-component]")
@@ -34,11 +52,6 @@ export function getSectionTargetElement(state: {
       } catch {}
     }
 
-    // Fallback host document search
-    if (state.targetId) {
-      const elById = document.querySelector<HTMLElement>(`[data-puck-id="${state.targetId}"], #${state.targetId}`);
-      if (elById) return elById.closest<HTMLElement>(".wb-editor-section-wrap, [data-puck-component]") || elById;
-    }
     const hostSections = Array.from(document.querySelectorAll<HTMLElement>(".wb-editor-section-wrap, [data-puck-component]"));
     if (typeof state.sectionIndex === "number" && hostSections[state.sectionIndex]) {
       return hostSections[state.sectionIndex];
@@ -52,40 +65,25 @@ export function getSectionTargetElement(state: {
   return null;
 }
 
+/** How long to wait for a just-dispatched section to render in the canvas iframe. */
+const SCROLL_TARGET_WAIT_MS = 1500;
+
 export function scrollCanvasToSection(state: {
   sectionIndex?: number;
   sectionType?: string | null;
   targetId?: string | null;
 }) {
-  try {
-    const iframes = Array.from(document.querySelectorAll<HTMLIFrameElement>("iframe"));
-    for (const iframe of iframes) {
-      try {
-        const doc = iframe.contentDocument;
-        const win = iframe.contentWindow;
-        if (!doc) continue;
-
-        const el = getSectionTargetElement(state);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-          if (win) {
-            const rect = el.getBoundingClientRect();
-            const currentScroll = win.pageYOffset || doc.documentElement.scrollTop || 0;
-            const targetScroll = currentScroll + rect.top - (win.innerHeight / 2) + (rect.height / 2);
-            win.scrollTo({ top: Math.max(0, targetScroll), behavior: "smooth" });
-          }
-          return;
-        }
-      } catch {}
+  const startedAt = performance.now();
+  const attempt = () => {
+    const byId = state.targetId ? findSectionByIdInCanvas(state.targetId) : null;
+    if (!byId && state.targetId && performance.now() - startedAt < SCROLL_TARGET_WAIT_MS) {
+      requestAnimationFrame(attempt);
+      return;
     }
-
-    const hostEl = getSectionTargetElement(state);
-    if (hostEl) {
-      hostEl.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-    }
-  } catch {
-    // ignore
-  }
+    const el = byId ?? getSectionTargetElement(state);
+    el?.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+  };
+  attempt();
 }
 
 export function scrollCanvasToBottom() {

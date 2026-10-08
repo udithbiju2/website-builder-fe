@@ -18,13 +18,22 @@ import {
   type SectionSettings,
   type SectionType,
 } from "../../../site-kit/index.ts";
-import { websitesApi } from "../../../api/websites.ts";
+import { websitesApi, type AiLayoutSlot } from "../../../api/websites.ts";
 import type { AiSuggestion } from "../schema/editor-document.ts";
 import { useEditor } from "../editor-context.ts";
-import { itemAsSection, sectionToItem } from "../puck/adapter.ts";
+import { aiPlaceholderItem, itemAsSection, sectionToItem } from "../puck/adapter.ts";
 import { selectSection, useBuilderPuck } from "../puck/puck-api.ts";
 import { scrollCanvasToSection } from "./AiBuilderCanvasOverlay.tsx";
 import { ToolButton } from "./ui.tsx";
+import ConfirmDialog from "../../../components/ui/ConfirmDialog.tsx";
+import {
+  formatCountdown,
+  pruneExpiredRollbacks,
+  rollbackRemainingMs,
+  useNow,
+  type ChatMessage,
+  type ChatSession,
+} from "./ai-chat-history.ts";
 
 const COLOR_MAP: Record<string, string> = {
   red: "#dc2626",
@@ -351,21 +360,11 @@ function formatRelativeTime(ts: number): string {
   return `${days}d`;
 }
 
-type ChatMessage = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-  suggestion?: AiSuggestion | null;
-  chatReply?: string | null;
-};
+const MAX_SESSIONS = 15;
 
-type ChatSession = {
-  id: string;
-  title: string;
-  timestamp: number;
-  messages: ChatMessage[];
-};
+const sessionsStorageKey = (websiteId: string | undefined) => `ai_chat_sessions_${websiteId}`;
+
+const sameContent = (a: Section[], b: Section[]) => JSON.stringify(a) === JSON.stringify(b);
 
 export default function AiDrawer() {
   const { aiOpen, setAiOpen, website, notify, setAiBuilding } = useEditor();
@@ -388,7 +387,7 @@ export default function AiDrawer() {
   // Chat sessions history
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
     try {
-      const stored = localStorage.getItem(`ai_chat_sessions_${website?.id}`);
+      const stored = localStorage.getItem(sessionsStorageKey(website?.id));
       if (stored) {
         return JSON.parse(stored);
       }
@@ -401,11 +400,12 @@ export default function AiDrawer() {
   const [originalCanvasContent, setOriginalCanvasContent] = useState<typeof allItems | null>(null);
   const [previewCanvasContent, setPreviewCanvasContent] = useState<typeof allItems | null>(null);
   const [previewMode, setPreviewMode] = useState<"ai" | "original">("ai");
-  const [historySnapshot, setHistorySnapshot] = useState<{
-    content: typeof allItems;
-    summary: string;
-    timestamp: string;
-  } | null>(null);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+  const [rollbackRequest, setRollbackRequest] = useState<ChatMessage | null>(null);
+
+  const hasLiveRollback = chatMessages.some((m) => rollbackRemainingMs(m, Date.now()) > 0);
+  const now = useNow(hasLiveRollback);
 
   const promptId = useId();
   const promptRef = useRef<HTMLTextAreaElement>(null);
@@ -470,11 +470,39 @@ export default function AiDrawer() {
         { label: "Enterprise Platform", prompt: "Generate a high-trust enterprise B2B platform page with stats, security badges, and tiered plans" },
       ];
 
+  /** Updates the chat feed and persists it as the active session. */
+  const saveSession = (messages: ChatMessage[]) => {
+    setChatMessages(messages);
+
+    const sessionId = activeSessionId ?? crypto.randomUUID();
+    if (!activeSessionId) setActiveSessionId(sessionId);
+
+    const firstPrompt = messages[0]?.content ?? "";
+    const session: ChatSession = {
+      id: sessionId,
+      title: firstPrompt.length > 40 ? `${firstPrompt.slice(0, 40)}…` : firstPrompt,
+      timestamp: Date.now(),
+      messages: pruneExpiredRollbacks(messages, Date.now()),
+    };
+
+    setSessions((prev) => {
+      const updated = [session, ...prev.filter((s) => s.id !== sessionId)].slice(0, MAX_SESSIONS);
+      try {
+        localStorage.setItem(sessionsStorageKey(website?.id), JSON.stringify(updated));
+      } catch {
+        // Storage full or unavailable; the in-memory session still works.
+      }
+      return updated;
+    });
+  };
+
   const handleNewChat = () => {
     if (originalCanvasContent) {
       handleReject();
     }
     setChatMessages([]);
+    setActiveSessionId(null);
+    setActiveMessageId(null);
     setPrompt("");
     setSuggestion(null);
     notify("Started a fresh AI conversation session.", "success");
@@ -483,18 +511,51 @@ export default function AiDrawer() {
   const handleClearHistory = () => {
     setSessions([]);
     try {
-      localStorage.removeItem(`ai_chat_sessions_${website?.id}`);
+      localStorage.removeItem(sessionsStorageKey(website?.id));
     } catch {
       // ignore
     }
   };
 
   const handleRestoreSession = (session: ChatSession) => {
-    setChatMessages(session.messages);
-    const lastMsgWithSuggestion = [...session.messages].reverse().find((m) => m.suggestion);
-    if (lastMsgWithSuggestion?.suggestion) {
-      setSuggestion(lastMsgWithSuggestion.suggestion);
-    }
+    setChatMessages(pruneExpiredRollbacks(session.messages, Date.now()));
+    setActiveSessionId(session.id);
+    setActiveMessageId(null);
+    setSuggestion(null);
+  };
+
+  /** Puts empty blocks where the AI will add sections and scrolls to the first change. */
+  const showPlannedLayout = (layout: AiLayoutSlot[], baseline: typeof allItems) => {
+    const existing = new Map(baseline.map((item) => [item.props.id, item]));
+    const items = layout.flatMap((slot) => {
+      if (slot.status !== "pending") return existing.get(slot.id) ?? [];
+      return slot.type in SECTION_DEFINITIONS ? aiPlaceholderItem(slot.id, slot.type as SectionType) : [];
+    });
+
+    dispatch({
+      type: "setData",
+      data: (previous) => ({ ...previous, root: previous.root ?? { props: {} }, content: items }),
+    });
+
+    const focus = layout.find((slot) => slot.status !== "existing");
+    const focusIdx = focus ? items.findIndex((item) => item.props.id === focus.id) : -1;
+    if (!focus || focusIdx === -1) return;
+
+    const label = focus.type.toUpperCase();
+    setAiBuilding({
+      active: true,
+      step: focus.status === "pending" ? `Building ${label} section...` : `Updating ${label} layout & typography...`,
+      scope: focus.status === "pending" ? "page" : "section",
+      sectionType: focus.type,
+      sectionIndex: focusIdx,
+      totalSections: items.length,
+      targetId: focus.id,
+      progressPercent: 50,
+      pointerY: 50,
+    });
+    setTimeout(() => {
+      scrollCanvasToSection({ sectionIndex: focusIdx, sectionType: focus.type, targetId: focus.id });
+    }, 60);
   };
 
   const handleGenerate = async (customPrompt?: string) => {
@@ -518,131 +579,16 @@ export default function AiDrawer() {
     setChatMessages(nextMessages);
     setLoading(true);
 
-    const isExplicitAdd =
-      /\b(add|insert|create|append|build|make|generate|design|put|give|also)\b/i.test(textToRun);
-
-    const currentValidItems = allItems.filter(
-      (it) => !(it.props?.data as Record<string, unknown>)?._aiPlaceholder
-    );
-    const baseline = structuredClone(currentValidItems);
+    const baseline = structuredClone(allItems);
     setOriginalCanvasContent(baseline);
 
-    let placeholderId: string | null = null;
-    const isAddingNewSection = isExplicitAdd || (!isSectionScope && baseline.length > 0);
-
-    const match = textToRun.toLowerCase().match(/(header|haedrr|haeder|headrr|hedar|heder|navbar|nav|footer|footr|foter|hero|feature|faeture|pricing|service|testimonial|faq|cta|contact|team|marquee|carousel)/);
-    const matchedWord = match ? match[1] : "hero";
-    const rawType =
-      matchedWord.startsWith("haed") || matchedWord.startsWith("hed") || matchedWord.startsWith("nav")
-        ? "header"
-        : matchedWord.startsWith("foot") || matchedWord.startsWith("fot")
-        ? "footer"
-        : matchedWord.startsWith("faet")
-        ? "features"
-        : matchedWord;
-    const detectedType: SectionType = (rawType in SECTION_DEFINITIONS ? rawType : "hero") as SectionType;
-
-    const isHeader = detectedType === "header";
-    const isFooter = detectedType === "footer";
-    const isHero = detectedType === "hero";
-    const headerIdx = baseline.findIndex((it) => itemAsSection(it).type === "header");
-    const footerIdx = baseline.findIndex((it) => itemAsSection(it).type === "footer");
-    const heroIdx = baseline.findIndex((it) => itemAsSection(it).type === "hero");
-
-    let computedInsertIdx = baseline.length;
-    let computedReplaceIdx = -1;
-
-    if (isHeader) {
-      computedInsertIdx = 0;
-      computedReplaceIdx = headerIdx;
-    } else if (isHero) {
-      computedReplaceIdx = heroIdx;
-      computedInsertIdx = heroIdx !== -1 ? heroIdx : headerIdx !== -1 ? headerIdx + 1 : 0;
-    } else if (isFooter) {
-      computedReplaceIdx = footerIdx;
-      computedInsertIdx = footerIdx !== -1 ? footerIdx : baseline.length;
-    } else {
-      if (selectedIndex !== null && selectedIndex >= 0 && selectedIndex < baseline.length) {
-        computedInsertIdx = selectedIndex + 1;
-      } else {
-        computedInsertIdx = footerIdx !== -1 ? footerIdx : baseline.length;
-      }
-    }
-
-    if (isAddingNewSection) {
-      placeholderId = `ai-placeholder-${Date.now()}`;
-      const def = SECTION_DEFINITIONS[detectedType] || SECTION_DEFINITIONS.hero;
-      const defaultData = def ? def.createData() : { variant: "centered", heading: "" };
-
-      const placeholderItem = {
-        type: detectedType,
-        props: {
-          id: placeholderId,
-          data: {
-            ...defaultData,
-            variant: (defaultData as any)?.variant || "centered",
-            design: (defaultData as any)?.design || "logo-left",
-            heading: (defaultData as any)?.heading || "",
-            siteName: (defaultData as any)?.siteName || "Brand",
-            menu: (defaultData as any)?.menu || [{ label: "Home", href: "/" }],
-            sticky: Boolean((defaultData as any)?.sticky),
-            _aiPlaceholder: true,
-            _placeholderLabel: `AI Building ${rawType.toUpperCase()} Section...`,
-          },
-          settings: DEFAULT_SECTION_SETTINGS,
-          hidden: false,
-        },
-      } as unknown as (typeof allItems)[number];
-
-      let initialItems: typeof allItems;
-      if (computedReplaceIdx !== -1) {
-        initialItems = baseline.map((it, idx) => (idx === computedReplaceIdx ? placeholderItem : it));
-      } else {
-        initialItems = [
-          ...baseline.slice(0, computedInsertIdx),
-          placeholderItem,
-          ...baseline.slice(computedInsertIdx),
-        ];
-      }
-
-      // 1. Immediately render the placeholder empty gap space box into canvas!
-      dispatch({
-        type: "setData",
-        data: (previous) => ({
-          ...previous,
-          root: previous.root ?? { props: {} },
-          content: initialItems,
-        }),
-      });
-
-      // 2. Scroll canvas directly to this placeholder box so it's 100% visible
-      setTimeout(() => {
-        scrollCanvasToSection({
-          sectionIndex: computedInsertIdx,
-          targetId: placeholderId,
-        });
-      }, 50);
-
-      // 3. Set aiBuilding tracking on the placeholder box
-      setAiBuilding({
-        active: true,
-        step: `Constructing ${rawType.toUpperCase()} in dedicated slot...`,
-        scope: "section",
-        sectionType: rawType,
-        sectionIndex: computedInsertIdx,
-        targetId: placeholderId,
-        progressPercent: 30,
-        pointerY: isHeader ? 15 : 75,
-      });
-    } else {
-      setAiBuilding({
-        active: true,
-        step: "Synthesizing prompt & architecture...",
-        scope: isSectionScope ? "section" : "page",
-        progressPercent: 20,
-        pointerY: isSectionScope ? 40 : 25,
-      });
-    }
+    setAiBuilding({
+      active: true,
+      step: "Understanding your request...",
+      scope: isSectionScope ? "section" : "page",
+      progressPercent: 20,
+      pointerY: isSectionScope ? 40 : 25,
+    });
 
     try {
       const historyPayload = nextMessages.slice(-10).map((m) => ({
@@ -650,75 +596,36 @@ export default function AiDrawer() {
         content: m.content,
       }));
 
-      const targetScope = isSectionScope && !isExplicitAdd ? "section" : "page";
+      const result = await websitesApi.generateAiSuggestionStream(
+        website.id,
+        {
+          prompt: textToRun,
+          scope: isSectionScope ? "section" : "page",
+          sectionId: currentSection?.id,
+          currentSection: currentSection ?? undefined,
+          currentSections: baseline.map(itemAsSection),
+          history: historyPayload,
+        },
+        (layout) => showPlannedLayout(layout, baseline),
+      );
 
-      const result = await websitesApi.generateAiSuggestion(website.id, {
-        prompt: textToRun,
-        scope: targetScope,
-        sectionId: isSectionScope && !isExplicitAdd ? currentSection?.id : undefined,
-        currentSection: isSectionScope && !isExplicitAdd ? currentSection ?? undefined : undefined,
-        currentSections: baseline.map(itemAsSection),
-        history: historyPayload,
-      });
+      const target = result.target;
+      const chatReply = target.scope === "chat" ? result.chatReply || result.summary : null;
 
-      const isChatScope =
-        (result.target as Record<string, unknown>).scope === "chat" ||
-        (result.before.length === 0 && result.after.length === 0);
-
-      // Assistant response message
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: isChatScope ? ((result as { chatReply?: string }).chatReply || result.summary) : result.summary,
+        content: chatReply ?? result.summary,
         timestamp: nowTime,
-        suggestion: isChatScope ? null : result,
-        chatReply: isChatScope ? ((result as { chatReply?: string }).chatReply || result.summary) : null,
+        suggestion: chatReply === null ? result : null,
+        chatReply,
+        ...(chatReply === null ? { status: "pending" as const } : {}),
       };
 
-      const updatedChatList = [...nextMessages, assistantMessage];
-      setChatMessages(updatedChatList);
+      saveSession([...nextMessages, assistantMessage]);
+      setActiveMessageId(chatReply === null ? assistantMessage.id : null);
 
-      // Save / Update session in sessions history
-      const sessionTitle = nextMessages[0]?.content
-        ? (nextMessages[0].content.length > 40 ? `${nextMessages[0].content.slice(0, 40)}…` : nextMessages[0].content)
-        : textToRun;
-
-      setSessions((prev) => {
-        const existingIdx = prev.findIndex((s) => s.title === sessionTitle);
-        let updated: ChatSession[];
-        if (existingIdx !== -1) {
-          const s = prev[existingIdx];
-          const updatedSession: ChatSession = { ...s, timestamp: Date.now(), messages: updatedChatList };
-          updated = [updatedSession, ...prev.filter((_, i) => i !== existingIdx)].slice(0, 15);
-        } else {
-          const newSession: ChatSession = {
-            id: crypto.randomUUID(),
-            title: sessionTitle,
-            timestamp: Date.now(),
-            messages: updatedChatList,
-          };
-          updated = [newSession, ...prev].slice(0, 15);
-        }
-        try {
-          localStorage.setItem(`ai_chat_sessions_${website?.id}`, JSON.stringify(updated));
-        } catch {
-          // ignore
-        }
-        return updated;
-      });
-
-      if (isChatScope) {
-        // Revert placeholder on chat-only reply
-        if (placeholderId) {
-          dispatch({
-            type: "setData",
-            data: (previous) => ({
-              ...previous,
-              root: previous.root ?? { props: {} },
-              content: baseline,
-            }),
-          });
-        }
+      if (target.scope === "chat") {
         setAiBuilding(null);
         setSuggestion(null);
         setOriginalCanvasContent(null);
@@ -726,143 +633,43 @@ export default function AiDrawer() {
         return;
       }
 
-      // Compute preview items
-      let nextItems: typeof allItems = [];
-      const isAddScope =
-        (result.target as Record<string, unknown>).scope === "section_add" ||
-        (result.before.length === 0 && result.after.length === 1 && result.target.scope !== "section") ||
-        (result.after.length === 1 && Boolean(baseline.length));
+      // The server returns the final section list; the preview renders it as-is.
+      let nextItems: typeof allItems;
 
-      if (isAddScope) {
-        const rawSection = result.after[0];
-        if (rawSection) {
-          const normalized = normalizeSection(rawSection as Section);
-          const isHeader = normalized.type === "header";
-          const isFooter = normalized.type === "footer";
-          const isHero = normalized.type === "hero";
-          const headerIdx = baseline.findIndex((it) => itemAsSection(it).type === "header");
-          const footerIdx = baseline.findIndex((it) => itemAsSection(it).type === "footer");
-          const heroIdx = baseline.findIndex((it) => itemAsSection(it).type === "hero");
+      if (target.scope === "section") {
+        const updated = result.after[0] ? normalizeSection(result.after[0] as Section) : null;
+        nextItems = updated
+          ? baseline.map((it) => (it.props.id === updated.id ? sectionToItem(updated) : it))
+          : baseline;
+        const targetIdx = nextItems.findIndex((it) => it.props.id === updated?.id);
 
-          let finalInsertIdx = baseline.length;
-          let finalReplaceIdx = -1;
-
-          if (isHeader) {
-            finalInsertIdx = 0;
-            finalReplaceIdx = headerIdx;
-          } else if (isHero) {
-            finalReplaceIdx = heroIdx;
-            finalInsertIdx = heroIdx !== -1 ? heroIdx : headerIdx !== -1 ? headerIdx + 1 : 0;
-          } else if (isFooter) {
-            finalReplaceIdx = footerIdx;
-            finalInsertIdx = footerIdx !== -1 ? footerIdx : baseline.length;
-          } else {
-            if (selectedIndex !== null && selectedIndex >= 0 && selectedIndex < baseline.length) {
-              finalInsertIdx = selectedIndex + 1;
-            } else {
-              finalInsertIdx = footerIdx !== -1 ? footerIdx : baseline.length;
-            }
-          }
-
-          if (finalReplaceIdx !== -1) {
-            nextItems = baseline.map((it, idx) => (idx === finalReplaceIdx ? sectionToItem(normalized) : it));
-          } else {
-            nextItems = [
-              ...baseline.slice(0, finalInsertIdx),
-              sectionToItem(normalized),
-              ...baseline.slice(finalInsertIdx),
-            ];
-          }
-
-          // Swap placeholder box with actual completed section!
-          dispatch({
-            type: "setData",
-            data: (previous) => ({
-              ...previous,
-              root: previous.root ?? { props: {} },
-              content: nextItems,
-            }),
-          });
-
+        if (updated && targetIdx !== -1) {
           setAiBuilding({
             active: true,
-            step: `Finalizing ${normalized.type.toUpperCase()} section layout...`,
+            step: `Updating ${updated.type.toUpperCase()} layout & typography...`,
             scope: "section",
-            sectionType: normalized.type,
-            sectionIndex: finalInsertIdx,
-            targetId: normalized.id,
-            progressPercent: 80,
-            pointerY: 65,
-          });
-
-          // Scroll fully so the new section is 100% visible
-          setTimeout(() => {
-            scrollCanvasToSection({
-              sectionIndex: finalInsertIdx,
-              sectionType: normalized.type,
-              targetId: normalized.id,
-            });
-          }, 60);
-
-          await new Promise((r) => setTimeout(r, 450));
-        }
-      } else if (result.target.scope === "section") {
-        const rawSection = result.after[0];
-        if (rawSection) {
-          const normalized = normalizeSection(rawSection as Section);
-          const foundIdx = baseline.findIndex((it) => it.props.id === normalized.id);
-          const targetIdx = foundIdx !== -1 ? foundIdx : selectedIndex;
-          if (targetIdx !== null && targetIdx !== -1 && targetIdx < baseline.length) {
-            nextItems = baseline.map((it, idx) => (idx === targetIdx ? sectionToItem(normalized) : it));
-          } else {
-            nextItems = [...baseline, sectionToItem(normalized)];
-          }
-
-          dispatch({
-            type: "setData",
-            data: (previous) => ({
-              ...previous,
-              root: previous.root ?? { props: {} },
-              content: nextItems,
-            }),
-          });
-
-          setAiBuilding({
-            active: true,
-            step: `Updating ${normalized.type.toUpperCase()} layout & typography...`,
-            scope: "section",
-            sectionType: normalized.type,
-            sectionIndex: targetIdx ?? undefined,
-            targetId: normalized.id,
+            sectionType: updated.type,
+            sectionIndex: targetIdx,
+            targetId: updated.id,
             progressPercent: 70,
             pointerY: 45,
           });
-
           setTimeout(() => {
-            scrollCanvasToSection({
-              sectionIndex: targetIdx ?? undefined,
-              sectionType: normalized.type,
-              targetId: normalized.id,
-            });
+            scrollCanvasToSection({ sectionIndex: targetIdx, sectionType: updated.type, targetId: updated.id });
           }, 60);
+        }
+      } else if (!target.rebuild) {
+        nextItems = result.after.map((s) => sectionToItem(normalizeSection(s as Section)));
+        const focusIdx = nextItems.findIndex((it) => it.props.id === target.focusSectionId);
 
-          await new Promise((r) => setTimeout(r, 450));
+        if (focusIdx !== -1) {
+          const focused = itemAsSection(nextItems[focusIdx]);
+          setTimeout(() => {
+            scrollCanvasToSection({ sectionIndex: focusIdx, sectionType: focused.type, targetId: focused.id });
+          }, 60);
         }
       } else {
-        const validSections: Section[] = result.after.map((s: unknown) => normalizeSection(s as Section));
-        const hasHeader = validSections.some((s) => s.type === "header");
-        const hasFooter = validSections.some((s) => s.type === "footer");
-        const baselineHeader = baseline.find((it) => itemAsSection(it).type === "header");
-        const baselineFooter = baseline.find((it) => itemAsSection(it).type === "footer");
-
-        let assembled = validSections.map(sectionToItem);
-        if (!hasHeader && baselineHeader) {
-          assembled = [baselineHeader, ...assembled];
-        }
-        if (!hasFooter && baselineFooter) {
-          assembled = [...assembled, baselineFooter];
-        }
-        nextItems = assembled;
+        nextItems = result.after.map((s) => sectionToItem(normalizeSection(s as Section)));
 
         // Progressive section-by-section construction on canvas
         for (let i = 0; i < nextItems.length; i++) {
@@ -982,17 +789,26 @@ export default function AiDrawer() {
       }),
     });
 
-    // Save baseline to rollback history
-    if (originalCanvasContent) {
-      setHistorySnapshot({
-        content: originalCanvasContent,
-        summary: suggestion?.summary || "AI Changes",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      });
+    if (activeMessageId && originalCanvasContent) {
+      const rollback = {
+        before: originalCanvasContent.map(itemAsSection),
+        after: previewCanvasContent.map(itemAsSection),
+      };
+      // Rollback restores a whole-canvas snapshot, so only the latest accepted change may use it.
+      saveSession(
+        chatMessages.map((m) =>
+          m.id === activeMessageId
+            ? { ...m, status: "accepted", acceptedAt: Date.now(), rollback }
+            : m.rollback
+              ? { ...m, rollback: undefined }
+              : m,
+        ),
+      );
     }
 
     notify("AI changes accepted and saved!", "success");
 
+    setActiveMessageId(null);
     setSuggestion(null);
     setOriginalCanvasContent(null);
     setPreviewCanvasContent(null);
@@ -1015,6 +831,10 @@ export default function AiDrawer() {
       });
       notify("AI changes discarded — restored original canvas.");
     }
+    if (activeMessageId) {
+      saveSession(chatMessages.map((m) => (m.id === activeMessageId ? { ...m, status: "rejected" } : m)));
+    }
+    setActiveMessageId(null);
     setSuggestion(null);
     setOriginalCanvasContent(null);
     setPreviewCanvasContent(null);
@@ -1023,18 +843,35 @@ export default function AiDrawer() {
     }, 150);
   };
 
-  const handleRollback = () => {
-    if (!historySnapshot) return;
+  const applyRollback = (message: ChatMessage) => {
+    setRollbackRequest(null);
+    if (!message.rollback || rollbackRemainingMs(message, Date.now()) === 0) {
+      notify("The rollback window for this change has expired.", "danger");
+      return;
+    }
+    const before = message.rollback.before;
     dispatch({
       type: "setData",
       data: (previous) => ({
         ...previous,
         root: previous.root ?? { props: {} },
-        content: historySnapshot.content,
+        content: before.map(sectionToItem),
       }),
     });
-    notify("Reverted to previous version!", "success");
-    setHistorySnapshot(null);
+    saveSession(
+      chatMessages.map((m) => (m.id === message.id ? { ...m, status: "rolled_back", rollback: undefined } : m)),
+    );
+    notify("Rolled back to the version before this AI change.", "success");
+  };
+
+  /** Asks first when the canvas was edited after accepting, since rollback would discard those edits. */
+  const handleRollback = (message: ChatMessage) => {
+    if (!message.rollback) return;
+    if (sameContent(allItems.map(itemAsSection), message.rollback.after)) {
+      applyRollback(message);
+    } else {
+      setRollbackRequest(message);
+    }
   };
 
   const isNewChat = chatMessages.length === 0;
@@ -1176,9 +1013,8 @@ export default function AiDrawer() {
         {/* ACTIVE CONVERSATION CHAT FEED (WhatsApp / ChatGPT conversational bubbles) */}
         {!isNewChat && (
           <div className="flex flex-col gap-3 py-1 animate-in fade-in duration-200">
-            {chatMessages.map((msg, idx) => {
+            {chatMessages.map((msg) => {
               const isUser = msg.role === "user";
-              const isLast = idx === chatMessages.length - 1;
 
               return (
                 <div
@@ -1210,7 +1046,15 @@ export default function AiDrawer() {
                   </div>
 
                   {/* Attached Live Canvas Preview Capsule under latest active suggestion */}
-                  {!isUser && isLast && suggestion && (
+                  {!isUser && msg.id !== activeMessageId && msg.status && (
+                    <SuggestionStatusCard
+                      message={msg}
+                      remainingMs={rollbackRemainingMs(msg, now)}
+                      onRollback={() => handleRollback(msg)}
+                    />
+                  )}
+
+                  {!isUser && msg.id === activeMessageId && suggestion && (
                     <section
                       aria-label="Suggested change"
                       className="w-full flex flex-col gap-2.5 rounded-2xl border border-brand/30 bg-ed-panel p-3 shadow-md animate-in fade-in slide-in-from-bottom-2 duration-200 mt-1"
@@ -1320,24 +1164,6 @@ export default function AiDrawer() {
           </div>
         )}
 
-        {/* 1-Click Rollback History Banner (Shown in active chat when checkpoint exists) */}
-        {historySnapshot && !suggestion && (
-          <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-ed-xs text-amber-900 dark:text-amber-200">
-            <div className="flex items-center gap-2 truncate">
-              <History className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-              <span className="truncate text-[11px]">Saved checkpoint ({historySnapshot.timestamp})</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleRollback}
-              className="flex items-center gap-1 rounded-lg bg-amber-500/20 px-2 py-1 text-[10.5px] font-semibold text-amber-700 hover:bg-amber-500/30 dark:text-amber-300 transition-colors shrink-0 ml-2 cursor-pointer"
-            >
-              <Undo2 className="size-3" />
-              Rollback
-            </button>
-          </div>
-        )}
-
         {/* SESSIONS HISTORY (ONLY rendered on fresh / new chat screen) */}
         {isNewChat && sessions.length > 0 && (
           <div className="flex flex-col gap-1 pt-1 animate-in fade-in duration-200">
@@ -1430,6 +1256,61 @@ export default function AiDrawer() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={rollbackRequest !== null}
+        title="Roll back this AI change?"
+        confirmLabel="Roll back"
+        tone="warning"
+        onConfirm={() => rollbackRequest && applyRollback(rollbackRequest)}
+        onCancel={() => setRollbackRequest(null)}
+      >
+        The canvas was edited after this change was accepted. Rolling back restores the page as it was before the AI
+        change, and those later edits will be lost.
+      </ConfirmDialog>
     </aside>
   );
+}
+
+function SuggestionStatusCard({
+  message,
+  remainingMs,
+  onRollback,
+}: {
+  message: ChatMessage;
+  remainingMs: number;
+  onRollback: () => void;
+}) {
+  if (message.status === "accepted" && remainingMs > 0) {
+    return (
+      <div className="flex w-full items-center justify-between gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-amber-900 dark:text-amber-200">
+        <div className="flex min-w-0 items-center gap-2">
+          <History className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+          <span className="truncate text-[11px]">Applied · rollback available</span>
+        </div>
+        <button
+          type="button"
+          onClick={onRollback}
+          className="ml-2 flex shrink-0 items-center gap-1 rounded-lg bg-amber-500/20 px-2 py-1 text-[10.5px] font-semibold text-amber-700 transition-colors hover:bg-amber-500/30 dark:text-amber-300 cursor-pointer"
+        >
+          <Undo2 className="size-3" aria-hidden />
+          Rollback
+          <span className="font-mono tabular-nums" aria-label={`${formatCountdown(remainingMs)} remaining`}>
+            {formatCountdown(remainingMs)}
+          </span>
+        </button>
+      </div>
+    );
+  }
+
+  const label =
+    message.status === "accepted"
+      ? "✓ Applied"
+      : message.status === "rolled_back"
+        ? "Rolled back"
+        : message.status === "rejected"
+          ? "Discarded"
+          : "Not applied";
+
+  return <span className="px-1 text-[10.5px] font-medium text-ed-muted">{label}</span>;
 }

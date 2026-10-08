@@ -20,7 +20,7 @@ import {
   type SiteArea,
 } from "./editor-context.ts";
 import { builderConfig } from "./puck/config.tsx";
-import { EditorDataError, puckDataToSections, sectionsToPuckData } from "./puck/adapter.ts";
+import { EditorDataError, hasAiPlaceholder, puckDataToSections, sectionsToPuckData } from "./puck/adapter.ts";
 import { selectSection, useBuilderPuck } from "./puck/puck-api.ts";
 import AiDrawer from "./shell/AiDrawer.tsx";
 import CanvasViewport from "./shell/CanvasViewport.tsx";
@@ -155,6 +155,8 @@ export default function EditorApp({ website: initialWebsite, themes, savedSectio
 
   const handlePuckChange = useCallback(
     (data: Data) => {
+      // The AI is still generating; the draft updates once placeholders are swapped for real sections.
+      if (hasAiPlaceholder(data)) return;
       let sections: Section[];
       try {
         sections = puckDataToSections(data);
