@@ -19,6 +19,7 @@ const VerifyEmailPage = lazy(() => import("./pages/auth/VerifyEmailPage.tsx"));
 const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage.tsx"));
 const DashboardPage = lazy(() => import("./pages/client/DashboardPage.tsx"));
 const MyWebsitesPage = lazy(() => import("./pages/client/MyWebsitesPage.tsx"));
+const AccountSettingsPage = lazy(() => import("./pages/client/AccountSettingsPage.tsx"));
 const MediaLibraryPage = lazy(() => import("./pages/media/MediaLibraryPage.tsx"));
 const CreateWebsitePage = lazy(() => import("./pages/websites/CreateWebsitePage.tsx"));
 const WebsitePreviewPage = lazy(() => import("./pages/websites/WebsitePreviewPage.tsx"));
@@ -66,6 +67,7 @@ export default function App() {
                 <Route path="dashboard" element={<DashboardPage />} />
                 <Route path="websites" element={<MyWebsitesPage />} />
                 <Route path="media" element={<MediaLibraryPage />} />
+                <Route path="account" element={<AccountSettingsPage />} />
               </Route>
             </Route>
 

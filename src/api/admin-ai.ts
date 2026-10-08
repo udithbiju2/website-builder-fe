@@ -1,3 +1,4 @@
+import type { AiModelOption } from "./ai-models.ts";
 import { request } from "./http.ts";
 
 export type AiConfig = {
@@ -5,6 +6,8 @@ export type AiConfig = {
   openaiApiKeyMasked: string | null;
   model: string;
   updatedAt: string | null;
+  /** Models offered to clients, with pricing. */
+  models: AiModelOption[];
 };
 
 export type AiConfigInput = {

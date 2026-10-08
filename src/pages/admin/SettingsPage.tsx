@@ -1,31 +1,27 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button, Chip, Label, Spinner, Switch } from "@heroui/react";
-import { Check, Eye, EyeOff, Mail, Send, Sliders } from "lucide-react";
+import { Check, Eye, EyeOff, Info, Mail, PenLine, Send, Sliders } from "lucide-react";
 import AiSparklesIcon from "../../components/icons/AiSparklesIcon.tsx";
 import { adminAiApi, type AiConfig, type AiConfigInput } from "../../api/admin-ai.ts";
+import AiModelPicker from "../../components/ai/AiModelPicker.tsx";
 import { adminEmailApi, type EmailConfig, type EmailConfigInput } from "../../api/admin-email.ts";
 import { ApiError, errorMessage } from "../../api/http.ts";
 import { useAuth } from "../../auth/auth-context.ts";
 import { validateEmail } from "../../auth/validation.ts";
 import PageHeader from "../../components/app/PageHeader.tsx";
 import FormAlert from "../../components/ui/FormAlert.tsx";
-import SelectInput, { type SelectOption } from "../../components/ui/SelectInput.tsx";
 import TextInput from "../../components/ui/TextInput.tsx";
 
 type Feedback = { status: "success" | "danger"; message: string } | null;
 type EmailConfigErrors = Partial<Record<keyof EmailConfigInput, string>>;
 type AiConfigErrors = Partial<Record<keyof AiConfigInput, string>>;
 
-const AI_MODEL_OPTIONS: SelectOption<string>[] = [
-  { value: "gpt-4o-mini", label: "Low (gpt-4o-mini) — Fast, Cost-Efficient (Recommended)" },
-  { value: "gpt-4o", label: "Medium (gpt-4o) — High Intelligence & Balanced Power" },
-  { value: "gpt-4.5-preview", label: "High (gpt-4.5-preview) — Maximum Creative Design" },
-  { value: "o3-mini", label: "High (o3-mini) — Fast Advanced Reasoning" },
-  { value: "o1-mini", label: "High (o1-mini) — Deep Structural Reasoning" },
-  { value: "gpt-4-turbo", label: "Medium (gpt-4-turbo) — High Performance Turbo" },
-  { value: "custom", label: "Custom Model (Manual Input)" },
-];
+const CUSTOM_MODEL = "custom";
+
+function isCatalogModel(config: AiConfig, model: string): boolean {
+  return config.models.some((option) => option.id === model);
+}
 
 function toEmailForm(config: EmailConfig): EmailConfigInput {
   return {
@@ -103,12 +99,11 @@ export default function SettingsPage() {
         if (cancelled) return;
         setAiConfig(loaded);
         const m = loaded.model || "gpt-4o-mini";
-        const isPreset = AI_MODEL_OPTIONS.some((opt) => opt.value === m && opt.value !== "custom");
-        if (isPreset) {
+        if (isCatalogModel(loaded, m)) {
           setSelectedModelDropdown(m);
           setCustomModelText("");
         } else {
-          setSelectedModelDropdown("custom");
+          setSelectedModelDropdown(CUSTOM_MODEL);
           setCustomModelText(m);
         }
         setAiForm({
@@ -186,7 +181,7 @@ export default function SettingsPage() {
   // AI HANDLERS
   function handleModelDropdownChange(val: string) {
     setSelectedModelDropdown(val);
-    if (val !== "custom") {
+    if (val !== CUSTOM_MODEL) {
       setAiForm((prev) => ({ ...prev, model: val }));
     } else {
       setAiForm((prev) => ({ ...prev, model: customModelText || "gpt-4o-mini" }));
@@ -200,7 +195,7 @@ export default function SettingsPage() {
 
   async function handleAiSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const finalModel = selectedModelDropdown === "custom" ? customModelText.trim() : selectedModelDropdown;
+    const finalModel = selectedModelDropdown === CUSTOM_MODEL ? customModelText.trim() : selectedModelDropdown;
 
     const nextErrors: AiConfigErrors = {
       openaiApiKey:
@@ -220,12 +215,11 @@ export default function SettingsPage() {
         model: finalModel,
       });
       setAiConfig(saved);
-      const isPreset = AI_MODEL_OPTIONS.some((opt) => opt.value === saved.model && opt.value !== "custom");
-      if (isPreset) {
+      if (isCatalogModel(saved, saved.model)) {
         setSelectedModelDropdown(saved.model);
         setCustomModelText("");
       } else {
-        setSelectedModelDropdown("custom");
+        setSelectedModelDropdown(CUSTOM_MODEL);
         setCustomModelText(saved.model);
       }
       setAiForm({
@@ -481,69 +475,62 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {/* Model Tier Selection Dropdown */}
+                  {/* Default Model Selection */}
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-ink flex items-center gap-1.5">
-                        <Sliders className="size-3.5 text-cyan-500" />
-                        AI Model Tier (Low / Medium / High)
-                      </span>
-                    </div>
+                    <span className="text-sm font-medium text-ink flex items-center gap-1.5">
+                      <Sliders className="size-3.5 text-cyan-500" />
+                      Platform default model
+                    </span>
+                    <p className="text-xs text-ink-muted">
+                      Used by every client who hasn't picked their own model under Account settings. Clients can choose
+                      any model below; costs differ per model because of token prices and reasoning tokens.
+                    </p>
 
-                    <SelectInput
-                      value={selectedModelDropdown}
+                    <AiModelPicker
+                      models={aiConfig.models}
+                      value={selectedModelDropdown === CUSTOM_MODEL ? null : selectedModelDropdown}
                       onChange={handleModelDropdownChange}
-                      options={AI_MODEL_OPTIONS}
                     />
 
-                    {selectedModelDropdown === "custom" && (
+                    <button
+                      type="button"
+                      aria-pressed={selectedModelDropdown === CUSTOM_MODEL}
+                      onClick={() => handleModelDropdownChange(CUSTOM_MODEL)}
+                      className={`flex items-center gap-2 rounded-xl border p-3 text-left text-sm transition-all cursor-pointer ${
+                        selectedModelDropdown === CUSTOM_MODEL
+                          ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                          : "border-line bg-surface hover:border-ink-muted/40"
+                      }`}
+                    >
+                      <PenLine className="size-4 text-ink-muted" aria-hidden />
+                      <span className="font-medium text-ink">Custom model ID</span>
+                      <span className="text-xs text-ink-muted">(platform default only, not offered to clients)</span>
+                    </button>
+
+                    {selectedModelDropdown === CUSTOM_MODEL && (
                       <div className="mt-1">
                         <TextInput
                           label="Custom Model ID"
                           name="customModel"
-                          placeholder="e.g. gpt-4-32k, ft:gpt-4o-mini:..."
+                          placeholder="e.g. gpt-5-mini, ft:gpt-4o-mini:..."
                           value={customModelText}
                           onChange={handleCustomModelTextChange}
                           error={aiErrors.model}
                         />
+                        <p className="mt-2 flex items-start gap-1.5 text-xs text-ink-muted">
+                          <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                          Custom models have no price on file, so AI usage costs for them are estimated at GPT-4o mini
+                          rates.
+                        </p>
                       </div>
                     )}
-
-                    <div className="mt-1 grid grid-cols-3 gap-2 text-xs">
-                      <div className={`p-2.5 rounded-lg border transition-all ${
-                        selectedModelDropdown === "gpt-4o-mini"
-                          ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-medium"
-                          : "border-line bg-surface-muted/30 text-ink-muted"
-                      }`}>
-                        <p className="font-semibold text-ink">Low Tier</p>
-                        <p className="text-[11px] mt-0.5">Ultra Fast & Low Cost</p>
-                      </div>
-
-                      <div className={`p-2.5 rounded-lg border transition-all ${
-                        selectedModelDropdown === "gpt-4o" || selectedModelDropdown === "gpt-4-turbo"
-                          ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-medium"
-                          : "border-line bg-surface-muted/30 text-ink-muted"
-                      }`}>
-                        <p className="font-semibold text-ink">Medium Tier</p>
-                        <p className="text-[11px] mt-0.5">Balanced Quality & Speed</p>
-                      </div>
-
-                      <div className={`p-2.5 rounded-lg border transition-all ${
-                        selectedModelDropdown === "gpt-4.5-preview" || selectedModelDropdown === "o3-mini" || selectedModelDropdown === "o1-mini"
-                          ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-medium"
-                          : "border-line bg-surface-muted/30 text-ink-muted"
-                      }`}>
-                        <p className="font-semibold text-ink">High Tier</p>
-                        <p className="text-[11px] mt-0.5">Deep Reasoning & Visuals</p>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Security Note */}
                   <div className="rounded-lg border border-line bg-surface-muted/30 p-3.5 text-xs text-ink-body flex items-start gap-2.5">
                     <Check className="size-4 text-emerald-500 shrink-0 mt-0.5" />
                     <span>
-                      Your key is securely encrypted at rest using AES-256-GCM. All website builders will automatically utilize this key for continuous copilot generation.
+                      Your key is securely encrypted at rest using AES-256-GCM. All AI requests use this key, whichever model the client has chosen.
                     </span>
                   </div>
 
