@@ -5618,90 +5618,321 @@ details[open] > summary .wb-faq-plus {
   position: relative;
   border-radius: var(--wb-radius, 24px);
   overflow: hidden;
-  min-height: 520px;
+  min-height: 540px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  color: #fff;
-  box-shadow: 0 16px 48px -12px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  background-color: #090d16;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 75% 15%, rgba(99, 102, 241, 0.24) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 20% 85%, rgba(56, 189, 248, 0.18) 0%, transparent 55%),
+    linear-gradient(135deg, #090d16 0%, #0f172a 60%, #171c32 100%);
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
-.wb-carousel-hero-slide { position: relative; width: 100%; height: 100%; }
-.wb-carousel-hero-bg { position: absolute; inset: 0; z-index: 1; }
-.wb-carousel-hero-img { width: 100%; height: 100%; object-fit: cover; }
+
+.wb-carousel-hero-slides-viewport {
+  position: relative;
+  width: 100%;
+  min-height: 540px;
+  display: flex;
+  overflow: hidden;
+}
+
+.wb-carousel-hero-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.wb-carousel-hero-slide.wb-hero-slide-active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.wb-carousel-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.wb-carousel-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.wb-hero-slide-active .wb-carousel-hero-img {
+  transform: scale(1.06);
+}
+
 .wb-carousel-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.5) 45%, rgba(0, 0, 0, 0.88) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(9, 13, 22, 0.35) 0%,
+    rgba(9, 13, 22, 0.55) 35%,
+    rgba(9, 13, 22, 0.92) 80%,
+    rgba(9, 13, 22, 0.98) 100%
+  );
+  pointer-events: none;
 }
+
+.wb-carousel-hero-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 40% at 85% 20%, rgba(99, 102, 241, 0.2), transparent 60%);
+  pointer-events: none;
+}
+
 .wb-carousel-hero-content {
   position: relative;
   z-index: 2;
-  padding: 56px 48px;
-  max-width: 820px;
+  padding: clamp(36px, 6vw, 64px) clamp(28px, 5vw, 56px);
+  max-width: 860px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
+
+.wb-hero-slide-active .wb-carousel-hero-badge-pill {
+  animation: wb-hero-fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.wb-hero-slide-active .wb-carousel-hero-sub {
+  animation: wb-hero-fade-up 0.5s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.wb-hero-slide-active .wb-carousel-hero-title {
+  animation: wb-hero-fade-up 0.6s 0.14s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.wb-hero-slide-active .wb-carousel-hero-desc {
+  animation: wb-hero-fade-up 0.6s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.wb-hero-slide-active .wb-carousel-hero-actions {
+  animation: wb-hero-fade-up 0.6s 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes wb-hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .wb-carousel-hero-badge-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 14px;
+  padding: 6px 16px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  font-size: 12.5px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   width: fit-content;
 }
-.wb-carousel-hero-sub { font-size: 15px; font-weight: 600; color: color-mix(in srgb, #fff 85%, var(--wb-primary)); margin: 0; }
-.wb-carousel-hero-title {
-  font-size: clamp(32px, 5vw, 52px);
-  font-weight: 800;
-  line-height: 1.12;
-  color: #fff;
+
+.wb-carousel-hero-sub {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: color-mix(in srgb, #fff 80%, var(--wb-primary));
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   margin: 0;
 }
-.wb-carousel-hero-desc { font-size: 16.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.85); margin: 0; }
-.wb-carousel-hero-actions { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
-.wb-carousel-hero-nav-bar {
-  position: absolute;
-  bottom: 32px;
-  right: 32px;
-  z-index: 3;
+
+.wb-carousel-hero-title {
+  font-size: clamp(32px, 4.5vw, 54px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+  margin: 0;
+}
+
+.wb-carousel-hero-desc {
+  font-size: clamp(15.5px, 1.8vw, 17.5px);
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
+  max-width: 680px;
+  margin: 0;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
+}
+
+.wb-carousel-hero-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: rgba(0, 0, 0, 0.45);
+  gap: 14px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.wb-carousel-hero-container .wb-btn-primary {
+  box-shadow: 0 4px 20px -2px color-mix(in srgb, var(--wb-primary) 50%, transparent);
+}
+.wb-carousel-hero-container .wb-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px -2px color-mix(in srgb, var(--wb-primary) 65%, transparent);
+}
+
+.wb-carousel-hero-container .wb-btn-secondary {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
-  padding: 8px 16px;
+  -webkit-backdrop-filter: blur(12px);
+}
+.wb-carousel-hero-container .wb-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.65);
+  color: #ffffff;
+}
+
+/* Alignment support */
+.wb-carousel-hero-container.wb-align-center .wb-carousel-hero-content {
+  margin: 0 auto;
+  align-items: center;
+  text-align: center;
+}
+.wb-carousel-hero-container.wb-align-center .wb-carousel-hero-actions {
+  justify-content: center;
+}
+.wb-carousel-hero-container.wb-align-right .wb-carousel-hero-content {
+  margin-left: auto;
+  align-items: flex-end;
+  text-align: right;
+}
+.wb-carousel-hero-container.wb-align-right .wb-carousel-hero-actions {
+  justify-content: flex-end;
+}
+
+/* Card Style Modifiers */
+.wb-carousel-hero-container.wb-carousel-card-bordered {
+  border: 1.5px solid color-mix(in srgb, var(--wb-primary) 50%, transparent);
+  box-shadow: 0 0 35px -5px color-mix(in srgb, var(--wb-primary) 30%, transparent), 0 20px 50px -15px rgba(0, 0, 0, 0.4);
+}
+.wb-carousel-hero-container.wb-carousel-card-elevated {
+  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.6);
+}
+.wb-carousel-hero-container.wb-carousel-card-glass {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+.wb-carousel-hero-container.wb-carousel-card-flat {
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.wb-carousel-hero-container.wb-carousel-card-contrast {
+  background-color: #000;
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Floating Controls Bar */
+.wb-carousel-hero-nav-bar {
+  position: absolute;
+  bottom: clamp(24px, 4vw, 36px);
+  right: clamp(24px, 4vw, 36px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(10, 15, 26, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 8px 18px;
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
-.wb-carousel-hero-dots { display: flex; align-items: center; gap: 6px; }
+
+.wb-carousel-hero-counter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.9);
+  padding-right: 6px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.wb-hero-counter-current {
+  color: #fff;
+}
+
+.wb-hero-counter-sep {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.wb-hero-counter-total {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.wb-carousel-hero-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .wb-carousel-hero-dot {
   background: none;
   border: none;
-  padding: 4px;
+  padding: 4px 2px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
+
 .wb-hero-dot-bar {
   display: block;
-  width: 14px;
+  width: 12px;
   height: 4px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.35);
-  transition: all 0.3s ease;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.wb-carousel-hero-dot:hover .wb-hero-dot-bar {
+  background: rgba(255, 255, 255, 0.6);
+}
+
 .wb-carousel-hero-dot.wb-hero-dot-active .wb-hero-dot-bar {
-  width: 28px;
+  width: 26px;
   background: #fff;
 }
-.wb-carousel-hero-arrows { display: flex; align-items: center; gap: 6px; }
+
+.wb-carousel-hero-arrows {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .wb-carousel-hero-arrow-btn {
   width: 32px;
   height: 32px;
@@ -5712,11 +5943,34 @@ details[open] > summary .wb-faq-plus {
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .wb-carousel-hero-arrow-btn:hover {
   background: #fff;
-  color: #000;
+  color: #0b0f19;
+  border-color: #fff;
+  transform: scale(1.08);
+}
+
+@media (max-width: 768px) {
+  .wb-carousel-hero-container,
+  .wb-carousel-hero-slides-viewport {
+    min-height: 480px;
+  }
+  .wb-carousel-hero-content {
+    padding: 32px 20px 84px 20px;
+    gap: 12px;
+  }
+  .wb-carousel-hero-nav-bar {
+    bottom: 18px;
+    right: 18px;
+    padding: 6px 14px;
+    gap: 10px;
+  }
+  .wb-carousel-hero-counter {
+    display: none;
+  }
 }
 
 /* Showcase 3D Perspective Variant */
