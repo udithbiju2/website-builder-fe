@@ -4,8 +4,12 @@ import type {
   CarouselCardStyle,
   CarouselSlide,
   CarouselVariant,
+  SectionAlign,
   SectionOf,
 } from "../types.ts";
+import CurvedBannerCarousel, {
+  DEFAULT_BANNER_ITEMS,
+} from "../../components/common/CurvedBannerCarousel.tsx";
 
 function ChevronLeftIcon() {
   return (
@@ -141,8 +145,25 @@ function CarouselCards({
 /* =========================================================================
    VARIANT 2: Hero Banner Slider
    ========================================================================= */
+const DEFAULT_HERO_SLIDE_IMAGES = [
+  {
+    url: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1800&auto=format&fit=crop&q=80",
+    alt: "Global digital technology studio and innovation lab",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1800&auto=format&fit=crop&q=80",
+    alt: "Cloud infrastructure and data network connectivity",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1800&auto=format&fit=crop&q=80",
+    alt: "Futuristic digital intelligence and fluid architecture",
+  },
+];
+
 function CarouselHeroSlider({
   slides,
+  cardStyle,
+  align = "left",
   activeIndex,
   onPrev,
   onNext,
@@ -151,6 +172,8 @@ function CarouselHeroSlider({
   showDots,
 }: {
   slides: CarouselSlide[];
+  cardStyle?: CarouselCardStyle;
+  align?: SectionAlign;
   activeIndex: number;
   onPrev: () => void;
   onNext: () => void;
@@ -158,42 +181,77 @@ function CarouselHeroSlider({
   showArrows: boolean;
   showDots: boolean;
 }) {
-  const current = slides[activeIndex] || slides[0];
-  if (!current) return null;
+  const cardClass = getCardStyleClass(cardStyle);
+  const alignClass = `wb-align-${align}`;
 
   return (
-    <div className="wb-carousel-hero-container">
-      <div className="wb-carousel-hero-slide">
-        {current.image && (
-          <div className="wb-carousel-hero-bg">
-            <SiteImage image={current.image} className="wb-carousel-hero-img" />
-            <div className="wb-carousel-hero-overlay" />
-          </div>
-        )}
+    <div className={`wb-carousel-hero-container ${cardClass} ${alignClass}`}>
+      <div className="wb-carousel-hero-slides-viewport">
+        {slides.map((slide, i) => {
+          const isActive = i === activeIndex;
+          const slideImg =
+            slide.image?.url && slide.image.url.trim() !== ""
+              ? slide.image
+              : DEFAULT_HERO_SLIDE_IMAGES[i % DEFAULT_HERO_SLIDE_IMAGES.length];
 
-        <div className="wb-carousel-hero-content">
-          {current.badge && (
-            <div className="wb-carousel-hero-badge-pill">
-              <span className="wb-carousel-pulse-dot" aria-hidden="true" />
-              <span>{current.badge}</span>
-            </div>
-          )}
-          {current.subtitle && <p className="wb-carousel-hero-sub">{current.subtitle}</p>}
-          <h2 className="wb-carousel-hero-title">{current.title}</h2>
-          {current.description && <p className="wb-carousel-hero-desc">{current.description}</p>}
+          return (
+            <div
+              key={i}
+              className={`wb-carousel-hero-slide ${isActive ? "wb-hero-slide-active" : ""}`}
+              aria-hidden={!isActive}
+            >
+              <div className="wb-carousel-hero-bg">
+                <SiteImage image={slideImg} className="wb-carousel-hero-img" />
+                <div className="wb-carousel-hero-overlay" />
+                <div className="wb-carousel-hero-glow" />
+              </div>
 
-          {(current.button || current.secondaryButton) && (
-            <div className="wb-carousel-hero-actions">
-              {current.button && <SiteLink link={current.button} className="wb-btn wb-btn-primary wb-btn-lg" />}
-              {current.secondaryButton && <SiteLink link={current.secondaryButton} className="wb-btn wb-btn-secondary wb-btn-lg" />}
+              <div className="wb-carousel-hero-content">
+                {slide.badge && (
+                  <div className="wb-carousel-hero-badge-pill">
+                    <span className="wb-carousel-pulse-dot" aria-hidden="true" />
+                    <span>{slide.badge}</span>
+                  </div>
+                )}
+                {slide.subtitle && <p className="wb-carousel-hero-sub">{slide.subtitle}</p>}
+                <h2 className="wb-carousel-hero-title">{slide.title}</h2>
+                {(slide.description || slide.caption) && (
+                  <p className="wb-carousel-hero-desc">
+                    {slide.description || slide.caption}
+                  </p>
+                )}
+
+                {(slide.button || slide.secondaryButton) && (
+                  <div className="wb-carousel-hero-actions">
+                    {slide.button && (
+                      <SiteLink
+                        link={slide.button}
+                        className="wb-btn wb-btn-primary wb-btn-lg"
+                      />
+                    )}
+                    {slide.secondaryButton && (
+                      <SiteLink
+                        link={slide.secondaryButton}
+                        className="wb-btn wb-btn-secondary wb-btn-lg"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Floating Controls */}
+      {/* Floating Controls Bar */}
       {slides.length > 1 && (
         <div className="wb-carousel-hero-nav-bar">
+          <div className="wb-carousel-hero-counter">
+            <span className="wb-hero-counter-current">{String(activeIndex + 1).padStart(2, "0")}</span>
+            <span className="wb-hero-counter-sep">/</span>
+            <span className="wb-hero-counter-total">{String(slides.length).padStart(2, "0")}</span>
+          </div>
+
           {showDots && (
             <div className="wb-carousel-hero-dots">
               {slides.map((_, i) => (
@@ -767,6 +825,8 @@ export default function CarouselSection({ section }: { section: SectionOf<"carou
         {variant === "hero-slider" ? (
           <CarouselHeroSlider
             slides={slides}
+            cardStyle={data.cardStyle}
+            align={data.align}
             activeIndex={activeIndex}
             onPrev={prevSlide}
             onNext={nextSlide}
@@ -824,6 +884,29 @@ export default function CarouselSection({ section }: { section: SectionOf<"carou
             onNext={nextSlide}
             onSelect={setActiveIndex}
           />
+        ) : variant === "curved-banner" ? (
+          <div className="wb-carousel-curved-wrapper">
+            <CurvedBannerCarousel
+              items={
+                slides.length > 0
+                  ? slides.map((s, idx) => ({
+                      id: `slide-${idx}`,
+                      title: s.title,
+                      subtitle: s.subtitle || s.description,
+                      badge: s.badge,
+                      image:
+                        s.image?.url ||
+                        DEFAULT_BANNER_ITEMS[idx % DEFAULT_BANNER_ITEMS.length].image,
+                      alt: s.image?.alt || s.title,
+                    }))
+                  : DEFAULT_BANNER_ITEMS
+              }
+              speed={42}
+              direction="left-to-right"
+              curveIntensity="medium"
+              pauseOnHover={data.pauseOnHover ?? true}
+            />
+          </div>
         ) : (
           <CarouselCards
             slides={slides}

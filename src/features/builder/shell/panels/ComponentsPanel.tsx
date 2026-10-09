@@ -12,6 +12,7 @@ import {
   Image,
   Layers,
   LayoutDashboard,
+  LogIn,
   Mail,
   Megaphone,
   MessageSquareQuote,
@@ -48,6 +49,7 @@ const SECTION_ICONS: Record<SectionType, ComponentType<LucideProps>> = {
   team: Users,
   carousel: SlidersHorizontal,
   marquee: MoveHorizontal,
+  auth: LogIn,
   custom: LayoutDashboard,
 };
 

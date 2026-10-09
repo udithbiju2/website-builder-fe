@@ -52,6 +52,14 @@ export const HEADER_DESIGNS = [
   "ecommerce",
   "floating",
   "transparent",
+  "glass-dock",
+  "split-stacked",
+  "command-bar",
+  "mega-menu-grid",
+  "side-drawer",
+  "headline-ticker",
+  "luxury-editorial",
+  "saas-console",
 ] as const;
 
 export type HeaderDesign = (typeof HEADER_DESIGNS)[number];
@@ -80,6 +88,7 @@ export type HeaderMenuItem = {
   href: string;
   badge?: string;
   icon?: string;
+  description?: string;
   children?: HeaderSubMenuItem[];
 };
 
@@ -103,6 +112,30 @@ export type HeaderData = {
   currency?: string;
   mobileMenuType?: "drawer" | "fullscreen" | "dropdown";
   hidden?: boolean;
+  badge?: string;
+  searchPlaceholder?: string;
+  utilityLinks?: LinkRef[];
+  tagline?: string;
+  statusText?: string;
+  statusColor?: HeaderStatusColor;
+  /** Label on the side-drawer menu trigger. */
+  menuLabel?: string;
+  /** Contact block shown in the full-height curtain menu. */
+  contactLabel?: string;
+  contactEmail?: string;
+  /** Highlight card shown inside mega-menu dropdowns. */
+  featured?: HeaderFeatured;
+};
+
+export const HEADER_STATUS_COLORS = ["green", "blue", "orange", "purple", "red"] as const;
+
+export type HeaderStatusColor = (typeof HEADER_STATUS_COLORS)[number];
+
+export type HeaderFeatured = {
+  badge?: string;
+  title: string;
+  description?: string;
+  link?: LinkRef;
 };
 
 export const FOOTER_DESIGNS = [
@@ -234,6 +267,7 @@ export const HERO_VARIANTS = [
   "minimal-typography",
   "floating-cards",
   "asymmetric",
+  "curved-carousel",
 ] as const;
 
 export type HeroVariant = (typeof HERO_VARIANTS)[number];
@@ -289,6 +323,11 @@ export type HeroData = {
   rating?: HeroRating;
   floatingCards?: HeroFloatingCard[];
   trustedBy?: HeroTrustedBy;
+  carouselSpeed?: number;
+  carouselDirection?: "left-to-right" | "right-to-left";
+  showDoodles?: boolean;
+  curveIntensity?: "none" | "subtle" | "medium" | "dramatic";
+  carouselSlides?: CarouselSlide[];
 };
 
 export type GridColumns = 1 | 2 | 3 | 4;
@@ -695,6 +734,7 @@ export const CAROUSEL_VARIANTS = [
   "image-gallery",
   "image-strip",
   "image-coverflow",
+  "curved-banner",
 ] as const;
 export type CarouselVariant = (typeof CAROUSEL_VARIANTS)[number];
 
@@ -768,6 +808,174 @@ export type MarqueeData = {
   fontSize?: "small" | "medium" | "large" | "huge";
 };
 
+export const AUTH_VARIANTS = [
+  "diagonal-split",
+  "gradient-spotlight",
+  "illustration-frame",
+  "glass-aurora",
+  "dark-wave",
+  "product-showcase",
+  "minimal-editorial",
+  "bento-grid",
+  "fullbleed-sheet",
+  "tabbed-compact",
+] as const;
+export type AuthVariant = (typeof AUTH_VARIANTS)[number];
+
+export const AUTH_VIEWS = ["login", "register", "forgot", "otp"] as const;
+export type AuthView = (typeof AUTH_VIEWS)[number];
+
+export const AUTH_FIELD_TYPES = [
+  "text",
+  "email",
+  "password",
+  "confirm-password",
+  "tel",
+  "number",
+  "date",
+  "select",
+  "checkbox",
+] as const;
+export type AuthFieldType = (typeof AUTH_FIELD_TYPES)[number];
+
+export type AuthField = {
+  /** Form field name; letters, numbers, `-` and `_`. */
+  name: string;
+  label: string;
+  type: AuthFieldType;
+  placeholder?: string;
+  required?: boolean;
+  width?: "full" | "half";
+  /** Choices for `select` fields. */
+  options?: string[];
+};
+
+export const AUTH_SOCIAL_PROVIDERS = [
+  "google",
+  "apple",
+  "github",
+  "facebook",
+  "x",
+  "linkedin",
+  "microsoft",
+] as const;
+export type AuthSocialProvider = (typeof AUTH_SOCIAL_PROVIDERS)[number];
+
+export type AuthSocialLink = {
+  provider: AuthSocialProvider;
+  /** OAuth start URL; `#` renders a non-navigating button. */
+  href: string;
+};
+
+export type AuthSocial = {
+  enabled: boolean;
+  label?: string;
+  style?: "icons" | "full";
+  position?: "top" | "bottom";
+  showOnRegister?: boolean;
+  providers: AuthSocialLink[];
+};
+
+export type AuthLoginView = {
+  heading: string;
+  subheading?: string;
+  fields: AuthField[];
+  submitLabel: string;
+  showRemember?: boolean;
+  rememberLabel?: string;
+  forgotLabel?: string;
+  switchPrompt?: string;
+  switchLabel?: string;
+};
+
+export type AuthRegisterView = {
+  enabled: boolean;
+  heading: string;
+  subheading?: string;
+  fields: AuthField[];
+  submitLabel: string;
+  showTerms?: boolean;
+  termsText?: string;
+  termsLink?: LinkRef;
+  switchPrompt?: string;
+  switchLabel?: string;
+};
+
+export type AuthForgotView = {
+  enabled: boolean;
+  heading: string;
+  subheading?: string;
+  fields: AuthField[];
+  submitLabel: string;
+  backLabel?: string;
+  successHeading?: string;
+  successText?: string;
+};
+
+export type AuthOtpView = {
+  enabled: boolean;
+  heading: string;
+  subheading?: string;
+  length: 4 | 5 | 6;
+  submitLabel: string;
+  resendLabel?: string;
+  resendSeconds?: number;
+  requireOnLogin?: boolean;
+  requireOnRegister?: boolean;
+  requireOnForgot?: boolean;
+};
+
+export type AuthPanel = {
+  eyebrow?: string;
+  heading?: string;
+  text?: string;
+  /** Shown instead of heading/text while the register view is open. */
+  registerHeading?: string;
+  registerText?: string;
+  image?: ImageRef;
+  highlights?: string[];
+  testimonial?: { quote: string; name: string; role?: string; avatar?: ImageRef };
+  stats?: { value: string; label: string }[];
+};
+
+export type AuthColors = {
+  accent?: string;
+  panel?: string;
+  panelText?: string;
+  card?: string;
+};
+
+export type AuthAnimation = "none" | "fade" | "slide-up" | "slide-side" | "scale" | "blur";
+
+export type AuthData = {
+  variant: AuthVariant;
+  defaultView?: AuthView;
+  brandName?: string;
+  logo?: ImageRef;
+  formPosition?: "left" | "right";
+  minHeight?: "auto" | "screen";
+  inputStyle?: "outline" | "filled" | "underline" | "pill";
+  buttonShape?: "rounded" | "pill" | "square";
+  headingSize?: "sm" | "md" | "lg";
+  showLabels?: boolean;
+  showFieldIcons?: boolean;
+  showPasswordToggle?: boolean;
+  animation?: AuthAnimation;
+  backgroundMotion?: boolean;
+  colors?: AuthColors;
+  panel?: AuthPanel;
+  social: AuthSocial;
+  login: AuthLoginView;
+  register: AuthRegisterView;
+  forgot: AuthForgotView;
+  otp: AuthOtpView;
+  successHeading?: string;
+  successText?: string;
+  /** Shown as a continue button once the flow completes. */
+  successLink?: LinkRef;
+  footerNote?: string;
+};
+
 export type CustomGap = "sm" | "md" | "lg";
 export type CustomAlign = "start" | "center" | "end";
 export type CustomCardTone = "default" | "muted" | "primary" | "glass";
@@ -812,6 +1020,7 @@ export type SectionDataMap = {
   team: TeamData;
   carousel: CarouselData;
   marquee: MarqueeData;
+  auth: AuthData;
   custom: CustomData;
 };
 
