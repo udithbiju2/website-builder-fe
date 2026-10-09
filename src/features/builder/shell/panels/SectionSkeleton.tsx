@@ -239,22 +239,16 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
         </div>
       );
 
-    case "header-saas-console":
+    case "header-clean-transparent":
       return (
-        <div className="flex h-full w-full items-center justify-between px-2 border-b border-zinc-200 dark:border-zinc-700">
-          <div className="flex items-center gap-1">
-            <div className="h-2 w-3 rounded-xs bg-zinc-400 dark:bg-zinc-500" />
-            <div className="h-1.5 w-3 rounded-xs bg-zinc-200 dark:bg-zinc-700" />
+        <div className="flex h-full w-full items-center justify-between px-2">
+          <div className="h-2 w-5 rounded-sm bg-zinc-400 dark:bg-zinc-500" />
+          <div className="flex items-center gap-1.5">
+            <div className="h-1 w-3 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="h-1 w-3 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            <div className="h-1 w-3 rounded-full bg-zinc-300 dark:bg-zinc-600" />
           </div>
-          <div className="flex items-center gap-1">
-            <div className="h-1 w-2 rounded-full bg-zinc-400 dark:bg-zinc-400" />
-            <div className="h-1 w-2 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-            <div className="h-1 w-2 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="h-1 w-1 rounded-full bg-emerald-500" />
-            <div className="h-1.5 w-3 rounded-xs bg-brand/70" />
-          </div>
+          <div className="h-2 w-5 rounded-full bg-brand/70" />
         </div>
       );
 

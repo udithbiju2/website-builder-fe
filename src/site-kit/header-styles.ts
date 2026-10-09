@@ -1,6 +1,6 @@
 /**
  * Styles for the premium header designs (glass dock, split stacked, command bar,
- * mega menu grid, side drawer, headline ticker, luxury editorial, SaaS console).
+ * mega menu grid, side drawer, headline ticker, luxury editorial, clean transparent).
  * Interpolated into SITE_CSS, so it must not contain backticks or template
  * placeholders. Breakpoints use the `wb-site` container like the rest of the kit.
  */
@@ -371,44 +371,28 @@ export const PREMIUM_HEADER_CSS = `
 }
 .wb-header-luxury-editorial .wb-mobile-toggle-btn { border-radius: 0; }
 
-/* SaaS console */
-.wb-console-bar { display: flex; align-items: center; gap: 16px; min-height: 60px; }
-.wb-console-start { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.wb-console-divider { width: 1px; height: 22px; flex-shrink: 0; background: var(--wb-border); transform: rotate(18deg); }
-.wb-console-workspace {
-  display: inline-flex; align-items: center; gap: 8px; height: 34px; min-width: 0; padding: 0 10px 0 5px; border-radius: 10px;
-  border: 1px solid transparent; font-size: 13.5px; font-weight: 600; color: var(--wb-text);
-  transition: background-color 150ms ease, border-color 150ms ease;
+/* Clean transparent */
+.wb-header.wb-hd.wb-header-clean-transparent {
+  background: transparent; border-bottom: 1px solid transparent;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  transition: background-color 200ms ease, border-color 200ms ease;
 }
-.wb-console-workspace:hover { background: color-mix(in srgb, var(--wb-text) 5%, transparent); border-color: var(--wb-border); }
-.wb-console-avatar {
-  display: grid; place-items: center; width: 24px; height: 24px; flex-shrink: 0; border-radius: 7px;
-  font-size: 12px; font-weight: 700; color: var(--wb-on-primary);
-  background: linear-gradient(135deg, var(--wb-primary), color-mix(in srgb, var(--wb-primary) 55%, #000));
+.wb-header.wb-header-clean-transparent.wb-pos-static { position: absolute; top: 0; left: 0; right: 0; }
+.wb-header.wb-hd.wb-header-clean-transparent:is(.wb-pos-sticky, .wb-pos-fixed, .wb-pos-floating) {
+  background: color-mix(in srgb, var(--wb-bg) 72%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--wb-text) 8%, transparent);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
 }
-.wb-console-workspace-name { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.wb-console-workspace svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--wb-muted); }
-.wb-console-search { width: 240px; height: 36px; border-radius: 10px; }
-.wb-console-status {
-  display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 9999px;
-  border: 1px solid var(--wb-border); font-size: 12px; font-weight: 500; color: var(--wb-muted); white-space: nowrap;
-}
-.wb-header-saas-console .wb-btn { min-height: 36px; padding: 6px 14px; border-radius: 10px; font-size: 13.5px; }
-.wb-console-tabs { display: flex; align-items: stretch; gap: 2px; margin: 0 -12px; overflow-x: auto; scrollbar-width: none; }
-.wb-console-tabs::-webkit-scrollbar { display: none; }
-.wb-console-tab {
-  position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 8px; padding: 12px 12px 14px;
-  font-size: 13.5px; font-weight: 500; color: var(--wb-muted); white-space: nowrap; transition: color 150ms ease;
-}
-.wb-console-tab::before { content: ""; position: absolute; inset: 6px 2px 8px; z-index: -1; border-radius: 8px; transition: background-color 150ms ease; }
-.wb-console-tab:hover { color: var(--wb-text); }
-.wb-console-tab:hover::before { background: color-mix(in srgb, var(--wb-text) 5%, transparent); }
-.wb-console-tab.is-active { color: var(--wb-text); }
-.wb-console-tab.is-active::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; border-radius: 2px; background: var(--wb-text); }
-.wb-console-tab-badge {
-  padding: 1px 7px; border-radius: 9999px; font-size: 10.5px; font-weight: 600; color: var(--wb-muted);
-  background: color-mix(in srgb, var(--wb-text) 7%, transparent);
-}
+.wb-clean { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 24px; min-height: 80px; }
+.wb-clean > .wb-brand { justify-self: start; }
+.wb-clean-nav { justify-self: center; }
+.wb-clean-nav .wb-nav-item, .wb-clean-nav .wb-dropdown-trigger { padding: 8px 14px; font-size: 14.5px; }
+.wb-clean-actions { justify-self: end; margin-left: 0; }
+.wb-header-clean-transparent .wb-btn { border-radius: 9999px; padding: 8px 20px; }
+.wb-header-clean-transparent .wb-btn-secondary { background: transparent; border-color: transparent; }
+.wb-header-clean-transparent .wb-btn-secondary:hover { border-color: var(--wb-border); }
+.wb-header-clean-transparent .wb-mobile-toggle-btn { background: transparent; }
 
 /* Mobile drawer extras */
 .wb-drawer-utility { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-top: 16px; border-top: 1px solid var(--wb-border); font-size: 13px; }
@@ -421,8 +405,8 @@ export const PREMIUM_HEADER_CSS = `
   .wb-editorial-link { letter-spacing: 0.1em; }
   .wb-stacked-tagline { display: none; }
 }
-@container wb-site (max-width: 1100px) {
-  .wb-editorial-nav-end { display: none; }
+@container wb-site (max-width: 1180px) {
+  .wb-editorial-nav { display: none; }
   .wb-header-luxury-editorial .wb-mobile-toggle-btn { display: inline-flex !important; }
 }
 @container wb-site (max-width: 1180px) {
@@ -430,13 +414,12 @@ export const PREMIUM_HEADER_CSS = `
   .wb-header-command-bar .wb-mobile-toggle-btn { display: inline-flex !important; }
   .wb-dock-search { width: 40px; padding: 0; justify-content: center; }
   .wb-dock-search .wb-hd-search-label, .wb-dock-search .wb-kbd { display: none; }
-  .wb-console-search { width: 190px; }
 }
 @container wb-site (max-width: 1060px) {
-  .wb-hd .wb-header-cta .wb-btn-secondary, .wb-console-status, .wb-side-tagline { display: none; }
+  .wb-hd .wb-header-cta .wb-btn-secondary, .wb-side-tagline { display: none; }
 }
 @container wb-site (max-width: 900px) {
-  .wb-hd-nav, .wb-stacked-top, .wb-cmd-search, .wb-console-search, .wb-editorial-nav, .wb-dock-badge { display: none; }
+  .wb-hd-nav, .wb-stacked-top, .wb-cmd-search, .wb-editorial-nav, .wb-dock-badge { display: none; }
   .wb-cmd-search-compact { display: inline-grid; }
   .wb-dock { min-height: 56px; padding: 6px 6px 6px 18px; }
   .wb-stacked-main, .wb-cmd, .wb-mega-bar, .wb-ticker-bar { min-height: 64px; gap: 12px; }
@@ -446,11 +429,10 @@ export const PREMIUM_HEADER_CSS = `
   .wb-editorial-masthead { align-items: flex-start; text-align: left; }
   .wb-editorial-masthead .wb-brand, .wb-editorial-masthead .wb-brand-text { font-size: 24px; }
   .wb-editorial-top { display: none; }
-  .wb-console-bar { min-height: 56px; }
+  .wb-clean { grid-template-columns: minmax(0, 1fr) auto; min-height: 68px; }
 }
 @container wb-site (max-width: 600px) {
-  .wb-side-cta, .wb-side-trigger-label, .wb-ticker-link, .wb-editorial-tagline,
-  .wb-console-divider, .wb-console-workspace { display: none; }
+  .wb-side-cta, .wb-side-trigger-label, .wb-ticker-link, .wb-editorial-tagline { display: none; }
   .wb-side-trigger { padding: 0 4px; gap: 0; }
   .wb-header.wb-header-glass-dock { padding: 10px 12px; }
   .wb-ticker-inner { gap: 12px; }

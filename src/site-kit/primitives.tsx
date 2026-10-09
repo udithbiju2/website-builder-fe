@@ -7,17 +7,15 @@ type SiteLinkProps = {
   link: LinkRef;
   className?: string;
   children?: ReactNode;
-  onClick?: () => void;
 };
 
-export function SiteLink({ link, className, children, onClick }: SiteLinkProps) {
+export function SiteLink({ link, className, children }: SiteLinkProps) {
   const href = safeHref(link.href);
   const external = isExternalHref(href);
   return (
     <a
       href={href}
       className={className}
-      onClick={onClick}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
       {children ?? link.label}
@@ -180,69 +178,33 @@ export function SiteIcon({ name }: { name: IconName | string }) {
   );
 }
 
-/** Bare SVG glyph for a named icon; renders `fallback` (or nothing) for unknown names. */
-export function IconSvg({ name, fallback, className }: { name?: string; fallback?: IconName; className?: string }) {
-  const key = name && Object.prototype.hasOwnProperty.call(ICON_PATHS, name) ? (name as IconName) : fallback;
-  if (!key) return null;
+export function MenuIcon() {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {ICON_PATHS[key]}
-    </svg>
-  );
-}
-
-export function ArrowRightIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 12h14M13 6l6 6-6 6" />
-    </svg>
-  );
-}
-
-export function CommandIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M18 3a3 3 0 00-3 3v12a3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3H6a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3V6a3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3h12a3 3 0 003-3 3 3 0 00-3-3z" />
-    </svg>
-  );
-}
-
-export function MenuIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
       <path d="M4 7h16M4 12h16M4 17h16" />
     </svg>
   );
 }
 
-export function CloseIcon({ className = "" }: { className?: string }) {
+export function CloseIcon() {
   return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M18 6L6 18M6 6l12 12" />
     </svg>
   );
 }
 
-export function ChevronDownIcon({ className = "" }: { className?: string }) {
+export function ChevronDownIcon() {
   return (
-    <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M6 9l6 6 6-6" />
     </svg>
   );
 }
 
-export function SearchIcon({ className = "" }: { className?: string }) {
+export function SearchIcon() {
   return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="8" />
       <path d="M21 21l-4.35-4.35" />
     </svg>

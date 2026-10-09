@@ -63,6 +63,7 @@ import {
 } from "./fields.tsx";
 import { FontPicker } from "./FontPicker.tsx";
 import CustomSectionForm from "./CustomSectionForm.tsx";
+import AuthSectionForm from "./AuthSectionForm.tsx";
 
 type DataFormProps<T> = { data: T; onChange: (data: T) => void };
 
@@ -3370,6 +3371,13 @@ function DataForm({
     case "marquee":
       return (
         <MarqueeForm
+          data={section.data}
+          onChange={(data) => onChange({ ...section, data })}
+        />
+      );
+    case "auth":
+      return (
+        <AuthSectionForm
           data={section.data}
           onChange={(data) => onChange({ ...section, data })}
         />

@@ -1,3 +1,4 @@
+import { AUTH_PRESETS, createAuthData } from "./auth-defaults.ts";
 import type {
   Section,
   SectionDataMap,
@@ -22,7 +23,8 @@ export type SectionCategory =
   | "Pricing"
   | "Team"
   | "Carousel"
-  | "Marquee";
+  | "Marquee"
+  | "Auth";
 
 export type SectionDefinition<T extends SectionType> = {
   type: T;
@@ -446,6 +448,14 @@ export const SECTION_DEFINITIONS: { [T in SectionType]: SectionDefinition<T> } =
         ],
       }),
     },
+    auth: {
+      type: "auth",
+      label: "Login / Sign up",
+      category: "Auth",
+      description:
+        "Login, register, forgot password and optional OTP verification screens with configurable fields and social login.",
+      createData: createAuthData,
+    },
     custom: {
       type: "custom",
       label: "Custom Layout",
@@ -747,7 +757,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Glass dock header",
     category: "Header",
     description:
-      "Floating frosted-glass capsule with segmented navigation, status badge and search.",
+      "Floating segmented liquid glass island dock with active beacon and command hint.",
     create: () =>
       createSection("header", {
         data: {
@@ -755,9 +765,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
           siteName: "Modulus",
           badge: "v2.6",
           statusText: "All systems online",
-          statusColor: "green",
-          showSearch: true,
-          searchPlaceholder: "Search",
+          statusColor: "#22c55e",
           menu: [
             { label: "Overview", href: "#overview" },
             { label: "Features", href: "#features" },
@@ -784,7 +792,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
           siteName: "Enterprise Cloud",
           tagline: "Global Cloud Infrastructure & Edge Network",
           statusText: "System operational (99.99%)",
-          statusColor: "green",
+          statusColor: "#22c55e",
           utilityLinks: [
             { label: "Global Status", href: "/status" },
             { label: "Documentation", href: "/docs" },
@@ -815,7 +823,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Command bar header",
     category: "Header",
     description:
-      "Developer header with a centered spotlight search and keyboard shortcut hint.",
+      "Developer spotlight header with interactive ⌘K command search pill and modal.",
     create: () =>
       createSection("header", {
         data: {
@@ -841,7 +849,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Mega menu grid header",
     category: "Header",
     description:
-      "Full-width bento mega dropdowns with icon links and a featured highlight card.",
+      "Architectural bento mega-dropdown header with multi-column links and featured release card.",
     create: () =>
       createSection("header", {
         data: {
@@ -851,34 +859,25 @@ export const SECTION_PRESETS: SectionPreset[] = [
             {
               label: "Products",
               href: "/products",
-              description: "Everything you need to run payments at scale.",
               children: [
-                { label: "Payments", href: "/payments", description: "Accept global online transactions", icon: "wallet" },
-                { label: "Billing", href: "/billing", description: "Flexible subscriptions & recurring invoices", icon: "chart" },
-                { label: "Connect", href: "/connect", description: "Multi-party platforms & marketplaces", icon: "layers" },
-                { label: "Radar", href: "/radar", description: "AI-driven fraud detection & security", icon: "shield" },
+                { label: "Payments", href: "/payments", description: "Accept global online transactions" },
+                { label: "Billing", href: "/billing", description: "Flexible subscriptions & recurring invoices" },
+                { label: "Connect", href: "/connect", description: "Multi-party platforms & marketplaces" },
+                { label: "Radar", href: "/radar", description: "AI-driven fraud detection & security" },
               ],
             },
             {
               label: "Developers",
               href: "/developers",
-              description: "Build and ship integrations in minutes.",
               children: [
-                { label: "API Reference", href: "/api", description: "Complete REST and GraphQL endpoints", icon: "code" },
-                { label: "SDKs & Libraries", href: "/sdks", description: "Client libraries for 12 languages", icon: "box" },
-                { label: "Webhooks", href: "/webhooks", description: "Real-time event streaming", icon: "bolt" },
-                { label: "Status", href: "/status", description: "Live uptime and incident history", icon: "cloud" },
+                { label: "API Reference", href: "/api", description: "Complete REST and GraphQL endpoints" },
+                { label: "SDKs & Libraries", href: "/sdks", description: "Client libraries for 12 languages" },
+                { label: "Webhooks", href: "/webhooks", description: "Real-time event streaming" },
               ],
             },
             { label: "Customers", href: "/customers" },
             { label: "Pricing", href: "/pricing" },
           ],
-          featured: {
-            badge: "New",
-            title: "Global payouts are live",
-            description: "Send funds to 50+ countries with instant settlement and unified reporting.",
-            link: { label: "Read the announcement", href: "/changelog" },
-          },
           secondaryCta: { label: "Sign in", href: "/login" },
           cta: { label: "Create Account", href: "/signup" },
           sticky: true,
@@ -891,7 +890,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Side drawer curtain header",
     category: "Header",
     description:
-      "Quiet luxury bar that opens a full-height curtain menu with indexed links.",
+      "Minimalist luxury bar with slide-over off-canvas navigation curtain.",
     create: () =>
       createSection("header", {
         data: {
@@ -905,9 +904,6 @@ export const SECTION_PRESETS: SectionPreset[] = [
             { label: "The Studio", href: "/studio", description: "Team & Locations" },
             { label: "Contact Inquiries", href: "/contact", description: "Commissions & Press" },
           ],
-          menuLabel: "Menu",
-          contactLabel: "Studio inquiries",
-          contactEmail: "hello@atelier.studio",
           cta: { label: "Book Commission", href: "/contact" },
           sticky: true,
         },
@@ -919,17 +915,17 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Headline ticker header",
     category: "Header",
     description:
-      "Seamless live headline ticker above a clean navigation bar.",
+      "Live broadcast ticker announcement marquee integrated with glass header.",
     create: () =>
       createSection("header", {
         data: {
           design: "headline-ticker",
           siteName: "NewsPulse Live",
           announcement:
-            "Spring 2026 release is live | Early access unlocked | Join 100,000+ creators building on Modulus",
+            "🚀 Spring 2026 Release is live • Early access unlocked • Join 100,000+ creators building on Modulus",
           announcementLink: { label: "Learn more", href: "/changelog" },
-          statusText: "Live",
-          statusColor: "red",
+          statusText: "LIVE 24/7",
+          statusColor: "#ef4444",
           menu: [
             { label: "Stories", href: "/stories" },
             { label: "Broadcasts", href: "/broadcasts" },
@@ -948,7 +944,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Luxury editorial header",
     category: "Header",
     description:
-      "Centered masthead flanked by indexed navigation with double hairline rule.",
+      "Hairline bordered grid layout with numbered index navigation, centered masthead, and atelier metadata.",
     create: () =>
       createSection("header", {
         data: {
@@ -963,10 +959,8 @@ export const SECTION_PRESETS: SectionPreset[] = [
             { label: "Exhibitions", href: "/exhibitions" },
             { label: "Archive", href: "/archive" },
           ],
-          contactLabel: "Editorial desk",
-          contactEmail: "desk@chronicle.co",
           secondaryCta: { label: "Index", href: "/index" },
-          cta: { label: "Subscribe", href: "/subscribe" },
+          cta: { label: "Subscribe Edition", href: "/subscribe" },
           sticky: false,
         },
       }),
@@ -977,7 +971,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "SaaS console header",
     category: "Header",
     description:
-      "Cloud console header with workspace switcher, search, status and a tab row.",
+      "Developer cloud console header with workspace selector pill, tabbed navigation, and utility cluster.",
     create: () =>
       createSection("header", {
         data: {
@@ -985,9 +979,8 @@ export const SECTION_PRESETS: SectionPreset[] = [
           siteName: "Modulus Cloud",
           badge: "ACME Corp",
           statusText: "Healthy",
-          statusColor: "green",
-          showSearch: true,
-          searchPlaceholder: "Jump to...",
+          statusColor: "#22c55e",
+          searchPlaceholder: "Quick Jump...",
           menu: [
             { label: "Projects", href: "/projects" },
             { label: "Deployments", href: "/deployments" },
@@ -995,7 +988,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
             { label: "Logs", href: "/logs" },
             { label: "Settings", href: "/settings" },
           ],
-          cta: { label: "New Project", href: "/new" },
+          cta: { label: "+ New Project", href: "/new" },
           sticky: true,
         },
       }),
@@ -3584,4 +3577,14 @@ export const SECTION_PRESETS: SectionPreset[] = [
         },
       }),
   },
+  ...AUTH_PRESETS.map(
+    (preset): SectionPreset => ({
+      key: preset.key,
+      type: "auth",
+      label: preset.label,
+      category: "Auth",
+      description: preset.description,
+      create: () => createSection("auth", { data: preset.data(), settings: { spacing: "none", ...preset.settings } }),
+    }),
+  ),
 ];

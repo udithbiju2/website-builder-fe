@@ -72,8 +72,8 @@ const STATUS_COLOR_OPTIONS: { value: HeaderStatusColor; label: string }[] = [
   { value: "red", label: "Red (Live / Incident)" },
 ];
 
-const DESIGNS_WITH_STATUS_COLOR: HeaderData["design"][] = ["glass-dock", "split-stacked", "headline-ticker", "saas-console"];
-const DESIGNS_WITH_SEARCH: HeaderData["design"][] = ["glass-dock", "command-bar", "mega-menu-grid", "saas-console", "ecommerce"];
+const DESIGNS_WITH_STATUS_COLOR: HeaderData["design"][] = ["glass-dock", "split-stacked", "headline-ticker"];
+const DESIGNS_WITH_SEARCH: HeaderData["design"][] = ["glass-dock", "command-bar", "mega-menu-grid", "ecommerce"];
 const DESIGNS_WITH_CURTAIN: HeaderData["design"][] = ["side-drawer", "luxury-editorial"];
 
 function MenuItemEditor({
@@ -190,7 +190,7 @@ export function HeaderForm({
             { value: "side-drawer", label: "Side drawer (Slide-over off-canvas curtain)" },
             { value: "headline-ticker", label: "Headline ticker (Live broadcast marquee strip)" },
             { value: "luxury-editorial", label: "Luxury editorial (Numbered grid index & masthead)" },
-            { value: "saas-console", label: "SaaS console (Cloud developer workspace header)" },
+            { value: "clean-transparent", label: "Clean transparent (Minimal header over your hero)" },
             { value: "classical", label: "Classical (Logo left, nav center, dual buttons)" },
             { value: "minimalist", label: "Minimalist (Nav left, centered logo, CTA right)" },
             { value: "comprehensive", label: "Comprehensive (Mega nav, CTA buttons)" },

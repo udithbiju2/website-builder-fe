@@ -3,7 +3,19 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { WebsitePage } from "../../api/websites.ts";
 import type { EditorDraft } from "../../pages/websites/editor/editor-state.ts";
-import { createSection, DEFAULT_THEME, SectionView, FONT_KEYS, FONTS, fontStack, sectionFontStyle, themeToCssVars } from "../../site-kit/index.ts";
+import {
+  createSection,
+  DEFAULT_THEME,
+  SECTION_PRESETS,
+  SectionView,
+  FONT_KEYS,
+  FONTS,
+  fontStack,
+  sectionFontStyle,
+  themeToCssVars,
+  type Section,
+  type SectionOf,
+} from "../../site-kit/index.ts";
 import { collectAssets } from "./assets.ts";
 import { planSave } from "./autosave/save-plan.ts";
 import { SerialSaver } from "./autosave/serial-saver.ts";
@@ -212,6 +224,45 @@ describe("custom section", () => {
     expect(html).not.toContain("javascript:");
     expect(html).not.toContain("<img");
     expect(html).toContain('href="#"');
+  });
+});
+
+describe("auth section", () => {
+  const authPresets = SECTION_PRESETS.filter((preset) => preset.type === "auth");
+  const render = (section: Section) => renderToStaticMarkup(createElement(SectionView, { section }));
+
+  it("ships ten distinct designs that all render a form", () => {
+    expect(authPresets).toHaveLength(10);
+    const variants = new Set(authPresets.map((preset) => (preset.create() as SectionOf<"auth">).data.variant));
+    expect(variants.size).toBe(10);
+    for (const preset of authPresets) {
+      const html = render(preset.create());
+      expect(html).toContain("<form");
+      expect(html).toContain("wb-auth-submit");
+    }
+  });
+
+  it("opens the configured view and falls back to login when it is disabled", () => {
+    const section = createSection("auth");
+    expect(render({ ...section, data: { ...section.data, defaultView: "otp" } })).toContain("wb-auth-otp");
+    const otpOff = { ...section.data, defaultView: "otp" as const, otp: { ...section.data.otp, enabled: false } };
+    const html = render({ ...section, data: otpOff });
+    expect(html).not.toContain("wb-auth-otp");
+    expect(html).toContain(section.data.login.heading);
+  });
+
+  it("drops unsafe colors and links", () => {
+    const section = createSection("auth");
+    const html = render({
+      ...section,
+      data: {
+        ...section.data,
+        colors: { accent: "red;background:url(x)" },
+        social: { ...section.data.social, providers: [{ provider: "github", href: "javascript:alert(1)" }] },
+      },
+    });
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("url(x)");
   });
 });
 

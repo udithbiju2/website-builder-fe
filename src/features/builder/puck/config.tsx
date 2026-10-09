@@ -118,6 +118,7 @@ const baseComponents: { [T in SectionType]: ComponentConfig<SectionProps<T>> } =
   team: sectionComponent("team"),
   carousel: sectionComponent("carousel"),
   marquee: sectionComponent("marquee"),
+  auth: sectionComponent("auth"),
   custom: sectionComponent("custom"),
 };
 

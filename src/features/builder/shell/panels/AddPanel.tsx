@@ -8,6 +8,7 @@ import {
   HelpCircle,
   Image,
   Layers,
+  LogIn,
   Mail,
   Megaphone,
   MessageSquareQuote,
@@ -62,16 +63,25 @@ const CATEGORIES: CategoryItem[] = [
   { id: "team", category: "Team", label: "Team", shortLabel: "Team", icon: Users },
   { id: "carousel", category: "Carousel", label: "Carousel & Sliders", shortLabel: "Carousel", icon: SlidersHorizontal },
   { id: "marquee", category: "Marquee", label: "Marquee & Tickers", shortLabel: "Marquee", icon: MoveHorizontal },
+  { id: "auth", category: "Auth", label: "Login & Sign up", shortLabel: "Auth", icon: LogIn },
   { id: "footer", category: "Footer", label: "Footer", shortLabel: "Footer", icon: PanelBottom },
 ];
 
 const PREVIEW_WIDTH = 1040;
 const PREVIEW_SCALE = 0.27;
+/** Headers are previewed at a full desktop width so their desktop layout shows, at the same thumbnail size. */
+const HEADER_PREVIEW_WIDTH = 1360;
+const HEADER_PREVIEW_SCALE = (PREVIEW_WIDTH * PREVIEW_SCALE) / HEADER_PREVIEW_WIDTH;
 
 function SectionLivePreview({ preset, theme }: { preset: SectionPreset; theme: ThemeSettings }) {
   const section = useMemo(() => preset.create(), [preset.key]);
-  const isHeaderOrFooter = preset.type === "header" || preset.type === "footer";
-  const heightClass = isHeaderOrFooter ? "h-20" : "h-32";
+  const isHeader = preset.type === "header";
+  const isAuth = preset.type === "auth";
+  const isHeaderOrFooter = isHeader || preset.type === "footer";
+  const heightClass = isHeaderOrFooter ? "h-20" : isAuth ? "h-36" : "h-32";
+  const isWide = isHeader || isAuth;
+  const width = isWide ? HEADER_PREVIEW_WIDTH : PREVIEW_WIDTH;
+  const scale = isWide ? HEADER_PREVIEW_SCALE : PREVIEW_SCALE;
 
   return (
     <div
@@ -82,14 +92,15 @@ function SectionLivePreview({ preset, theme }: { preset: SectionPreset; theme: T
       <SiteStyles />
       <div
         className="origin-top-left"
-        style={{ width: PREVIEW_WIDTH, transform: `scale(${PREVIEW_SCALE})` }}
+        style={{ width, transform: `scale(${scale})` }}
       >
         <div
           className={`wb-site wb-buttons-${theme.buttonStyle} wb-cards-${theme.cardStyle}`}
           style={{
             ...themeToCssVars(theme),
             "--wb-section-y": isHeaderOrFooter ? "16px" : "24px",
-            "--wb-container": "1000px",
+            "--wb-container": isWide ? "1280px" : "1000px",
+            "--wb-auth-screen-h": "680px",
           } as CSSProperties}
         >
           <SectionView section={section} />

@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import SiteFooter from "./layout/SiteFooter.tsx";
 import SiteHeader from "./layout/SiteHeader.tsx";
+import AuthSection from "./sections/AuthSection.tsx";
 import ContactSection from "./sections/ContactSection.tsx";
 import CtaSection from "./sections/CtaSection.tsx";
 import CustomSection from "./sections/CustomSection.tsx";
@@ -65,6 +66,8 @@ export function SectionView({ section }: { section: Section }) {
       return <CarouselSection section={section} />;
     case "marquee":
       return <MarqueeSection section={section} />;
+    case "auth":
+      return <AuthSection section={section} />;
     case "custom":
       return <CustomSection section={section} />;
   }

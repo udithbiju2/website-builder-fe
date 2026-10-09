@@ -478,7 +478,7 @@ function normalizeSection(raw: Section): Section {
       "side-drawer",
       "headline-ticker",
       "luxury-editorial",
-      "saas-console",
+      "clean-transparent",
     ];
     if (
       typeof mergedData.design !== "string" ||
