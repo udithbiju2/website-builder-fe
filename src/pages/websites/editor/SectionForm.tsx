@@ -209,6 +209,81 @@ function ColumnsFields<
   );
 }
 
+const DEFAULT_HERO_CAROUSEL_SLIDES: CarouselSlide[] = [
+  {
+    title: "Cliffside Explorer",
+    subtitle: "@marco_travels",
+    badge: "Travel",
+    image: {
+      url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&h=1050&q=85",
+      alt: "Person sitting on rocky coastal cliffs looking at azure sea",
+    },
+  },
+  {
+    title: "Aesthetic Wellness",
+    subtitle: "@glow_studios",
+    badge: "Beauty",
+    image: {
+      url: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=700&h=1050&q=85",
+      alt: "Person receiving relaxing aesthetic foam facial skincare treatment",
+    },
+  },
+  {
+    title: "Vibrant Harvest",
+    subtitle: "@citrus_kitchen",
+    badge: "Food & Drink",
+    image: {
+      url: "https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=700&h=1050&q=85",
+      alt: "Sliced grapefruits and fresh lemons on rustic board",
+    },
+  },
+  {
+    title: "Morning Routine",
+    subtitle: "@nourish_daily",
+    badge: "Lifestyle",
+    image: {
+      url: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&w=700&h=1050&q=85",
+      alt: "Smiling woman enjoying fresh smoothie bowl with spoon",
+    },
+  },
+  {
+    title: "Night Highway",
+    subtitle: "@riders_journal",
+    badge: "Automotive",
+    image: {
+      url: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=700&h=1050&q=85",
+      alt: "Motorcyclist cruising through bridge highway with headlights",
+    },
+  },
+  {
+    title: "Artisan Refresh",
+    subtitle: "@fresh_press",
+    badge: "Culinary",
+    image: {
+      url: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=700&h=1050&q=85",
+      alt: "Hands pouring fresh squeezed orange juice into a glass jar",
+    },
+  },
+  {
+    title: "Golden Hour Studio",
+    subtitle: "@sarah_creates",
+    badge: "Creator",
+    image: {
+      url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=700&h=1050&q=85",
+      alt: "Creator in studio setting with warm cinematic lighting",
+    },
+  },
+  {
+    title: "Urban Motion",
+    subtitle: "@tokyo_street",
+    badge: "Fashion",
+    image: {
+      url: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&h=1050&q=85",
+      alt: "Traveler standing near scenic landscape overlooking vista",
+    },
+  },
+];
+
 function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
   const trustedBy = data.trustedBy ?? {};
   const updateTrustedBy = (
@@ -227,6 +302,10 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
             {
               value: "centered",
               label: "Centered (Heading, dual CTAs, visual showcase)",
+            },
+            {
+              value: "curved-carousel",
+              label: "3D Curved Video Reel Banner (Exact Arc Carousel & Doodles)",
             },
             { value: "split", label: "Split screen (Side-by-side headline & media mockup)" },
             {
@@ -329,6 +408,56 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
         />
       </FormGroup>
 
+      {data.variant === "curved-carousel" && (
+        <FormGroup title="3D Carousel Settings">
+          <SelectField
+            label="Scroll direction"
+            value={data.carouselDirection || "left-to-right"}
+            options={[
+              { value: "left-to-right", label: "Left to Right (Continuous Loop)" },
+              { value: "right-to-left", label: "Right to Left (Continuous Loop)" },
+            ]}
+            onChange={(dir) =>
+              onChange({
+                ...data,
+                carouselDirection: dir as "left-to-right" | "right-to-left",
+              })
+            }
+          />
+          <SelectField
+            label="Scroll speed"
+            value={String(data.carouselSpeed ?? 45)}
+            options={[
+              { value: "28", label: "Slow (Relaxed)" },
+              { value: "45", label: "Medium (Standard smooth)" },
+              { value: "68", label: "Fast (Dynamic motion)" },
+            ]}
+            onChange={(spd) =>
+              onChange({
+                ...data,
+                carouselSpeed: Number(spd),
+              })
+            }
+          />
+          <SelectField
+            label="Curve intensity"
+            value={data.curveIntensity || "medium"}
+            options={[
+              { value: "subtle", label: "Subtle (Gentle tilt)" },
+              { value: "medium", label: "Medium (Realistic 3D cylinder arc)" },
+              { value: "dramatic", label: "Dramatic (Deep panoramic amphitheater)" },
+              { value: "none", label: "None (Flat linear reel)" },
+            ]}
+            onChange={(curve) =>
+              onChange({
+                ...data,
+                curveIntensity: curve as "none" | "subtle" | "medium" | "dramatic",
+              })
+            }
+          />
+        </FormGroup>
+      )}
+
       <FormGroup title="Headings & copy">
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-1">
@@ -412,129 +541,184 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
         />
       </FormGroup>
 
-      <FormGroup title="Foreground media / visual">
-        <SelectField
-          label="Foreground media type"
-          value={data.mediaType ?? (data.videoUrl ? "video" : "image")}
-          options={[
-            { value: "image", label: "Image showcase / Mockup" },
-            { value: "video", label: "Playable video demo (MP4 / YouTube / Vimeo)" },
-            { value: "both", label: "Interactive video with poster image" },
-          ]}
-          onChange={(mediaType) =>
-            onChange({ ...data, mediaType: mediaType as HeroData["mediaType"] })
-          }
-        />
+      {data.variant === "curved-carousel" ? (
+        <FormGroup title="Carousel Cards & Imagery">
+          <p className="text-xs text-ed-muted mb-3">
+            Add, reorder, or customize the photography and video reel cards in the 3D banner.
+          </p>
+          <ItemList<CarouselSlide>
+            label="Carousel Cards"
+            items={data.carouselSlides ?? DEFAULT_HERO_CAROUSEL_SLIDES}
+            max={20}
+            onChange={(carouselSlides) => onChange({ ...data, carouselSlides })}
+            create={() => ({
+              title: "New Video Reel",
+              subtitle: "@creator_handle",
+              badge: "Featured",
+              image: {
+                url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Card image",
+              },
+            })}
+            itemTitle={(slide) => slide.title || "Card"}
+            addLabel="Add Card / Image"
+            renderItem={(slide, update) => (
+              <>
+                <ImageField
+                  label="Card Image / Poster"
+                  value={slide.image}
+                  onChange={(image) => update({ ...slide, image })}
+                />
+                <TextField
+                  label="Card Title"
+                  value={slide.title}
+                  onChange={(title) => update({ ...slide, title })}
+                  maxLength={120}
+                  required
+                />
+                <TextField
+                  label="Creator / Handle"
+                  value={slide.subtitle || ""}
+                  onChange={(subtitle) => update({ ...slide, subtitle })}
+                  maxLength={120}
+                  placeholder="@creator_handle"
+                />
+                <TextField
+                  label="Badge / Tag"
+                  value={slide.badge || ""}
+                  onChange={(badge) => update({ ...slide, badge })}
+                  maxLength={60}
+                  placeholder="e.g. Travel, Beauty, Food, Tech"
+                />
+              </>
+            )}
+          />
+        </FormGroup>
+      ) : (
+        <FormGroup title="Foreground media / visual">
+          <SelectField
+            label="Foreground media type"
+            value={data.mediaType ?? (data.videoUrl ? "video" : "image")}
+            options={[
+              { value: "image", label: "Image showcase / Mockup" },
+              { value: "video", label: "Playable video demo (MP4 / YouTube / Vimeo)" },
+              { value: "both", label: "Interactive video with poster image" },
+            ]}
+            onChange={(mediaType) =>
+              onChange({ ...data, mediaType: mediaType as HeroData["mediaType"] })
+            }
+          />
 
-        <SelectField
-          label="Media display placement"
-          value={
-            data.imagePosition ??
-            (data.variant === "split"
-              ? "right"
-              : data.variant === "split-left"
-                ? "left"
-                : data.variant === "background-image" || data.variant === "video-bg"
-                  ? "background"
-                  : "bottom")
-          }
-          options={[
-            {
-              value: "right",
-              label: "Split right (Headline left, media on right)",
-            },
-            {
-              value: "left",
-              label: "Split left (Media on left, headline right)",
-            },
-            {
-              value: "bottom",
-              label: "Foreground showcase card / player (Below CTA buttons)",
-            },
-            {
-              value: "background",
-              label: "Full background cover (Edge-to-edge behind text)",
-            },
-          ]}
-          onChange={(imagePosition) => {
-            const pos = imagePosition as HeroData["imagePosition"];
-            let variant = data.variant;
-            if (pos === "left") variant = "split-left";
-            else if (pos === "right" && data.variant === "split-left") variant = "split";
-            onChange({
-              ...data,
-              imagePosition: pos,
-              variant,
-            });
-          }}
-          hint="Choose whether your media is positioned side-by-side (left/right), below headline/CTAs, or fills the background."
-        />
+          <SelectField
+            label="Media display placement"
+            value={
+              data.imagePosition ??
+              (data.variant === "split"
+                ? "right"
+                : data.variant === "split-left"
+                  ? "left"
+                  : data.variant === "background-image" || data.variant === "video-bg"
+                    ? "background"
+                    : "bottom")
+            }
+            options={[
+              {
+                value: "right",
+                label: "Split right (Headline left, media on right)",
+              },
+              {
+                value: "left",
+                label: "Split left (Media on left, headline right)",
+              },
+              {
+                value: "bottom",
+                label: "Foreground showcase card / player (Below CTA buttons)",
+              },
+              {
+                value: "background",
+                label: "Full background cover (Edge-to-edge behind text)",
+              },
+            ]}
+            onChange={(imagePosition) => {
+              const pos = imagePosition as HeroData["imagePosition"];
+              let variant = data.variant;
+              if (pos === "left") variant = "split-left";
+              else if (pos === "right" && data.variant === "split-left") variant = "split";
+              onChange({
+                ...data,
+                imagePosition: pos,
+                variant,
+              });
+            }}
+            hint="Choose whether your media is positioned side-by-side (left/right), below headline/CTAs, or fills the background."
+          />
 
-        <ImageField
-          label={
-            data.mediaType === "both"
-              ? "Video poster / thumbnail image (optional)"
-              : "Main hero image / mockup (optional)"
-          }
-          value={data.image}
-          onChange={(image) => onChange({ ...data, image })}
-          optional
-        />
+          <ImageField
+            label={
+              data.mediaType === "both"
+                ? "Video poster / thumbnail image (optional)"
+                : "Main hero image / mockup (optional)"
+            }
+            value={data.image}
+            onChange={(image) => onChange({ ...data, image })}
+            optional
+          />
 
-        <SelectField
-          label="Image / media style"
-          value={data.imageStyle ?? "plain"}
-          options={[
-            { value: "plain", label: "Standard rounded corners" },
-            {
-              value: "mockup",
-              label: "Browser mockup window (with macOS 3-dots & shadow)",
-            },
-            { value: "glow", label: "Ambient glow backlight" },
-            { value: "rounded", label: "Soft pill corners" },
-          ]}
-          onChange={(imageStyle) =>
-            onChange({
-              ...data,
-              imageStyle: imageStyle as HeroData["imageStyle"],
-            })
-          }
-        />
+          <SelectField
+            label="Image / media style"
+            value={data.imageStyle ?? "plain"}
+            options={[
+              { value: "plain", label: "Standard rounded corners" },
+              {
+                value: "mockup",
+                label: "Browser mockup window (with macOS 3-dots & shadow)",
+              },
+              { value: "glow", label: "Ambient glow backlight" },
+              { value: "rounded", label: "Soft pill corners" },
+            ]}
+            onChange={(imageStyle) =>
+              onChange({
+                ...data,
+                imageStyle: imageStyle as HeroData["imageStyle"],
+              })
+            }
+          />
 
-        <VideoField
-          label="Playable video demo (optional)"
-          value={data.videoUrl}
-          onChange={(videoUrl) =>
-            onChange({ ...data, videoUrl: videoUrl || undefined })
-          }
-          placeholder="https://www.youtube.com/watch?v=... or upload MP4"
-          hint="Supports direct MP4/WebM uploads (up to 50 MB) or YouTube/Vimeo links."
-        />
+          <VideoField
+            label="Playable video demo (optional)"
+            value={data.videoUrl}
+            onChange={(videoUrl) =>
+              onChange({ ...data, videoUrl: videoUrl || undefined })
+            }
+            placeholder="https://www.youtube.com/watch?v=... or upload MP4"
+            hint="Supports direct MP4/WebM uploads (up to 50 MB) or YouTube/Vimeo links."
+          />
 
-        {Boolean(data.videoUrl) && (
-          <div className="flex flex-col gap-2 pt-1">
-            <CheckboxField
-              label="Show video player controls"
-              checked={data.videoControls ?? true}
-              onChange={(videoControls) =>
-                onChange({ ...data, videoControls })
-              }
-            />
-            <CheckboxField
-              label="Autoplay video (muted)"
-              checked={Boolean(data.videoAutoplay)}
-              onChange={(videoAutoplay) =>
-                onChange({ ...data, videoAutoplay })
-              }
-            />
-            <CheckboxField
-              label="Loop video continuously"
-              checked={Boolean(data.videoLoop)}
-              onChange={(videoLoop) => onChange({ ...data, videoLoop })}
-            />
-          </div>
-        )}
-      </FormGroup>
+          {Boolean(data.videoUrl) && (
+            <div className="flex flex-col gap-2 pt-1">
+              <CheckboxField
+                label="Show video player controls"
+                checked={data.videoControls ?? true}
+                onChange={(videoControls) =>
+                  onChange({ ...data, videoControls })
+                }
+              />
+              <CheckboxField
+                label="Autoplay video (muted)"
+                checked={Boolean(data.videoAutoplay)}
+                onChange={(videoAutoplay) =>
+                  onChange({ ...data, videoAutoplay })
+                }
+              />
+              <CheckboxField
+                label="Loop video continuously"
+                checked={Boolean(data.videoLoop)}
+                onChange={(videoLoop) => onChange({ ...data, videoLoop })}
+              />
+            </div>
+          )}
+        </FormGroup>
+      )}
 
       <FormGroup title="Full background media & cover (Image / Video)">
         <ImageField
@@ -2624,6 +2808,7 @@ function TeamForm({ data, onChange }: DataFormProps<TeamData>) {
 }
 
 const CAROUSEL_VARIANT_OPTIONS: { value: CarouselVariant; label: string }[] = [
+  { value: "curved-banner", label: "Dynamic 3D Curved Arc Video Reel Banner" },
   { value: "image-gallery", label: "Images Carousel · Full Visual Gallery" },
   { value: "image-strip", label: "Images Carousel · Multi-Image Filmstrip" },
   { value: "image-coverflow", label: "Images Carousel · 3D Coverflow Reel" },

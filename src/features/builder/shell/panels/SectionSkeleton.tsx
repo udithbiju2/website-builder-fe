@@ -296,6 +296,25 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
         </div>
       );
 
+    case "hero-curved-carousel":
+      return (
+        <div className="flex h-full w-full flex-col items-center justify-between p-2 text-center">
+          <div className="flex flex-col items-center gap-1">
+            <div className="h-1 w-12 rounded-full bg-amber-400/80" />
+            <div className="h-2 w-28 rounded-xs bg-zinc-400 dark:bg-zinc-300" />
+            <div className="h-1 w-32 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+          </div>
+          <div className="relative my-0.5 flex w-full items-center justify-center gap-1">
+            <div className="h-6 w-3.5 -rotate-6 translate-y-0.5 rounded-xs bg-zinc-400/60 dark:bg-zinc-600" />
+            <div className="h-7 w-4 -rotate-3 rounded-xs bg-brand/50 dark:bg-brand/60" />
+            <div className="h-8 w-4.5 rounded-xs bg-brand shadow-xs" />
+            <div className="h-7 w-4 rotate-3 rounded-xs bg-brand/50 dark:bg-brand/60" />
+            <div className="h-6 w-3.5 rotate-6 translate-y-0.5 rounded-xs bg-zinc-400/60 dark:bg-zinc-600" />
+          </div>
+          <div className="h-1.5 w-8 rounded-full border border-dashed border-red-400 bg-red-400/20" />
+        </div>
+      );
+
     case "hero-split":
       return (
         <div className="grid h-full w-full grid-cols-2 items-center gap-2 px-2">

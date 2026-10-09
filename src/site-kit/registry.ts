@@ -765,7 +765,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
           siteName: "Modulus",
           badge: "v2.6",
           statusText: "All systems online",
-          statusColor: "#22c55e",
+          statusColor: "green",
           menu: [
             { label: "Overview", href: "#overview" },
             { label: "Features", href: "#features" },
@@ -792,7 +792,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
           siteName: "Enterprise Cloud",
           tagline: "Global Cloud Infrastructure & Edge Network",
           statusText: "System operational (99.99%)",
-          statusColor: "#22c55e",
+          statusColor: "green",
           utilityLinks: [
             { label: "Global Status", href: "/status" },
             { label: "Documentation", href: "/docs" },
@@ -925,7 +925,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
             "🚀 Spring 2026 Release is live • Early access unlocked • Join 100,000+ creators building on Modulus",
           announcementLink: { label: "Learn more", href: "/changelog" },
           statusText: "LIVE 24/7",
-          statusColor: "#ef4444",
+          statusColor: "red",
           menu: [
             { label: "Stories", href: "/stories" },
             { label: "Broadcasts", href: "/broadcasts" },
@@ -979,7 +979,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
           siteName: "Modulus Cloud",
           badge: "ACME Corp",
           statusText: "Healthy",
-          statusColor: "#22c55e",
+          statusColor: "green",
           searchPlaceholder: "Quick Jump...",
           menu: [
             { label: "Projects", href: "/projects" },
@@ -1302,6 +1302,104 @@ export const SECTION_PRESETS: SectionPreset[] = [
             "Everything you need to launch a modern, high-converting digital experience in minutes.",
           primaryCta: { label: "Get started free", href: "/signup" },
           secondaryCta: { label: "Book a demo", href: "/demo" },
+        },
+      }),
+  },
+  {
+    key: "hero-curved-carousel",
+    type: "hero",
+    label: "Hero · 3D video reel carousel",
+    category: "Hero",
+    description:
+      "Curved 3D arc video reel banner with smooth continuous loop scrolling, doodles and CTA.",
+    create: () =>
+      createSection("hero", {
+        data: {
+          variant: "curved-carousel",
+          eyebrow: "Join over 100,000 happy creators",
+          badgeIcon: "✨",
+          heading: "Engage Audiences with Stunning Videos",
+          highlightText: "Stunning Videos",
+          subheading:
+            "Boost Your Brand with High-Impact Short Videos from our expert content creators. Our team is ready to propel your business forward",
+          primaryCta: { label: "Get Started", href: "/signup" },
+          carouselDirection: "left-to-right",
+          carouselSpeed: 45,
+          curveIntensity: "medium",
+          carouselSlides: [
+            {
+              title: "Cliffside Explorer",
+              subtitle: "@marco_travels",
+              badge: "Travel",
+              image: {
+                url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Cliffside Explorer",
+              },
+            },
+            {
+              title: "Aesthetic Wellness",
+              subtitle: "@glow_studios",
+              badge: "Beauty",
+              image: {
+                url: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Aesthetic Wellness",
+              },
+            },
+            {
+              title: "Vibrant Harvest",
+              subtitle: "@citrus_kitchen",
+              badge: "Food & Drink",
+              image: {
+                url: "https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Vibrant Harvest",
+              },
+            },
+            {
+              title: "Morning Routine",
+              subtitle: "@nourish_daily",
+              badge: "Lifestyle",
+              image: {
+                url: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Morning Routine",
+              },
+            },
+            {
+              title: "Night Highway",
+              subtitle: "@riders_journal",
+              badge: "Automotive",
+              image: {
+                url: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Night Highway",
+              },
+            },
+            {
+              title: "Artisan Refresh",
+              subtitle: "@fresh_press",
+              badge: "Culinary",
+              image: {
+                url: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Artisan Refresh",
+              },
+            },
+            {
+              title: "Golden Hour Studio",
+              subtitle: "@sarah_creates",
+              badge: "Creator",
+              image: {
+                url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Golden Hour Studio",
+              },
+            },
+            {
+              title: "Urban Motion",
+              subtitle: "@tokyo_street",
+              badge: "Fashion",
+              image: {
+                url: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Urban Motion",
+              },
+            },
+          ],
         },
       }),
   },

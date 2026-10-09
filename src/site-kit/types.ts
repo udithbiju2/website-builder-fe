@@ -264,6 +264,7 @@ export const HERO_VARIANTS = [
   "minimal-typography",
   "floating-cards",
   "asymmetric",
+  "curved-carousel",
 ] as const;
 
 export type HeroVariant = (typeof HERO_VARIANTS)[number];
@@ -319,6 +320,11 @@ export type HeroData = {
   rating?: HeroRating;
   floatingCards?: HeroFloatingCard[];
   trustedBy?: HeroTrustedBy;
+  carouselSpeed?: number;
+  carouselDirection?: "left-to-right" | "right-to-left";
+  showDoodles?: boolean;
+  curveIntensity?: "none" | "subtle" | "medium" | "dramatic";
+  carouselSlides?: CarouselSlide[];
 };
 
 export type GridColumns = 1 | 2 | 3 | 4;
@@ -725,6 +731,7 @@ export const CAROUSEL_VARIANTS = [
   "image-gallery",
   "image-strip",
   "image-coverflow",
+  "curved-banner",
 ] as const;
 export type CarouselVariant = (typeof CAROUSEL_VARIANTS)[number];
 

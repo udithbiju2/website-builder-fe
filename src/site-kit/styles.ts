@@ -1541,6 +1541,120 @@ export const SITE_CSS = `
 
 .wb-hero-minimal-typography h1 { font-size: 68px; font-weight: 900; letter-spacing: -0.04em; }
 
+/* Hero 3D Curved Carousel Banner Layout */
+.wb-hero-curved-carousel {
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  padding: calc(var(--wb-section-y) * 0.9) 0;
+}
+
+.wb-hero-curved-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.wb-hero-curved-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.wb-hero-curved-badge-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.wb-hero-curved-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: color-mix(in srgb, #f59e0b 14%, var(--wb-bg, #ffffff));
+  border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+  color: #b45309;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin: 0 auto;
+}
+
+:root.dark .wb-hero-curved-badge,
+[data-theme="dark"] .wb-hero-curved-badge {
+  background: color-mix(in srgb, #f59e0b 18%, #18181b);
+  border-color: color-mix(in srgb, #f59e0b 38%, transparent);
+  color: #fde68a;
+}
+
+.wb-hero-curved-title {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.wb-hero-curved-carousel .wb-hero-curved-title h1,
+.wb-hero-curved-carousel h1,
+.wb-hero-curved-title h1 {
+  font-size: clamp(36px, 5vw, 62px);
+  font-weight: 850;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 0 auto !important;
+  text-align: center !important;
+  max-width: 840px;
+  display: block;
+}
+
+.wb-hero-curved-carousel .wb-hero-curved-sub,
+.wb-hero-curved-carousel p.wb-hero-curved-sub,
+.wb-hero-curved-sub {
+  font-size: clamp(16px, 1.8vw, 19px);
+  line-height: 1.6;
+  max-width: 660px;
+  margin: 20px auto 0 auto !important;
+  text-align: center !important;
+  color: var(--wb-muted);
+}
+
+.wb-hero-curved-carousel-track {
+  width: 100%;
+  margin: 36px 0 28px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.wb-hero-curved-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  text-align: center;
+  width: 100%;
+}
+
 /* Full Image / Video Background Overlay & High Contrast Text */
 .wb-hero-has-bg-media {
   position: relative; overflow: hidden;

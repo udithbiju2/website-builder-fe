@@ -77,11 +77,12 @@ function SectionLivePreview({ preset, theme }: { preset: SectionPreset; theme: T
   const section = useMemo(() => preset.create(), [preset.key]);
   const isHeader = preset.type === "header";
   const isAuth = preset.type === "auth";
+  const isCurvedHero = preset.key === "hero-curved-carousel";
   const isHeaderOrFooter = isHeader || preset.type === "footer";
-  const heightClass = isHeaderOrFooter ? "h-20" : isAuth ? "h-36" : "h-32";
+  const heightClass = isHeaderOrFooter ? "h-20" : isAuth || isCurvedHero ? "h-36" : "h-32";
   const isWide = isHeader || isAuth;
   const width = isWide ? HEADER_PREVIEW_WIDTH : PREVIEW_WIDTH;
-  const scale = isWide ? HEADER_PREVIEW_SCALE : PREVIEW_SCALE;
+  const scale = isWide ? HEADER_PREVIEW_SCALE : isCurvedHero ? 0.20 : PREVIEW_SCALE;
 
   return (
     <div
