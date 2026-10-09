@@ -6,6 +6,9 @@ import type {
   CarouselVariant,
   SectionOf,
 } from "../types.ts";
+import CurvedBannerCarousel, {
+  DEFAULT_BANNER_ITEMS,
+} from "../../components/common/CurvedBannerCarousel.tsx";
 
 function ChevronLeftIcon() {
   return (
@@ -824,6 +827,29 @@ export default function CarouselSection({ section }: { section: SectionOf<"carou
             onNext={nextSlide}
             onSelect={setActiveIndex}
           />
+        ) : variant === "curved-banner" ? (
+          <div className="wb-carousel-curved-wrapper">
+            <CurvedBannerCarousel
+              items={
+                slides.length > 0
+                  ? slides.map((s, idx) => ({
+                      id: `slide-${idx}`,
+                      title: s.title,
+                      subtitle: s.subtitle || s.description,
+                      badge: s.badge,
+                      image:
+                        s.image?.url ||
+                        DEFAULT_BANNER_ITEMS[idx % DEFAULT_BANNER_ITEMS.length].image,
+                      alt: s.image?.alt || s.title,
+                    }))
+                  : DEFAULT_BANNER_ITEMS
+              }
+              speed={42}
+              direction="left-to-right"
+              curveIntensity="medium"
+              pauseOnHover={data.pauseOnHover ?? true}
+            />
+          </div>
         ) : (
           <CarouselCards
             slides={slides}

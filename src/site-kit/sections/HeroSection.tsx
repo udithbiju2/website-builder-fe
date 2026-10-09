@@ -1,6 +1,10 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
 import { BottomShapeDivider, parseRichText, PlayIcon, SectionShell, SiteButton, SiteImage, SiteLink } from "../primitives.tsx";
 import type { HeroData, SectionOf } from "../types.ts";
+import CurvedBannerCarousel, {
+  DEFAULT_BANNER_ITEMS,
+  type CurvedBannerItem,
+} from "../../components/common/CurvedBannerCarousel.tsx";
 
 function getEmbedUrl(url?: string, isBackground = false): string | null {
   if (!url) return null;
@@ -203,6 +207,100 @@ export default function HeroSection({ section }: { section: SectionOf<"hero"> })
       )}
     </div>
   );
+
+  if (data.variant === "curved-carousel") {
+    const carouselSpeed = data.carouselSpeed ?? 45;
+    const carouselDirection = data.carouselDirection ?? "left-to-right";
+    const curveIntensity = data.curveIntensity ?? "medium";
+
+    const customCarouselItems: CurvedBannerItem[] =
+      data.carouselSlides && data.carouselSlides.length > 0
+        ? data.carouselSlides.map((slide, idx) => ({
+            id: `hero-card-${idx}`,
+            title: slide.title || `Card ${idx + 1}`,
+            subtitle: slide.description || "",
+            badge: slide.badge || "",
+            image:
+              slide.image?.url ||
+              DEFAULT_BANNER_ITEMS[idx % DEFAULT_BANNER_ITEMS.length].image,
+            author: slide.subtitle || "",
+            alt: slide.image?.alt || slide.title || "Reel card",
+          }))
+        : DEFAULT_BANNER_ITEMS;
+
+    return (
+      <SectionShell
+        sectionId={section.id}
+        settings={section.settings}
+        className={`wb-hero wb-hero-curved-carousel ${minHeightClass}`}
+        label="Hero"
+        fullWidth={true}
+      >
+        <div className="wb-hero-curved-wrapper">
+          <div className="wb-hero-curved-copy">
+            {/* Eyebrow / Pill Badge */}
+            {(data.eyebrow || data.badgeIcon) && (
+              <div className="wb-hero-curved-badge-wrap">
+                <span className="wb-hero-curved-badge">
+                  {data.badgeIcon && <span>{data.badgeIcon}</span>}
+                  {data.eyebrow && <span>{data.eyebrow}</span>}
+                </span>
+              </div>
+            )}
+
+            {/* Centered Heading */}
+            {data.heading && (
+              <div className="wb-hero-curved-title">
+                {renderHighlightedHeading(
+                  data.heading,
+                  data.highlightText,
+                  Boolean(section.settings.customColors?.gradientFrom || section.settings.customColors?.gradientTo),
+                )}
+              </div>
+            )}
+
+            {/* Centered Subheading */}
+            {data.subheading && (
+              <p className="wb-hero-curved-sub">
+                {parseRichText(data.subheading)}
+              </p>
+            )}
+          </div>
+
+          {/* 3D Curved Continuous Looping Video Banner Carousel */}
+          <div className="wb-hero-curved-carousel-track">
+            <CurvedBannerCarousel
+              items={customCarouselItems}
+              speed={carouselSpeed}
+              direction={carouselDirection}
+              curveIntensity={curveIntensity}
+              cardWidth={240}
+              cardHeight={350}
+              gap={22}
+              pauseOnHover={true}
+              interactive={true}
+            />
+          </div>
+
+          {/* Action CTAs */}
+          {allButtons.length > 0 && (
+            <div className="wb-hero-curved-actions">
+              {allButtons.map((btn, idx) =>
+                btn ? (
+                  <SiteButton
+                    key={`${btn.label}-${btn.href}-${idx}`}
+                    link={btn}
+                    tone={idx === 0 ? "primary" : "secondary"}
+                  />
+                ) : null
+              )}
+            </div>
+          )}
+        </div>
+        <BottomShapeDivider shape={data.bottomShape} />
+      </SectionShell>
+    );
+  }
 
   const copy = (
     <div className="wb-hero-copy">

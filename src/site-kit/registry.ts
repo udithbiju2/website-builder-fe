@@ -1,3 +1,4 @@
+import { AUTH_PRESETS, createAuthData } from "./auth-defaults.ts";
 import type {
   Section,
   SectionDataMap,
@@ -22,7 +23,8 @@ export type SectionCategory =
   | "Pricing"
   | "Team"
   | "Carousel"
-  | "Marquee";
+  | "Marquee"
+  | "Auth";
 
 export type SectionDefinition<T extends SectionType> = {
   type: T;
@@ -446,6 +448,14 @@ export const SECTION_DEFINITIONS: { [T in SectionType]: SectionDefinition<T> } =
         ],
       }),
     },
+    auth: {
+      type: "auth",
+      label: "Login / Sign up",
+      category: "Auth",
+      description:
+        "Login, register, forgot password and optional OTP verification screens with configurable fields and social login.",
+      createData: createAuthData,
+    },
     custom: {
       type: "custom",
       label: "Custom Layout",
@@ -740,6 +750,248 @@ export const SECTION_PRESETS: SectionPreset[] = [
     category: "Header",
     description: "Centered logo and navigation links.",
     create: () => createSection("header", { data: { design: "centered" } }),
+  },
+  {
+    key: "header-glass-dock",
+    type: "header",
+    label: "Glass dock header",
+    category: "Header",
+    description:
+      "Floating segmented liquid glass island dock with active beacon and command hint.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "glass-dock",
+          siteName: "Modulus",
+          badge: "v2.6",
+          statusText: "All systems online",
+          statusColor: "green",
+          menu: [
+            { label: "Overview", href: "#overview" },
+            { label: "Features", href: "#features" },
+            { label: "Pricing", href: "#pricing" },
+            { label: "Changelog", href: "#changelog" },
+          ],
+          cta: { label: "Get Started", href: "/signup" },
+          position: "floating",
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-split-stacked",
+    type: "header",
+    label: "Split stacked header",
+    category: "Header",
+    description:
+      "2-tier enterprise double-decker with top utility status strip + primary navigation bar.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "split-stacked",
+          siteName: "Enterprise Cloud",
+          tagline: "Global Cloud Infrastructure & Edge Network",
+          statusText: "System operational (99.99%)",
+          statusColor: "green",
+          utilityLinks: [
+            { label: "Global Status", href: "/status" },
+            { label: "Documentation", href: "/docs" },
+            { label: "Support", href: "/support" },
+          ],
+          menu: [
+            {
+              label: "Platform",
+              href: "/platform",
+              children: [
+                { label: "Compute Engine", href: "/compute", description: "Scalable virtual instances" },
+                { label: "Edge Functions", href: "/edge", description: "Sub-millisecond serverless" },
+              ],
+            },
+            { label: "Solutions", href: "/solutions" },
+            { label: "Enterprise", href: "/enterprise" },
+            { label: "Pricing", href: "/pricing" },
+          ],
+          secondaryCta: { label: "Contact Sales", href: "/contact" },
+          cta: { label: "Start Free Trial", href: "/signup" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-command-bar",
+    type: "header",
+    label: "Command bar header",
+    category: "Header",
+    description:
+      "Developer spotlight header with interactive ⌘K command search pill and modal.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "command-bar",
+          siteName: "Modulus Dev",
+          badge: "API v3",
+          searchPlaceholder: "Search docs, components, APIs...",
+          menu: [
+            { label: "Documentation", href: "/docs" },
+            { label: "Components", href: "/components" },
+            { label: "Playground", href: "/playground" },
+            { label: "Changelog", href: "/changelog" },
+          ],
+          secondaryCta: { label: "GitHub", href: "https://github.com" },
+          cta: { label: "Deploy App", href: "/deploy" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-mega-menu-grid",
+    type: "header",
+    label: "Mega menu grid header",
+    category: "Header",
+    description:
+      "Architectural bento mega-dropdown header with multi-column links and featured release card.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "mega-menu-grid",
+          siteName: "Stripe Scale",
+          menu: [
+            {
+              label: "Products",
+              href: "/products",
+              children: [
+                { label: "Payments", href: "/payments", description: "Accept global online transactions" },
+                { label: "Billing", href: "/billing", description: "Flexible subscriptions & recurring invoices" },
+                { label: "Connect", href: "/connect", description: "Multi-party platforms & marketplaces" },
+                { label: "Radar", href: "/radar", description: "AI-driven fraud detection & security" },
+              ],
+            },
+            {
+              label: "Developers",
+              href: "/developers",
+              children: [
+                { label: "API Reference", href: "/api", description: "Complete REST and GraphQL endpoints" },
+                { label: "SDKs & Libraries", href: "/sdks", description: "Client libraries for 12 languages" },
+                { label: "Webhooks", href: "/webhooks", description: "Real-time event streaming" },
+              ],
+            },
+            { label: "Customers", href: "/customers" },
+            { label: "Pricing", href: "/pricing" },
+          ],
+          secondaryCta: { label: "Sign in", href: "/login" },
+          cta: { label: "Create Account", href: "/signup" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-side-drawer",
+    type: "header",
+    label: "Side drawer curtain header",
+    category: "Header",
+    description:
+      "Minimalist luxury bar with slide-over off-canvas navigation curtain.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "side-drawer",
+          siteName: "Atelier Studio",
+          tagline: "Architecture & Spatial Design",
+          menu: [
+            { label: "Selected Works", href: "/works", description: "2022 — 2026 Portfolio" },
+            { label: "Design Philosophy", href: "/philosophy", description: "Manifesto & Practices" },
+            { label: "Publications", href: "/publications", description: "Monographs & Press" },
+            { label: "The Studio", href: "/studio", description: "Team & Locations" },
+            { label: "Contact Inquiries", href: "/contact", description: "Commissions & Press" },
+          ],
+          cta: { label: "Book Commission", href: "/contact" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-headline-ticker",
+    type: "header",
+    label: "Headline ticker header",
+    category: "Header",
+    description:
+      "Live broadcast ticker announcement marquee integrated with glass header.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "headline-ticker",
+          siteName: "NewsPulse Live",
+          announcement:
+            "🚀 Spring 2026 Release is live • Early access unlocked • Join 100,000+ creators building on Modulus",
+          announcementLink: { label: "Learn more", href: "/changelog" },
+          statusText: "LIVE 24/7",
+          statusColor: "red",
+          menu: [
+            { label: "Stories", href: "/stories" },
+            { label: "Broadcasts", href: "/broadcasts" },
+            { label: "Podcasts", href: "/podcasts" },
+            { label: "Markets", href: "/markets" },
+          ],
+          secondaryCta: { label: "Sign in", href: "/login" },
+          cta: { label: "Subscribe $5/mo", href: "/subscribe" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-luxury-editorial",
+    type: "header",
+    label: "Luxury editorial header",
+    category: "Header",
+    description:
+      "Hairline bordered grid layout with numbered index navigation, centered masthead, and atelier metadata.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "luxury-editorial",
+          siteName: "CHRONICLE & CO.",
+          tagline: "Vol. XXIV — Global Architectural Journal",
+          statusText: "Spring / Summer 2026",
+          menu: [
+            { label: "Editorial", href: "/editorial" },
+            { label: "Architecture", href: "/architecture" },
+            { label: "Interiors", href: "/interiors" },
+            { label: "Exhibitions", href: "/exhibitions" },
+            { label: "Archive", href: "/archive" },
+          ],
+          secondaryCta: { label: "Index", href: "/index" },
+          cta: { label: "Subscribe Edition", href: "/subscribe" },
+          sticky: false,
+        },
+      }),
+  },
+  {
+    key: "header-saas-console",
+    type: "header",
+    label: "SaaS console header",
+    category: "Header",
+    description:
+      "Developer cloud console header with workspace selector pill, tabbed navigation, and utility cluster.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "saas-console",
+          siteName: "Modulus Cloud",
+          badge: "ACME Corp",
+          statusText: "Healthy",
+          statusColor: "green",
+          searchPlaceholder: "Quick Jump...",
+          menu: [
+            { label: "Projects", href: "/projects" },
+            { label: "Deployments", href: "/deployments" },
+            { label: "Analytics", href: "/analytics" },
+            { label: "Logs", href: "/logs" },
+            { label: "Settings", href: "/settings" },
+          ],
+          cta: { label: "+ New Project", href: "/new" },
+          sticky: true,
+        },
+      }),
   },
   {
     key: "footer-mega",
@@ -1050,6 +1302,104 @@ export const SECTION_PRESETS: SectionPreset[] = [
             "Everything you need to launch a modern, high-converting digital experience in minutes.",
           primaryCta: { label: "Get started free", href: "/signup" },
           secondaryCta: { label: "Book a demo", href: "/demo" },
+        },
+      }),
+  },
+  {
+    key: "hero-curved-carousel",
+    type: "hero",
+    label: "Hero · 3D video reel carousel",
+    category: "Hero",
+    description:
+      "Curved 3D arc video reel banner with smooth continuous loop scrolling, doodles and CTA.",
+    create: () =>
+      createSection("hero", {
+        data: {
+          variant: "curved-carousel",
+          eyebrow: "Join over 100,000 happy creators",
+          badgeIcon: "✨",
+          heading: "Engage Audiences with Stunning Videos",
+          highlightText: "Stunning Videos",
+          subheading:
+            "Boost Your Brand with High-Impact Short Videos from our expert content creators. Our team is ready to propel your business forward",
+          primaryCta: { label: "Get Started", href: "/signup" },
+          carouselDirection: "left-to-right",
+          carouselSpeed: 45,
+          curveIntensity: "medium",
+          carouselSlides: [
+            {
+              title: "Cliffside Explorer",
+              subtitle: "@marco_travels",
+              badge: "Travel",
+              image: {
+                url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Cliffside Explorer",
+              },
+            },
+            {
+              title: "Aesthetic Wellness",
+              subtitle: "@glow_studios",
+              badge: "Beauty",
+              image: {
+                url: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Aesthetic Wellness",
+              },
+            },
+            {
+              title: "Vibrant Harvest",
+              subtitle: "@citrus_kitchen",
+              badge: "Food & Drink",
+              image: {
+                url: "https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Vibrant Harvest",
+              },
+            },
+            {
+              title: "Morning Routine",
+              subtitle: "@nourish_daily",
+              badge: "Lifestyle",
+              image: {
+                url: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Morning Routine",
+              },
+            },
+            {
+              title: "Night Highway",
+              subtitle: "@riders_journal",
+              badge: "Automotive",
+              image: {
+                url: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Night Highway",
+              },
+            },
+            {
+              title: "Artisan Refresh",
+              subtitle: "@fresh_press",
+              badge: "Culinary",
+              image: {
+                url: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Artisan Refresh",
+              },
+            },
+            {
+              title: "Golden Hour Studio",
+              subtitle: "@sarah_creates",
+              badge: "Creator",
+              image: {
+                url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Golden Hour Studio",
+              },
+            },
+            {
+              title: "Urban Motion",
+              subtitle: "@tokyo_street",
+              badge: "Fashion",
+              image: {
+                url: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=700&h=1050&q=85",
+                alt: "Urban Motion",
+              },
+            },
+          ],
         },
       }),
   },
@@ -3325,4 +3675,14 @@ export const SECTION_PRESETS: SectionPreset[] = [
         },
       }),
   },
+  ...AUTH_PRESETS.map(
+    (preset): SectionPreset => ({
+      key: preset.key,
+      type: "auth",
+      label: preset.label,
+      category: "Auth",
+      description: preset.description,
+      create: () => createSection("auth", { data: preset.data(), settings: { spacing: "none", ...preset.settings } }),
+    }),
+  ),
 ];
