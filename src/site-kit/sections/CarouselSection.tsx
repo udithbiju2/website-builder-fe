@@ -828,7 +828,7 @@ export default function CarouselSection({ section }: { section: SectionOf<"carou
             onSelect={setActiveIndex}
           />
         ) : variant === "curved-banner" ? (
-          <div className="wb-carousel-curved-wrapper w-full overflow-hidden py-4">
+          <div className="wb-carousel-curved-wrapper">
             <CurvedBannerCarousel
               items={
                 slides.length > 0

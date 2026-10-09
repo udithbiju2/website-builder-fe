@@ -1575,7 +1575,7 @@ export const SITE_CSS = `
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   width: 100%;
 }
 
@@ -1584,10 +1584,13 @@ export const SITE_CSS = `
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 6px 18px;
+  max-width: 100%;
+  padding: 7px 16px;
   border-radius: 9999px;
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
   letter-spacing: 0.01em;
   background: color-mix(in srgb, #f59e0b 14%, var(--wb-bg, #ffffff));
   border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
@@ -1616,10 +1619,11 @@ export const SITE_CSS = `
 .wb-hero-curved-carousel .wb-hero-curved-title h1,
 .wb-hero-curved-carousel h1,
 .wb-hero-curved-title h1 {
-  font-size: clamp(36px, 5vw, 62px);
+  font-size: clamp(32px, 5cqi, 62px);
   font-weight: 850;
   letter-spacing: -0.035em;
-  line-height: 1.15;
+  line-height: 1.12;
+  text-wrap: balance;
   margin: 0 auto !important;
   text-align: center !important;
   max-width: 840px;
@@ -1629,7 +1633,7 @@ export const SITE_CSS = `
 .wb-hero-curved-carousel .wb-hero-curved-sub,
 .wb-hero-curved-carousel p.wb-hero-curved-sub,
 .wb-hero-curved-sub {
-  font-size: clamp(16px, 1.8vw, 19px);
+  font-size: clamp(16px, 1.8cqi, 19px);
   line-height: 1.6;
   max-width: 660px;
   margin: 20px auto 0 auto !important;
@@ -1639,7 +1643,7 @@ export const SITE_CSS = `
 
 .wb-hero-curved-carousel-track {
   width: 100%;
-  margin: 36px 0 28px 0;
+  margin-top: 32px;
   position: relative;
   overflow: hidden;
 }
@@ -1651,8 +1655,223 @@ export const SITE_CSS = `
   justify-content: center;
   gap: 16px;
   margin-top: 24px;
+  padding: 0 24px;
   text-align: center;
   width: 100%;
+}
+
+@container wb-site (max-width: 600px) {
+  .wb-hero-curved-copy { padding: 0 16px; }
+  .wb-hero-curved-badge-wrap { margin-bottom: 18px; }
+  .wb-hero-curved-badge { font-size: 12px; padding: 6px 14px; gap: 6px; }
+  .wb-hero-curved-carousel .wb-hero-curved-sub { margin-top: 16px !important; }
+  .wb-hero-curved-carousel-track { margin-top: 20px; }
+  .wb-hero-curved-actions { margin-top: 16px; padding: 0 16px; }
+  .wb-hero-curved-actions .wb-btn { flex: 1 1 100%; }
+}
+
+/* 3D curved video reel (shared by the hero and carousel sections) */
+.wb-reel { position: relative; width: 100%; overflow: hidden; user-select: none; -webkit-user-select: none; }
+.wb-reel-interactive { cursor: grab; touch-action: pan-y; }
+.wb-reel-interactive:active { cursor: grabbing; }
+.wb-reel-stage {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+.wb-reel-card {
+  position: absolute;
+  left: 0;
+  transform-origin: center center;
+  will-change: transform;
+}
+.wb-reel-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--wb-text) 10%, transparent);
+  box-shadow: 0 20px 38px -12px rgb(15 23 42 / 0.22);
+  transition: transform 0.3s ease;
+}
+.wb-reel-card:hover .wb-reel-card-inner { transform: scale(1.025); }
+.wb-site .wb-reel-img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  transition: transform 0.7s ease-out;
+}
+.wb-reel-card:hover .wb-reel-img { transform: scale(1.05); }
+.wb-reel-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.62) 0%, rgb(0 0 0 / 0) 46%, rgb(0 0 0 / 0) 72%, rgb(0 0 0 / 0.18) 100%);
+}
+.wb-reel-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  max-width: calc(100% - 28px);
+  padding: 5px 11px;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.88);
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.wb-reel-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding-left: 3px;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.92);
+  color: var(--wb-primary);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.2);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.wb-reel-card:hover .wb-reel-play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.wb-reel-meta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
+  color: #ffffff;
+  text-align: left;
+}
+.wb-reel-author {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: rgb(255 255 255 / 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wb-site .wb-reel-title {
+  font-family: var(--wb-font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.35);
+}
+.wb-reel-ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22);
+}
+.wb-reel-compact .wb-reel-card-inner { border-radius: 18px; }
+.wb-reel-compact .wb-reel-badge { top: 10px; left: 10px; max-width: calc(100% - 20px); padding: 4px 9px; font-size: 10px; }
+.wb-reel-compact .wb-reel-meta { padding: 12px; }
+.wb-reel-compact .wb-reel-author { font-size: 10px; }
+.wb-site .wb-reel-compact .wb-reel-title { font-size: 13px; }
+.wb-reel-compact .wb-reel-play { width: 40px; height: 40px; }
+
+.wb-reel-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.wb-reel-modal-panel {
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--wb-bg);
+  color: var(--wb-text);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+}
+.wb-reel-modal-head,
+.wb-reel-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+}
+.wb-reel-modal-head { border-bottom: 1px solid var(--wb-border); }
+.wb-reel-modal-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wb-primary);
+}
+.wb-site .wb-reel-modal-title { font-size: 18px; font-weight: 700; }
+.wb-reel-modal-close {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 1px solid var(--wb-border);
+  background: var(--wb-surface);
+  font-size: 13px;
+  cursor: pointer;
+}
+.wb-reel-modal-media { aspect-ratio: 9 / 14; max-height: 65vh; width: 100%; background: #000000; }
+.wb-reel-modal-media video,
+.wb-site .wb-reel-modal-media img { width: 100%; height: 100%; max-width: none; object-fit: cover; }
+.wb-reel-modal-author { font-size: 14px; font-weight: 500; }
+.wb-reel-modal-sub { font-size: 12px; color: var(--wb-muted); }
+.wb-reel-modal-done {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--wb-primary);
+  color: var(--wb-on-primary, #ffffff);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 /* Full Image / Video Background Overlay & High Contrast Text */

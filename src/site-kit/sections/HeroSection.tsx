@@ -211,7 +211,7 @@ export default function HeroSection({ section }: { section: SectionOf<"hero"> })
         ? data.carouselSlides.map((slide, idx) => ({
             id: `hero-card-${idx}`,
             title: slide.title || `Card ${idx + 1}`,
-            subtitle: slide.subtitle || slide.description || "",
+            subtitle: slide.description || "",
             badge: slide.badge || "",
             image:
               slide.image?.url ||
