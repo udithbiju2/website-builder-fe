@@ -237,6 +237,10 @@ function HeroForm({ data, onChange }: DataFormProps<HeroData>) {
               label: "Soft card showcase (Elevated container card)",
             },
             {
+              value: "floating-cards",
+              label: "Floating feature cards (Interactive cards & metrics)",
+            },
+            {
               value: "curved-bottom",
               label: "Curved wave bottom (Smooth SVG wave divider)",
             },
@@ -2860,8 +2864,17 @@ const MARQUEE_VARIANT_OPTIONS: { value: MarqueeVariant; label: string }[] = [
   { value: "dual-directional", label: "Dual Opposite Streaming Tracks" },
 ];
 
+function normalizeMarqueeVariant(variant?: string): MarqueeVariant {
+  if (!variant) return "ticker-text";
+  if (variant === "gradient-pill" || variant === "pills" || variant === "badges") return "pill-badges";
+  if (variant === "cards" || variant === "features") return "cards-stream";
+  if (variant === "dual" || variant === "two-way") return "dual-directional";
+  if (MARQUEE_VARIANTS.includes(variant as MarqueeVariant)) return variant as MarqueeVariant;
+  return "ticker-text";
+}
+
 function MarqueeForm({ data, onChange }: DataFormProps<MarqueeData>) {
-  const currentVariant = data.variant || "ticker-text";
+  const currentVariant = normalizeMarqueeVariant(data.variant);
 
   return (
     <>
@@ -2870,7 +2883,7 @@ function MarqueeForm({ data, onChange }: DataFormProps<MarqueeData>) {
           label="Marquee Style"
           value={currentVariant}
           onChange={(variant) =>
-            onChange({ ...data, variant: variant as MarqueeVariant })
+            onChange({ ...data, variant: normalizeMarqueeVariant(variant) })
           }
           options={MARQUEE_VARIANT_OPTIONS}
         />
