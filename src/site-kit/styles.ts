@@ -103,6 +103,9 @@ export const SITE_CSS = `
 .wb-header.wb-pos-sticky, .wb-header.wb-sticky { position: -webkit-sticky; position: sticky; top: 0; z-index: 40; width: 100%; }
 .wb-header.wb-pos-fixed, .wb-header.wb-fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 40; width: 100%; }
 .wb-header.wb-pos-floating { position: -webkit-sticky; position: sticky; top: 12px; z-index: 40; width: 100%; }
+.wb-header.wb-chrome-bg-surface:not(.wb-header-transparent), .wb-footer.wb-chrome-bg-surface { background: var(--wb-surface); }
+.wb-header.wb-chrome-bg-primary:not(.wb-header-transparent), .wb-footer.wb-chrome-bg-primary { background: var(--wb-primary); color: var(--wb-on-primary); }
+.wb-header.wb-chrome-bg-dark:not(.wb-header-transparent), .wb-footer.wb-chrome-bg-dark { background: var(--wb-text); color: var(--wb-bg); }
 .wb-header.wb-header-transparent { position: absolute; top: 0; left: 0; right: 0; background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.15); z-index: 40; width: 100%; }
 .wb-header.wb-header-floating { background: transparent; border-bottom: none; padding: 8px 16px; }
 .wb-header-floating-pill { max-width: 1100px; margin: 0 auto; background: color-mix(in srgb, var(--wb-bg) 90%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--wb-border); border-radius: 9999px; box-shadow: 0 10px 28px -6px rgb(0 0 0 / 0.12); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 56px; }
@@ -1352,8 +1355,9 @@ export const SITE_CSS = `
   color: var(--wb-primary);
 }
 .wb-text-gradient {
-  background: linear-gradient(135deg, var(--wb-primary), #ec4899, #8b5cf6);
+  background: var(--wb-gradient, linear-gradient(135deg, var(--wb-primary), #ec4899, #8b5cf6));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  text-shadow: none;
 }
 
 /* Hero Action Buttons */
@@ -1885,24 +1889,46 @@ export const SITE_CSS = `
 .wb-hero-dark-overlay,
 .wb-hero-background-image,
 .wb-hero-video-bg {
-  color: #ffffff !important;
   position: relative;
+}
+/* Light text over the media unless the section sets its own text colors. */
+.wb-hero-dark-overlay:not(.wb-custom-text),
+.wb-hero-background-image:not(.wb-custom-text),
+.wb-hero-video-bg:not(.wb-custom-text),
+.wb-hero-dark-overlay:not(.wb-custom-text) h1,
+.wb-hero-dark-overlay:not(.wb-custom-text) h2,
+.wb-hero-dark-overlay:not(.wb-custom-text) h3,
+.wb-hero-background-image:not(.wb-custom-text) h1,
+.wb-hero-video-bg:not(.wb-custom-text) h1 {
+  color: #ffffff !important;
 }
 .wb-hero-dark-overlay h1,
 .wb-hero-dark-overlay h2,
 .wb-hero-dark-overlay h3,
 .wb-hero-background-image h1,
 .wb-hero-video-bg h1 {
-  color: #ffffff !important;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+.wb-hero-dark-overlay:not(.wb-custom-muted) .wb-hero-sub,
+.wb-hero-dark-overlay:not(.wb-custom-muted) .wb-hero-desc,
+.wb-hero-dark-overlay:not(.wb-custom-muted) .wb-muted,
+.wb-hero-background-image:not(.wb-custom-muted) .wb-muted,
+.wb-hero-video-bg:not(.wb-custom-muted) .wb-muted {
+  color: #e2e8f0 !important;
 }
 .wb-hero-dark-overlay .wb-hero-sub,
 .wb-hero-dark-overlay .wb-hero-desc,
 .wb-hero-dark-overlay .wb-muted,
 .wb-hero-background-image .wb-muted,
 .wb-hero-video-bg .wb-muted {
-  color: #e2e8f0 !important;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+/* Gradient text is transparent, so a text shadow would cover it. */
+.wb-hero-dark-overlay .wb-text-gradient,
+.wb-hero-background-image .wb-text-gradient,
+.wb-hero-video-bg .wb-text-gradient {
+  text-shadow: none;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
 }
 .wb-hero-dark-overlay .wb-hero-badge,
 .wb-hero-background-image .wb-hero-badge,

@@ -35,7 +35,16 @@ import {
   useNow,
   type ChatMessage,
   type ChatSession,
+  type SuggestionStatus,
 } from "./ai-chat-history.ts";
+
+/** Tells the AI what became of each change it proposed earlier in the chat. */
+const SUGGESTION_OUTCOMES: Record<SuggestionStatus, string> = {
+  pending: "The owner hasn't applied this change; it isn't on the page",
+  accepted: "The owner applied this change",
+  rejected: "The owner rejected this change; it isn't on the page",
+  rolled_back: "The owner applied this change, then undid it; it isn't on the page",
+};
 
 const COLOR_MAP: Record<string, string> = {
   red: "#dc2626",
@@ -521,8 +530,10 @@ function normalizeSection(raw: Section): Section {
   }
 
   const rawSettings = (raw.settings || {}) as Record<string, unknown>;
+  const { background: _background, customColors: _customColors, ...otherSettings } = rawSettings;
   const cleanSettings: SectionSettings = {
     ...DEFAULT_SECTION_SETTINGS,
+    ...(otherSettings as Partial<SectionSettings>),
   };
 
   const validBgs = ["default", "surface", "primary", "dark"];
@@ -558,6 +569,8 @@ function normalizeSection(raw: Section): Section {
       "primary",
       "muted",
       "border",
+      "gradientFrom",
+      "gradientTo",
     ] as const) {
       const hex = sanitizeHex(rawCustom[key]);
       if (hex) {
@@ -569,14 +582,8 @@ function normalizeSection(raw: Section): Section {
     }
   }
 
-  if (typeof rawSettings.hideOnMobile === "boolean") {
-    cleanSettings.hideOnMobile = rawSettings.hideOnMobile;
-  }
-  if (typeof rawSettings.spacing === "string") {
-    cleanSettings.spacing = rawSettings.spacing as SectionSettings["spacing"];
-  }
-  if (typeof rawSettings.align === "string") {
-    cleanSettings.align = rawSettings.align as SectionSettings["align"];
+  if (typeof cleanSettings.hideOnMobile !== "boolean") {
+    cleanSettings.hideOnMobile = DEFAULT_SECTION_SETTINGS.hideOnMobile;
   }
 
   return {
@@ -983,10 +990,10 @@ export default function AiDrawer() {
     setOriginalCanvasContent(baseline);
 
     try {
-      const historyPayload = nextMessages.slice(-10).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const historyPayload = nextMessages.slice(-10).map((m) => {
+        const outcome = m.role === "assistant" && m.status ? `\n(${SUGGESTION_OUTCOMES[m.status]})` : "";
+        return { role: m.role, content: `${m.content.slice(0, 2900 - outcome.length)}${outcome}` };
+      });
 
       const result = await websitesApi.generateAiSuggestionStream(
         website.id,
@@ -1461,10 +1468,13 @@ export default function AiDrawer() {
               className="w-full resize-none bg-transparent text-ed-xs text-ed-text placeholder:text-ed-muted/60 focus:outline-none leading-relaxed"
             />
 
-            <div className="mt-2 flex items-center justify-between border-t border-ed-border/40 pt-2 text-ed-xs">
-              <span className="text-ed-muted text-[10.5px] truncate font-medium">
-                {isSectionScope ? activeType : "Full Page"}
-              </span>
+            <div className="mt-2 flex items-center justify-between gap-2 border-t border-ed-border/40 pt-2 text-ed-xs">
+              <ScopeSelect
+                items={allItems}
+                selectedIndex={selectedIndex}
+                disabled={aiLock !== null}
+                onSelect={(index) => selectSection(dispatch, index)}
+              />
 
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-ed-faint font-mono">
@@ -1732,10 +1742,13 @@ export default function AiDrawer() {
               className="w-full resize-none bg-transparent text-ed-xs text-ed-text placeholder:text-ed-muted/60 focus:outline-none leading-relaxed max-h-32"
             />
 
-            <div className="mt-1.5 flex items-center justify-between border-t border-ed-border/40 pt-1.5 text-ed-xs">
-              <span className="text-ed-muted text-[10.5px] truncate font-medium">
-                {isSectionScope ? activeType : "Whole Page"}
-              </span>
+            <div className="mt-1.5 flex items-center justify-between gap-2 border-t border-ed-border/40 pt-1.5 text-ed-xs">
+              <ScopeSelect
+                items={allItems}
+                selectedIndex={selectedIndex}
+                disabled={aiLock !== null}
+                onSelect={(index) => selectSection(dispatch, index)}
+              />
 
               <div className="flex items-center gap-2">
                 {loading ? (
@@ -1828,6 +1841,43 @@ export default function AiDrawer() {
         will be lost.
       </ConfirmDialog>
     </aside>
+  );
+}
+
+/** Chooses what the AI works on: the whole page or one section; kept in sync with the canvas selection. */
+function ScopeSelect({
+  items,
+  selectedIndex,
+  disabled,
+  onSelect,
+}: {
+  items: Parameters<typeof itemAsSection>[0][];
+  selectedIndex: number | null;
+  disabled: boolean;
+  onSelect: (index: number | null) => void;
+}) {
+  const options = items.map((item, index) => {
+    const section = itemAsSection(item);
+    const label = SECTION_DEFINITIONS[section.type as SectionType]?.label ?? section.type;
+    const data = section.data as Record<string, unknown>;
+    const title = [data.heading, data.siteName, data.title].find((value) => typeof value === "string" && value.trim());
+    return { index, text: title ? `${label} · ${String(title).slice(0, 40)}` : label };
+  });
+  return (
+    <select
+      aria-label="What the AI should change"
+      value={selectedIndex ?? ""}
+      disabled={disabled}
+      onChange={(event) => onSelect(event.target.value === "" ? null : Number(event.target.value))}
+      className="min-w-0 max-w-[60%] truncate rounded-md border border-ed-border/60 bg-ed-panel px-1.5 py-0.5 text-[10.5px] font-medium text-ed-text focus:border-brand focus:outline-none disabled:opacity-50 cursor-pointer"
+    >
+      <option value="">Whole page</option>
+      {options.map((option) => (
+        <option key={option.index} value={option.index}>
+          {option.text}
+        </option>
+      ))}
+    </select>
   );
 }
 

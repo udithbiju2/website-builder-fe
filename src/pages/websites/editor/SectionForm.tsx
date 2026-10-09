@@ -3272,7 +3272,9 @@ export function SectionStyleForm({
       customColors.text ||
       customColors.primary ||
       customColors.muted ||
-      customColors.border,
+      customColors.border ||
+      customColors.gradientFrom ||
+      customColors.gradientTo,
   );
 
   return (
@@ -3342,6 +3344,19 @@ export function SectionStyleForm({
           value={customColors.border}
           onChange={(border) => updateCustomColor({ border })}
           fallback="#e2e8f0"
+        />
+        <ColorField
+          label="Gradient text start"
+          value={customColors.gradientFrom}
+          onChange={(gradientFrom) => updateCustomColor({ gradientFrom })}
+          fallback="#6366f1"
+          hint="Gradient used for highlighted heading words."
+        />
+        <ColorField
+          label="Gradient text end"
+          value={customColors.gradientTo}
+          onChange={(gradientTo) => updateCustomColor({ gradientTo })}
+          fallback="#8b5cf6"
         />
 
         {hasAnyCustomColors && (

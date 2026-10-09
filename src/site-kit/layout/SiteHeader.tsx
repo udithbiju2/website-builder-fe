@@ -8,7 +8,8 @@ import {
   SiteImage,
   SiteLink,
 } from "../primitives.tsx";
-import type { BrandDisplayMode, HeaderData, HeaderMenuItem, ImageRef } from "../types.ts";
+import type { BrandDisplayMode, HeaderData, HeaderMenuItem, ImageRef, SectionSettings } from "../types.ts";
+import { chromeStyle } from "./chrome.ts";
 
 export function SiteBrand({
   siteName,
@@ -320,7 +321,7 @@ function EditorialCurtainDrawer({
   );
 }
 
-export default function SiteHeader({ header }: { header: HeaderData }) {
+export default function SiteHeader({ header, settings }: { header: HeaderData; settings?: Partial<SectionSettings> }) {
   if (header.hidden) return null;
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -338,7 +339,8 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
 
   const isTransparent = position === "static" && (header.design === "transparent" || header.overlay);
   const designClass = isTransparent ? "wb-header-transparent" : `wb-header-${header.design}`;
-  const classes = ["wb-header", designClass, posClass].filter(Boolean).join(" ");
+  const chrome = chromeStyle(settings);
+  const classes = ["wb-header", designClass, posClass, chrome.className].filter(Boolean).join(" ");
 
   const brand = (
     <SiteBrand
@@ -375,7 +377,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     return (
       <>
         {announcement}
-        <header className={classes}>
+        <header className={classes} style={chrome.style}>
           <div className="wb-header-floating-pill">
             {brand}
             {header.menu.length > 0 && (
@@ -403,7 +405,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     return (
       <>
         {announcement}
-        <header className={classes}>
+        <header className={classes} style={chrome.style}>
           <div className="wb-container wb-header-inner">
             <div className="wb-nav-left">
               {header.menu.map((item) => (
@@ -429,7 +431,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     return (
       <>
         {announcement}
-        <header className={classes}>
+        <header className={classes} style={chrome.style}>
           <div className="wb-container wb-header-inner">
             {brand}
             {header.menu.length > 0 && (
@@ -457,7 +459,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
     return (
       <>
         {announcement}
-        <header className={classes}>
+        <header className={classes} style={chrome.style}>
           <div className="wb-container wb-header-inner">
             {brand}
             {header.menu.length > 0 && (
@@ -918,7 +920,7 @@ export default function SiteHeader({ header }: { header: HeaderData }) {
   return (
     <>
       {announcement}
-      <header className={classes}>
+      <header className={classes} style={chrome.style}>
         <div className="wb-container wb-header-inner">
           {brand}
           {header.menu.length > 0 && (

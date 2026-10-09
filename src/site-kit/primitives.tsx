@@ -383,11 +383,20 @@ export function SectionShell({ sectionId, settings, className, label, children, 
     ...(customColors?.primary ? { "--wb-primary": customColors.primary } : {}),
     ...(customColors?.muted ? { "--wb-muted": customColors.muted } : {}),
     ...(customColors?.border ? { "--wb-border": customColors.border } : {}),
+    ...(customColors?.gradientFrom || customColors?.gradientTo
+      ? {
+          "--wb-gradient": `linear-gradient(135deg, ${customColors.gradientFrom ?? "var(--wb-primary)"}, ${
+            customColors.gradientTo ?? customColors.gradientFrom
+          })`,
+        }
+      : {}),
   };
 
   const classes = [
     "wb-section",
     settings.background !== "default" && !customColors?.background && `wb-bg-${settings.background}`,
+    customColors?.text && "wb-custom-text",
+    customColors?.muted && "wb-custom-muted",
     settings.spacing && settings.spacing !== "default" && `wb-space-${settings.spacing}`,
     settings.align === "left" && "wb-align-left",
     settings.hideOnMobile && "wb-hide-mobile",

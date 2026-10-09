@@ -108,9 +108,16 @@ function HeroVideoPlayer({
   );
 }
 
-function renderHighlightedHeading(heading: string, highlight?: string): ReactNode {
+/** `gradient`: the section has its own gradient colors, shown on the whole heading when no words are highlighted. */
+function renderHighlightedHeading(heading: string, highlight: string | undefined, gradient: boolean): ReactNode {
   if (!highlight || !heading.includes(highlight)) {
-    return <h1>{parseRichText(heading)}</h1>;
+    return gradient ? (
+      <h1>
+        <span className="wb-text-gradient">{parseRichText(heading)}</span>
+      </h1>
+    ) : (
+      <h1>{parseRichText(heading)}</h1>
+    );
   }
   const parts = heading.split(highlight);
   return (
@@ -244,7 +251,11 @@ export default function HeroSection({ section }: { section: SectionOf<"hero"> })
             {/* Centered Heading */}
             {data.heading && (
               <div className="wb-hero-curved-title">
-                {renderHighlightedHeading(data.heading, data.highlightText)}
+                {renderHighlightedHeading(
+                  data.heading,
+                  data.highlightText,
+                  Boolean(section.settings.customColors?.gradientFrom || section.settings.customColors?.gradientTo),
+                )}
               </div>
             )}
 
@@ -300,7 +311,13 @@ export default function HeroSection({ section }: { section: SectionOf<"hero"> })
         </div>
       )}
 
-      {data.heading ? renderHighlightedHeading(data.heading, data.highlightText) : null}
+      {data.heading
+        ? renderHighlightedHeading(
+            data.heading,
+            data.highlightText,
+            Boolean(section.settings.customColors?.gradientFrom || section.settings.customColors?.gradientTo),
+          )
+        : null}
 
       {data.subheading && <p className="wb-hero-sub wb-muted">{parseRichText(data.subheading)}</p>}
       {data.description && <p className="wb-hero-desc wb-muted">{parseRichText(data.description)}</p>}
