@@ -747,7 +747,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Glass dock header",
     category: "Header",
     description:
-      "Floating segmented liquid glass island dock with active beacon and command hint.",
+      "Floating frosted-glass capsule with segmented navigation, status badge and search.",
     create: () =>
       createSection("header", {
         data: {
@@ -756,6 +756,8 @@ export const SECTION_PRESETS: SectionPreset[] = [
           badge: "v2.6",
           statusText: "All systems online",
           statusColor: "green",
+          showSearch: true,
+          searchPlaceholder: "Search",
           menu: [
             { label: "Overview", href: "#overview" },
             { label: "Features", href: "#features" },
@@ -813,7 +815,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Command bar header",
     category: "Header",
     description:
-      "Developer spotlight header with interactive ⌘K command search pill and modal.",
+      "Developer header with a centered spotlight search and keyboard shortcut hint.",
     create: () =>
       createSection("header", {
         data: {
@@ -839,7 +841,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Mega menu grid header",
     category: "Header",
     description:
-      "Architectural bento mega-dropdown header with multi-column links and featured release card.",
+      "Full-width bento mega dropdowns with icon links and a featured highlight card.",
     create: () =>
       createSection("header", {
         data: {
@@ -849,25 +851,34 @@ export const SECTION_PRESETS: SectionPreset[] = [
             {
               label: "Products",
               href: "/products",
+              description: "Everything you need to run payments at scale.",
               children: [
-                { label: "Payments", href: "/payments", description: "Accept global online transactions" },
-                { label: "Billing", href: "/billing", description: "Flexible subscriptions & recurring invoices" },
-                { label: "Connect", href: "/connect", description: "Multi-party platforms & marketplaces" },
-                { label: "Radar", href: "/radar", description: "AI-driven fraud detection & security" },
+                { label: "Payments", href: "/payments", description: "Accept global online transactions", icon: "wallet" },
+                { label: "Billing", href: "/billing", description: "Flexible subscriptions & recurring invoices", icon: "chart" },
+                { label: "Connect", href: "/connect", description: "Multi-party platforms & marketplaces", icon: "layers" },
+                { label: "Radar", href: "/radar", description: "AI-driven fraud detection & security", icon: "shield" },
               ],
             },
             {
               label: "Developers",
               href: "/developers",
+              description: "Build and ship integrations in minutes.",
               children: [
-                { label: "API Reference", href: "/api", description: "Complete REST and GraphQL endpoints" },
-                { label: "SDKs & Libraries", href: "/sdks", description: "Client libraries for 12 languages" },
-                { label: "Webhooks", href: "/webhooks", description: "Real-time event streaming" },
+                { label: "API Reference", href: "/api", description: "Complete REST and GraphQL endpoints", icon: "code" },
+                { label: "SDKs & Libraries", href: "/sdks", description: "Client libraries for 12 languages", icon: "box" },
+                { label: "Webhooks", href: "/webhooks", description: "Real-time event streaming", icon: "bolt" },
+                { label: "Status", href: "/status", description: "Live uptime and incident history", icon: "cloud" },
               ],
             },
             { label: "Customers", href: "/customers" },
             { label: "Pricing", href: "/pricing" },
           ],
+          featured: {
+            badge: "New",
+            title: "Global payouts are live",
+            description: "Send funds to 50+ countries with instant settlement and unified reporting.",
+            link: { label: "Read the announcement", href: "/changelog" },
+          },
           secondaryCta: { label: "Sign in", href: "/login" },
           cta: { label: "Create Account", href: "/signup" },
           sticky: true,
@@ -880,7 +891,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Side drawer curtain header",
     category: "Header",
     description:
-      "Minimalist luxury bar with slide-over off-canvas navigation curtain.",
+      "Quiet luxury bar that opens a full-height curtain menu with indexed links.",
     create: () =>
       createSection("header", {
         data: {
@@ -894,6 +905,9 @@ export const SECTION_PRESETS: SectionPreset[] = [
             { label: "The Studio", href: "/studio", description: "Team & Locations" },
             { label: "Contact Inquiries", href: "/contact", description: "Commissions & Press" },
           ],
+          menuLabel: "Menu",
+          contactLabel: "Studio inquiries",
+          contactEmail: "hello@atelier.studio",
           cta: { label: "Book Commission", href: "/contact" },
           sticky: true,
         },
@@ -905,16 +919,16 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Headline ticker header",
     category: "Header",
     description:
-      "Live broadcast ticker announcement marquee integrated with glass header.",
+      "Seamless live headline ticker above a clean navigation bar.",
     create: () =>
       createSection("header", {
         data: {
           design: "headline-ticker",
           siteName: "NewsPulse Live",
           announcement:
-            "🚀 Spring 2026 Release is live • Early access unlocked • Join 100,000+ creators building on Modulus",
+            "Spring 2026 release is live | Early access unlocked | Join 100,000+ creators building on Modulus",
           announcementLink: { label: "Learn more", href: "/changelog" },
-          statusText: "LIVE 24/7",
+          statusText: "Live",
           statusColor: "red",
           menu: [
             { label: "Stories", href: "/stories" },
@@ -934,7 +948,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "Luxury editorial header",
     category: "Header",
     description:
-      "Hairline bordered grid layout with numbered index navigation, centered masthead, and atelier metadata.",
+      "Centered masthead flanked by indexed navigation with double hairline rule.",
     create: () =>
       createSection("header", {
         data: {
@@ -949,8 +963,10 @@ export const SECTION_PRESETS: SectionPreset[] = [
             { label: "Exhibitions", href: "/exhibitions" },
             { label: "Archive", href: "/archive" },
           ],
+          contactLabel: "Editorial desk",
+          contactEmail: "desk@chronicle.co",
           secondaryCta: { label: "Index", href: "/index" },
-          cta: { label: "Subscribe Edition", href: "/subscribe" },
+          cta: { label: "Subscribe", href: "/subscribe" },
           sticky: false,
         },
       }),
@@ -961,7 +977,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
     label: "SaaS console header",
     category: "Header",
     description:
-      "Developer cloud console header with workspace selector pill, tabbed navigation, and utility cluster.",
+      "Cloud console header with workspace switcher, search, status and a tab row.",
     create: () =>
       createSection("header", {
         data: {
@@ -970,7 +986,8 @@ export const SECTION_PRESETS: SectionPreset[] = [
           badge: "ACME Corp",
           statusText: "Healthy",
           statusColor: "green",
-          searchPlaceholder: "Quick Jump...",
+          showSearch: true,
+          searchPlaceholder: "Jump to...",
           menu: [
             { label: "Projects", href: "/projects" },
             { label: "Deployments", href: "/deployments" },
@@ -978,7 +995,7 @@ export const SECTION_PRESETS: SectionPreset[] = [
             { label: "Logs", href: "/logs" },
             { label: "Settings", href: "/settings" },
           ],
-          cta: { label: "+ New Project", href: "/new" },
+          cta: { label: "New Project", href: "/new" },
           sticky: true,
         },
       }),

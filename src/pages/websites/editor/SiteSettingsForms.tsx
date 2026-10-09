@@ -5,8 +5,11 @@ import {
   isFontKey,
   type FooterData,
   type HeaderData,
+  type HeaderFeatured,
   type HeaderMenuItem,
+  type HeaderStatusColor,
   type HeaderSubMenuItem,
+  type IconName,
   type LinkRef,
   type ThemeSettings,
 } from "../../../site-kit/index.ts";
@@ -33,6 +36,46 @@ const renderLink = (item: LinkRef, update: (item: LinkRef) => void) => (
 const newMenuItem = (): HeaderMenuItem => ({ label: "New link", href: "/" });
 const newSubMenuItem = (): HeaderSubMenuItem => ({ label: "Submenu item", href: "/" });
 
+const MENU_ICON_OPTIONS: { value: IconName | ""; label: string }[] = [
+  { value: "", label: "Default (Layers)" },
+  { value: "layers", label: "Layers" },
+  { value: "box", label: "Box / Product" },
+  { value: "bolt", label: "Lightning / Speed" },
+  { value: "rocket", label: "Rocket / Launch" },
+  { value: "sparkles", label: "Sparkles / AI" },
+  { value: "chart", label: "Chart / Analytics" },
+  { value: "wallet", label: "Wallet / Payments" },
+  { value: "shield", label: "Shield / Security" },
+  { value: "lock", label: "Lock / Privacy" },
+  { value: "cloud", label: "Cloud / Hosting" },
+  { value: "code", label: "Code / API" },
+  { value: "tools", label: "Tools / Integrations" },
+  { value: "gear", label: "Settings" },
+  { value: "user", label: "User / Account" },
+  { value: "chat", label: "Chat / Support" },
+  { value: "mail", label: "Mail / Contact" },
+  { value: "phone", label: "Phone" },
+  { value: "bell", label: "Bell / Alerts" },
+  { value: "clock", label: "Clock / History" },
+  { value: "help", label: "Help / Docs" },
+  { value: "star", label: "Star / Featured" },
+  { value: "heart", label: "Heart / Community" },
+  { value: "check", label: "Check / Verified" },
+  { value: "pointer", label: "Pointer / Interactive" },
+];
+
+const STATUS_COLOR_OPTIONS: { value: HeaderStatusColor; label: string }[] = [
+  { value: "green", label: "Green (Online / Healthy)" },
+  { value: "blue", label: "Blue (Info)" },
+  { value: "orange", label: "Orange (Degraded)" },
+  { value: "purple", label: "Purple (Beta / Preview)" },
+  { value: "red", label: "Red (Live / Incident)" },
+];
+
+const DESIGNS_WITH_STATUS_COLOR: HeaderData["design"][] = ["glass-dock", "split-stacked", "headline-ticker", "saas-console"];
+const DESIGNS_WITH_SEARCH: HeaderData["design"][] = ["glass-dock", "command-bar", "mega-menu-grid", "saas-console", "ecommerce"];
+const DESIGNS_WITH_CURTAIN: HeaderData["design"][] = ["side-drawer", "luxury-editorial"];
+
 function MenuItemEditor({
   item,
   onChange,
@@ -45,6 +88,13 @@ function MenuItemEditor({
   return (
     <div className="flex flex-col gap-2.5">
       <LinkField label="Link" value={item} onChange={(patch) => onChange({ ...item, ...patch })} />
+      <TextField
+        label="Description (optional)"
+        value={item.description ?? ""}
+        onChange={(description) => onChange({ ...item, description: description.trim() || undefined })}
+        maxLength={140}
+        placeholder="Shown in curtain menus and mega menu intros"
+      />
       <TextField
         label="Badge (optional)"
         value={item.badge ?? ""}
@@ -95,6 +145,12 @@ function MenuItemEditor({
                   maxLength={20}
                   placeholder="New, Hot..."
                 />
+                <SelectField
+                  label="Icon (mega menu)"
+                  value={(sub.icon ?? "") as IconName | ""}
+                  options={MENU_ICON_OPTIONS}
+                  onChange={(icon) => update({ ...sub, icon: icon || undefined })}
+                />
               </div>
             )}
           />
@@ -113,6 +169,13 @@ export function HeaderForm({
   pages?: WebsitePage[];
   onChange: (header: HeaderData) => void;
 }) {
+  const { design, featured } = header;
+  const statusColor =
+    STATUS_COLOR_OPTIONS.find((option) => option.value === header.statusColor)?.value ??
+    (design === "headline-ticker" ? "red" : "green");
+  const updateFeatured = (patch: Partial<HeaderFeatured>) =>
+    onChange({ ...header, featured: { title: featured?.title ?? "", ...featured, ...patch } });
+
   return (
     <>
       <FormGroup title="Header design & layout">
@@ -122,7 +185,7 @@ export function HeaderForm({
           options={[
             { value: "glass-dock", label: "Glass dock (Segmented liquid glass island)" },
             { value: "split-stacked", label: "Split stacked (2-tier enterprise double-decker)" },
-            { value: "command-bar", label: "Command bar (Spotlight ⌘K search & modal)" },
+            { value: "command-bar", label: "Command bar (Centered spotlight search)" },
             { value: "mega-menu-grid", label: "Mega menu grid (Bento multi-column mega menu)" },
             { value: "side-drawer", label: "Side drawer (Slide-over off-canvas curtain)" },
             { value: "headline-ticker", label: "Headline ticker (Live broadcast marquee strip)" },
@@ -182,16 +245,158 @@ export function HeaderForm({
           value={header.statusText ?? ""}
           onChange={(statusText) => onChange({ ...header, statusText: statusText || undefined })}
           maxLength={60}
-          hint="Optional live status indicator text (e.g. 'All systems online', 'Healthy')."
+          hint="Optional status text (e.g. 'All systems online'). Also used as the ticker label and editorial edition line."
         />
         <TextField
           label="Announcement bar / Marquee"
           value={header.announcement ?? ""}
           onChange={(announcement) => onChange({ ...header, announcement: announcement || undefined })}
           maxLength={200}
-          hint="Optional banner message or live ticker text displayed above the header."
+          hint={
+            design === "headline-ticker"
+              ? "Ticker headlines. Separate multiple headlines with | or •."
+              : "Optional banner message displayed above the header."
+          }
+        />
+        <OptionalLinkField
+          label="Announcement link"
+          value={header.announcementLink}
+          onChange={(announcementLink) => onChange({ ...header, announcementLink })}
+          fallback={{ label: "Learn more", href: "/" }}
         />
       </FormGroup>
+
+      {(DESIGNS_WITH_STATUS_COLOR.includes(design) ||
+        DESIGNS_WITH_SEARCH.includes(design) ||
+        DESIGNS_WITH_CURTAIN.includes(design) ||
+        design === "split-stacked" ||
+        design === "mega-menu-grid") && (
+        <FormGroup title="Design content">
+          {DESIGNS_WITH_STATUS_COLOR.includes(design) && (
+            <SelectField
+              label="Status indicator color"
+              value={statusColor}
+              options={STATUS_COLOR_OPTIONS}
+              onChange={(statusColor) => onChange({ ...header, statusColor })}
+            />
+          )}
+
+          {DESIGNS_WITH_SEARCH.includes(design) && (
+            <>
+              <CheckboxField
+                label="Show search"
+                checked={design === "command-bar" ? header.showSearch !== false : (header.showSearch ?? Boolean(header.searchPlaceholder))}
+                onChange={(showSearch) => onChange({ ...header, showSearch })}
+              />
+              <TextField
+                label="Search placeholder"
+                value={header.searchPlaceholder ?? ""}
+                onChange={(searchPlaceholder) => onChange({ ...header, searchPlaceholder: searchPlaceholder || undefined })}
+                maxLength={100}
+                placeholder="Search docs, products..."
+              />
+            </>
+          )}
+
+          {design === "split-stacked" && (
+            <>
+              <ItemList
+                label="Utility links (top strip)"
+                items={header.utilityLinks ?? []}
+                max={8}
+                onChange={(utilityLinks) => onChange({ ...header, utilityLinks: utilityLinks.length > 0 ? utilityLinks : undefined })}
+                create={newLink}
+                itemTitle={linkTitle}
+                renderItem={renderLink}
+                addLabel="Add utility link"
+              />
+              <TextField
+                label="Currency / Region tag"
+                value={header.currency ?? ""}
+                onChange={(currency) => onChange({ ...header, currency: currency || undefined })}
+                maxLength={10}
+                placeholder="USD"
+              />
+            </>
+          )}
+
+          {design === "side-drawer" && (
+            <TextField
+              label="Menu button label"
+              value={header.menuLabel ?? ""}
+              onChange={(menuLabel) => onChange({ ...header, menuLabel: menuLabel || undefined })}
+              maxLength={30}
+              placeholder="Menu"
+            />
+          )}
+
+          {DESIGNS_WITH_CURTAIN.includes(design) && (
+            <>
+              <TextField
+                label="Menu contact heading"
+                value={header.contactLabel ?? ""}
+                onChange={(contactLabel) => onChange({ ...header, contactLabel: contactLabel || undefined })}
+                maxLength={60}
+                placeholder="Get in touch"
+              />
+              <TextField
+                label="Menu contact email"
+                type="email"
+                value={header.contactEmail ?? ""}
+                onChange={(contactEmail) => onChange({ ...header, contactEmail: contactEmail.trim() || undefined })}
+                maxLength={255}
+                hint="Shown at the bottom of the full-height menu."
+              />
+            </>
+          )}
+
+          {design === "mega-menu-grid" && (
+            <>
+              <CheckboxField
+                label="Show featured card in dropdowns"
+                checked={Boolean(featured)}
+                onChange={(on) =>
+                  onChange({
+                    ...header,
+                    featured: on ? { title: "What's new", description: "Discover the latest updates." } : undefined,
+                  })
+                }
+              />
+              {featured && (
+                <div className="flex flex-col gap-2.5">
+                  <TextField
+                    label="Featured badge"
+                    value={featured.badge ?? ""}
+                    onChange={(badge) => updateFeatured({ badge: badge || undefined })}
+                    maxLength={30}
+                    placeholder="New"
+                  />
+                  <TextField
+                    label="Featured title"
+                    value={featured.title}
+                    onChange={(title) => updateFeatured({ title })}
+                    maxLength={80}
+                    required
+                  />
+                  <TextAreaField
+                    label="Featured description"
+                    value={featured.description ?? ""}
+                    onChange={(description) => updateFeatured({ description: description || undefined })}
+                    maxLength={200}
+                    rows={2}
+                  />
+                  <OptionalLinkField
+                    label="Featured link"
+                    value={featured.link}
+                    onChange={(link) => updateFeatured({ link })}
+                    fallback={{ label: "Learn more", href: "/" }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </FormGroup>
+      )}
 
       <FormGroup title="Logo & Brand display">
         <SelectField

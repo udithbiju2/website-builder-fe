@@ -117,7 +117,25 @@ export type HeaderData = {
   utilityLinks?: LinkRef[];
   tagline?: string;
   statusText?: string;
-  statusColor?: "green" | "blue" | "orange" | "purple" | string;
+  statusColor?: HeaderStatusColor;
+  /** Label on the side-drawer menu trigger. */
+  menuLabel?: string;
+  /** Contact block shown in the full-height curtain menu. */
+  contactLabel?: string;
+  contactEmail?: string;
+  /** Highlight card shown inside mega-menu dropdowns. */
+  featured?: HeaderFeatured;
+};
+
+export const HEADER_STATUS_COLORS = ["green", "blue", "orange", "purple", "red"] as const;
+
+export type HeaderStatusColor = (typeof HEADER_STATUS_COLORS)[number];
+
+export type HeaderFeatured = {
+  badge?: string;
+  title: string;
+  description?: string;
+  link?: LinkRef;
 };
 
 export const FOOTER_DESIGNS = [

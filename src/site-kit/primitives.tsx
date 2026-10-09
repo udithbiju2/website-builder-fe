@@ -7,15 +7,17 @@ type SiteLinkProps = {
   link: LinkRef;
   className?: string;
   children?: ReactNode;
+  onClick?: () => void;
 };
 
-export function SiteLink({ link, className, children }: SiteLinkProps) {
+export function SiteLink({ link, className, children, onClick }: SiteLinkProps) {
   const href = safeHref(link.href);
   const external = isExternalHref(href);
   return (
     <a
       href={href}
       className={className}
+      onClick={onClick}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
       {children ?? link.label}
@@ -175,6 +177,42 @@ export function SiteIcon({ name }: { name: IconName | string }) {
     <span className="wb-icon wb-icon-emoji" aria-hidden="true">
       {name}
     </span>
+  );
+}
+
+/** Bare SVG glyph for a named icon; renders `fallback` (or nothing) for unknown names. */
+export function IconSvg({ name, fallback, className }: { name?: string; fallback?: IconName; className?: string }) {
+  const key = name && Object.prototype.hasOwnProperty.call(ICON_PATHS, name) ? (name as IconName) : fallback;
+  if (!key) return null;
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {ICON_PATHS[key]}
+    </svg>
+  );
+}
+
+export function ArrowRightIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+export function CommandIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 3a3 3 0 00-3 3v12a3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3H6a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3V6a3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3h12a3 3 0 003-3 3 3 0 00-3-3z" />
+    </svg>
   );
 }
 

@@ -164,7 +164,7 @@ export function SectionSkeleton({ preset }: { preset: SectionPreset }) {
           <div className="h-2 w-5 rounded-sm bg-zinc-400 dark:bg-zinc-500" />
           <div className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 dark:border-zinc-700 dark:bg-zinc-800">
             <div className="h-1 w-6 rounded-full bg-zinc-300 dark:bg-zinc-600" />
-            <div className="ml-1 h-1 w-2 rounded-xs bg-zinc-200 text-[6px] dark:bg-zinc-700">⌘K</div>
+            <div className="ml-1 h-1.5 w-2.5 rounded-xs border border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-700" />
           </div>
           <div className="h-2 w-4 rounded-sm bg-brand/70" />
         </div>
