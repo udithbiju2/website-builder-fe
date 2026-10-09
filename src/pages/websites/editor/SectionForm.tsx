@@ -2869,7 +2869,7 @@ function normalizeMarqueeVariant(variant?: string): MarqueeVariant {
   if (variant === "gradient-pill" || variant === "pills" || variant === "badges") return "pill-badges";
   if (variant === "cards" || variant === "features") return "cards-stream";
   if (variant === "dual" || variant === "two-way") return "dual-directional";
-  if (MARQUEE_VARIANTS.includes(variant as MarqueeVariant)) return variant as MarqueeVariant;
+  if (MARQUEE_VARIANT_OPTIONS.some((o) => o.value === variant)) return variant as MarqueeVariant;
   return "ticker-text";
 }
 

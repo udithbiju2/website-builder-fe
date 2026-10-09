@@ -120,9 +120,18 @@ export function HeaderForm({
           label="Design layout"
           value={header.design}
           options={[
+            { value: "glass-dock", label: "Glass dock (Segmented liquid glass island)" },
+            { value: "split-stacked", label: "Split stacked (2-tier enterprise double-decker)" },
+            { value: "command-bar", label: "Command bar (Spotlight ⌘K search & modal)" },
+            { value: "mega-menu-grid", label: "Mega menu grid (Bento multi-column mega menu)" },
+            { value: "side-drawer", label: "Side drawer (Slide-over off-canvas curtain)" },
+            { value: "headline-ticker", label: "Headline ticker (Live broadcast marquee strip)" },
+            { value: "luxury-editorial", label: "Luxury editorial (Numbered grid index & masthead)" },
+            { value: "saas-console", label: "SaaS console (Cloud developer workspace header)" },
             { value: "classical", label: "Classical (Logo left, nav center, dual buttons)" },
             { value: "minimalist", label: "Minimalist (Nav left, centered logo, CTA right)" },
             { value: "comprehensive", label: "Comprehensive (Mega nav, CTA buttons)" },
+            { value: "ecommerce", label: "E-commerce (Top search & cart bar, category tabs)" },
             { value: "floating", label: "Floating pill (Blurred floating island)" },
             { value: "transparent", label: "Transparent overlay (Hero overlay)" },
             { value: "logo-left", label: "Standard (Logo left, nav right)" },
@@ -155,11 +164,32 @@ export function HeaderForm({
           required
         />
         <TextField
-          label="Announcement bar"
+          label="Tagline / Sub-label"
+          value={header.tagline ?? ""}
+          onChange={(tagline) => onChange({ ...header, tagline: tagline || undefined })}
+          maxLength={150}
+          hint="Optional secondary brand subtitle or editorial volume label."
+        />
+        <TextField
+          label="Badge / Version / Workspace"
+          value={header.badge ?? ""}
+          onChange={(badge) => onChange({ ...header, badge: badge || undefined })}
+          maxLength={40}
+          hint="Optional pill badge (e.g. 'v2.6', 'Pro', 'ACME Corp')."
+        />
+        <TextField
+          label="Status text"
+          value={header.statusText ?? ""}
+          onChange={(statusText) => onChange({ ...header, statusText: statusText || undefined })}
+          maxLength={60}
+          hint="Optional live status indicator text (e.g. 'All systems online', 'Healthy')."
+        />
+        <TextField
+          label="Announcement bar / Marquee"
           value={header.announcement ?? ""}
           onChange={(announcement) => onChange({ ...header, announcement: announcement || undefined })}
           maxLength={200}
-          hint="Optional banner message displayed above the header."
+          hint="Optional banner message or live ticker text displayed above the header."
         />
       </FormGroup>
 

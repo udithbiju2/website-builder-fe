@@ -742,6 +742,248 @@ export const SECTION_PRESETS: SectionPreset[] = [
     create: () => createSection("header", { data: { design: "centered" } }),
   },
   {
+    key: "header-glass-dock",
+    type: "header",
+    label: "Glass dock header",
+    category: "Header",
+    description:
+      "Floating segmented liquid glass island dock with active beacon and command hint.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "glass-dock",
+          siteName: "Modulus",
+          badge: "v2.6",
+          statusText: "All systems online",
+          statusColor: "green",
+          menu: [
+            { label: "Overview", href: "#overview" },
+            { label: "Features", href: "#features" },
+            { label: "Pricing", href: "#pricing" },
+            { label: "Changelog", href: "#changelog" },
+          ],
+          cta: { label: "Get Started", href: "/signup" },
+          position: "floating",
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-split-stacked",
+    type: "header",
+    label: "Split stacked header",
+    category: "Header",
+    description:
+      "2-tier enterprise double-decker with top utility status strip + primary navigation bar.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "split-stacked",
+          siteName: "Enterprise Cloud",
+          tagline: "Global Cloud Infrastructure & Edge Network",
+          statusText: "System operational (99.99%)",
+          statusColor: "green",
+          utilityLinks: [
+            { label: "Global Status", href: "/status" },
+            { label: "Documentation", href: "/docs" },
+            { label: "Support", href: "/support" },
+          ],
+          menu: [
+            {
+              label: "Platform",
+              href: "/platform",
+              children: [
+                { label: "Compute Engine", href: "/compute", description: "Scalable virtual instances" },
+                { label: "Edge Functions", href: "/edge", description: "Sub-millisecond serverless" },
+              ],
+            },
+            { label: "Solutions", href: "/solutions" },
+            { label: "Enterprise", href: "/enterprise" },
+            { label: "Pricing", href: "/pricing" },
+          ],
+          secondaryCta: { label: "Contact Sales", href: "/contact" },
+          cta: { label: "Start Free Trial", href: "/signup" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-command-bar",
+    type: "header",
+    label: "Command bar header",
+    category: "Header",
+    description:
+      "Developer spotlight header with interactive ⌘K command search pill and modal.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "command-bar",
+          siteName: "Modulus Dev",
+          badge: "API v3",
+          searchPlaceholder: "Search docs, components, APIs...",
+          menu: [
+            { label: "Documentation", href: "/docs" },
+            { label: "Components", href: "/components" },
+            { label: "Playground", href: "/playground" },
+            { label: "Changelog", href: "/changelog" },
+          ],
+          secondaryCta: { label: "GitHub", href: "https://github.com" },
+          cta: { label: "Deploy App", href: "/deploy" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-mega-menu-grid",
+    type: "header",
+    label: "Mega menu grid header",
+    category: "Header",
+    description:
+      "Architectural bento mega-dropdown header with multi-column links and featured release card.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "mega-menu-grid",
+          siteName: "Stripe Scale",
+          menu: [
+            {
+              label: "Products",
+              href: "/products",
+              children: [
+                { label: "Payments", href: "/payments", description: "Accept global online transactions" },
+                { label: "Billing", href: "/billing", description: "Flexible subscriptions & recurring invoices" },
+                { label: "Connect", href: "/connect", description: "Multi-party platforms & marketplaces" },
+                { label: "Radar", href: "/radar", description: "AI-driven fraud detection & security" },
+              ],
+            },
+            {
+              label: "Developers",
+              href: "/developers",
+              children: [
+                { label: "API Reference", href: "/api", description: "Complete REST and GraphQL endpoints" },
+                { label: "SDKs & Libraries", href: "/sdks", description: "Client libraries for 12 languages" },
+                { label: "Webhooks", href: "/webhooks", description: "Real-time event streaming" },
+              ],
+            },
+            { label: "Customers", href: "/customers" },
+            { label: "Pricing", href: "/pricing" },
+          ],
+          secondaryCta: { label: "Sign in", href: "/login" },
+          cta: { label: "Create Account", href: "/signup" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-side-drawer",
+    type: "header",
+    label: "Side drawer curtain header",
+    category: "Header",
+    description:
+      "Minimalist luxury bar with slide-over off-canvas navigation curtain.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "side-drawer",
+          siteName: "Atelier Studio",
+          tagline: "Architecture & Spatial Design",
+          menu: [
+            { label: "Selected Works", href: "/works", description: "2022 — 2026 Portfolio" },
+            { label: "Design Philosophy", href: "/philosophy", description: "Manifesto & Practices" },
+            { label: "Publications", href: "/publications", description: "Monographs & Press" },
+            { label: "The Studio", href: "/studio", description: "Team & Locations" },
+            { label: "Contact Inquiries", href: "/contact", description: "Commissions & Press" },
+          ],
+          cta: { label: "Book Commission", href: "/contact" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-headline-ticker",
+    type: "header",
+    label: "Headline ticker header",
+    category: "Header",
+    description:
+      "Live broadcast ticker announcement marquee integrated with glass header.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "headline-ticker",
+          siteName: "NewsPulse Live",
+          announcement:
+            "🚀 Spring 2026 Release is live • Early access unlocked • Join 100,000+ creators building on Modulus",
+          announcementLink: { label: "Learn more", href: "/changelog" },
+          statusText: "LIVE 24/7",
+          statusColor: "red",
+          menu: [
+            { label: "Stories", href: "/stories" },
+            { label: "Broadcasts", href: "/broadcasts" },
+            { label: "Podcasts", href: "/podcasts" },
+            { label: "Markets", href: "/markets" },
+          ],
+          secondaryCta: { label: "Sign in", href: "/login" },
+          cta: { label: "Subscribe $5/mo", href: "/subscribe" },
+          sticky: true,
+        },
+      }),
+  },
+  {
+    key: "header-luxury-editorial",
+    type: "header",
+    label: "Luxury editorial header",
+    category: "Header",
+    description:
+      "Hairline bordered grid layout with numbered index navigation, centered masthead, and atelier metadata.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "luxury-editorial",
+          siteName: "CHRONICLE & CO.",
+          tagline: "Vol. XXIV — Global Architectural Journal",
+          statusText: "Spring / Summer 2026",
+          menu: [
+            { label: "Editorial", href: "/editorial" },
+            { label: "Architecture", href: "/architecture" },
+            { label: "Interiors", href: "/interiors" },
+            { label: "Exhibitions", href: "/exhibitions" },
+            { label: "Archive", href: "/archive" },
+          ],
+          secondaryCta: { label: "Index", href: "/index" },
+          cta: { label: "Subscribe Edition", href: "/subscribe" },
+          sticky: false,
+        },
+      }),
+  },
+  {
+    key: "header-saas-console",
+    type: "header",
+    label: "SaaS console header",
+    category: "Header",
+    description:
+      "Developer cloud console header with workspace selector pill, tabbed navigation, and utility cluster.",
+    create: () =>
+      createSection("header", {
+        data: {
+          design: "saas-console",
+          siteName: "Modulus Cloud",
+          badge: "ACME Corp",
+          statusText: "Healthy",
+          statusColor: "green",
+          searchPlaceholder: "Quick Jump...",
+          menu: [
+            { label: "Projects", href: "/projects" },
+            { label: "Deployments", href: "/deployments" },
+            { label: "Analytics", href: "/analytics" },
+            { label: "Logs", href: "/logs" },
+            { label: "Settings", href: "/settings" },
+          ],
+          cta: { label: "+ New Project", href: "/new" },
+          sticky: true,
+        },
+      }),
+  },
+  {
     key: "footer-mega",
     type: "footer",
     label: "Footer · mega store",
