@@ -2,7 +2,8 @@ import { useState, type CSSProperties, type FormEvent } from "react";
 import { safeHref } from "../links.ts";
 import { SiteBrand } from "./SiteHeader.tsx";
 import { PaymentIconsBar, SiteLink, SocialIcon } from "../primitives.tsx";
-import type { FooterData, LinkRef } from "../types.ts";
+import type { FooterData, LinkRef, SectionSettings } from "../types.ts";
+import { chromeStyle } from "./chrome.ts";
 
 function SocialCircleLinks({ social }: { social: LinkRef[] }) {
   if (!social || social.length === 0) return null;
@@ -119,11 +120,16 @@ function LegalLinksList({ legalLinks }: { legalLinks?: LinkRef[] }) {
   );
 }
 
-export default function SiteFooter({ footer }: { footer: FooterData }) {
+export default function SiteFooter({ footer, settings }: { footer: FooterData; settings?: Partial<SectionSettings> }) {
   if (footer.hidden) return null;
 
-  const themeClass =
-    footer.themeMode === "dark" ? "wb-footer-dark" : footer.themeMode === "light" ? "wb-footer-light" : "";
+  const chrome = chromeStyle(settings);
+  const themeClass = [
+    footer.themeMode === "dark" ? "wb-footer-dark" : footer.themeMode === "light" ? "wb-footer-light" : "",
+    chrome.className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const { contact, newsletter, ctaBanner, paymentMethods, legalLinks, menu = [] } = footer;
   const showPayments = paymentMethods?.enabled !== false;
@@ -132,7 +138,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
   // 1. SIMPLE DESIGN
   if (footer.design === "simple") {
     return (
-      <footer className={`wb-footer wb-footer-simple ${themeClass}`}>
+      <footer className={`wb-footer wb-footer-simple ${themeClass}`} style={chrome.style}>
         <div className="wb-container wb-footer-bottom">
           <div className="wb-footer-bottom-left">
             <span>{footer.copyright}</span>
@@ -147,7 +153,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
   // 2. INLINE SINGLE-BAR DESIGN (Logo left, nav links middle, social icons right)
   if (footer.design === "inline") {
     return (
-      <footer className={`wb-footer ${themeClass}`}>
+      <footer className={`wb-footer ${themeClass}`} style={chrome.style}>
         <div className="wb-container">
           <CtaBanner banner={ctaBanner} />
           <div className="wb-footer-inline-bar">
@@ -178,7 +184,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
   // 3. CENTERED BRAND DESIGN
   if (footer.design === "centered") {
     return (
-      <footer className={`wb-footer ${themeClass}`}>
+      <footer className={`wb-footer ${themeClass}`} style={chrome.style}>
         <div className="wb-container">
           <CtaBanner banner={ctaBanner} />
           <div className="wb-footer-centered-wrap">
@@ -215,7 +221,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
   // 4. NEWSLETTER & NAVIGATION DESIGN (Logo/social left, Horizontal links + contact center, Newsletter right)
   if (footer.design === "newsletter") {
     return (
-      <footer className={`wb-footer ${themeClass}`}>
+      <footer className={`wb-footer ${themeClass}`} style={chrome.style}>
         <div className="wb-container">
           <CtaBanner banner={ctaBanner} />
           <div className="wb-footer-newsletter-grid">
@@ -260,7 +266,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
   // 5. SPLIT DESIGN (Logo/social left, Nav links middle, Contact + payments right)
   if (footer.design === "split") {
     return (
-      <footer className={`wb-footer ${themeClass}`}>
+      <footer className={`wb-footer ${themeClass}`} style={chrome.style}>
         <div className="wb-container">
           <CtaBanner banner={ctaBanner} />
           <div className="wb-footer-split-grid">
@@ -318,7 +324,7 @@ export default function SiteFooter({ footer }: { footer: FooterData }) {
   const hasContact = Boolean(contact && (contact.email || contact.phone || contact.address || contact.hours));
 
   return (
-    <footer className={`wb-footer ${themeClass}`}>
+    <footer className={`wb-footer ${themeClass}`} style={chrome.style}>
       <div className="wb-container">
         <CtaBanner banner={ctaBanner} />
 

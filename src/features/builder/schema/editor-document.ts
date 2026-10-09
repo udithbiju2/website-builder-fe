@@ -18,6 +18,8 @@ export const sectionCustomColorsSchema = z
     primary: z.string().optional(),
     muted: z.string().optional(),
     border: z.string().optional(),
+    gradientFrom: z.string().optional(),
+    gradientTo: z.string().optional(),
   })
   .optional();
 
